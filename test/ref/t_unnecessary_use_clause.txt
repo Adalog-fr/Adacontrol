@@ -66,56 +66,66 @@ t_unnecessary_use_clause-use_type.adb:155:7: Delete:155:16
 t_unnecessary_use_clause-use_type.adb:155:17: Insert
 !
 !      use all type T_unnecessary_use_clause.Use_Type.Pack1.Int1;
-t_unnecessary_use_clause-use_type.adb:163:11: Error: UNNECESSARY_USE_CLAUSE: Operator: "use" clause for Pack1 used for operators of T_unnecessary_use_clause.Use_Type.Pack1.Int1
-t_unnecessary_use_clause-use_type.adb:163:7: Delete:163:16
-t_unnecessary_use_clause-use_type.adb:163:17: Insert
+t_unnecessary_use_clause-use_type.adb:166:20: Error: UNNECESSARY_USE_CLAUSE: Operator: "use all type" clause for PAck1.Tag1 used for operators of T_unnecessary_use_clause.Use_Type.Pack1.Tag1
+t_unnecessary_use_clause-use_type.adb:165:20: Error: UNNECESSARY_USE_CLAUSE: Operator: "use all type" clause for PACK1.TAG1'CLASS used for operators of T_unnecessary_use_clause.Use_Type.Pack1.Tag1'CLASS
+t_unnecessary_use_clause-use_type.adb:166:7: Delete:166:30
+t_unnecessary_use_clause-use_type.adb:165:7: Delete:165:36
+t_unnecessary_use_clause-use_type.adb:165:37: Insert
 !
-!      use type T_unnecessary_use_clause.Use_Type.Pack1.Int1;
-t_unnecessary_use_clause-use_type.adb:170:11: Error: UNNECESSARY_USE_CLAUSE: Primitive: "use" clause for Pack1 used for primitive operations of T_unnecessary_use_clause.Use_Type.Pack1.Int1
-t_unnecessary_use_clause-use_type.adb:170:7: Delete:170:16
-t_unnecessary_use_clause-use_type.adb:170:17: Insert
+!      use type T_unnecessary_use_clause.Use_Type.Pack1.Tag1'CLASS;
+t_unnecessary_use_clause-use_type.adb:166:31: Insert
 !
-!      use all type T_unnecessary_use_clause.Use_Type.Pack1.Int1;
-t_unnecessary_use_clause-use_type.adb:178:11: Error: UNNECESSARY_USE_CLAUSE: Primitive: "use" clause for Pack1 used for primitive operations of T_unnecessary_use_clause.Use_Type.Pack1.Int1
-t_unnecessary_use_clause-use_type.adb:178:11: Error: UNNECESSARY_USE_CLAUSE: Primitive: "use" clause for Pack1 used for primitive operations of T_unnecessary_use_clause.Use_Type.Pack1.Tag1
+!      use type T_unnecessary_use_clause.Use_Type.Pack1.Tag1;
+t_unnecessary_use_clause-use_type.adb:178:11: Error: UNNECESSARY_USE_CLAUSE: Operator: "use" clause for PACK1 used for operators of T_unnecessary_use_clause.Use_Type.Pack1.Int1
 t_unnecessary_use_clause-use_type.adb:178:7: Delete:178:16
 t_unnecessary_use_clause-use_type.adb:178:17: Insert
 !
+!      use type T_unnecessary_use_clause.Use_Type.Pack1.Int1;
+t_unnecessary_use_clause-use_type.adb:185:11: Error: UNNECESSARY_USE_CLAUSE: Primitive: "use" clause for pack1 used for primitive operations of T_unnecessary_use_clause.Use_Type.Pack1.Int1
+t_unnecessary_use_clause-use_type.adb:185:7: Delete:185:16
+t_unnecessary_use_clause-use_type.adb:185:17: Insert
+!
 !      use all type T_unnecessary_use_clause.Use_Type.Pack1.Int1;
-!      use all type T_unnecessary_use_clause.Use_Type.Pack1.Tag1;
-t_unnecessary_use_clause-use_type.adb:187:27: Error: UNNECESSARY_USE_CLAUSE: Primitive: "use" clause for Pack1 used for primitive operations of T_unnecessary_use_clause.Use_Type.Pack1.Int1
-t_unnecessary_use_clause-use_type.adb:187:27: Error: UNNECESSARY_USE_CLAUSE: Primitive: "use" clause for Pack1 used for primitive operations of T_unnecessary_use_clause.Use_Type.Pack1.Tag1
-t_unnecessary_use_clause-use_type.adb:187:25: Delete:187:31
-t_unnecessary_use_clause-use_type.adb:187:33: Insert
+t_unnecessary_use_clause-use_type.adb:193:11: Error: UNNECESSARY_USE_CLAUSE: Primitive: "use" clause for Pack1 used for primitive operations of T_unnecessary_use_clause.Use_Type.Pack1.Int1
+t_unnecessary_use_clause-use_type.adb:193:11: Error: UNNECESSARY_USE_CLAUSE: Primitive: "use" clause for Pack1 used for primitive operations of T_unnecessary_use_clause.Use_Type.Pack1.Tag1
+t_unnecessary_use_clause-use_type.adb:193:7: Delete:193:16
+t_unnecessary_use_clause-use_type.adb:193:17: Insert
 !
 !      use all type T_unnecessary_use_clause.Use_Type.Pack1.Int1;
 !      use all type T_unnecessary_use_clause.Use_Type.Pack1.Tag1;
-t_unnecessary_use_clause-use_type.adb:197:11: Error: UNNECESSARY_USE_CLAUSE: Operator: "use" clause for Pack1 used for operators of T_unnecessary_use_clause.Use_Type.Pack1.Int1
-t_unnecessary_use_clause-use_type.adb:197:7: Delete:197:16
-t_unnecessary_use_clause-use_type.adb:197:17: Insert
+t_unnecessary_use_clause-use_type.adb:202:27: Error: UNNECESSARY_USE_CLAUSE: Primitive: "use" clause for Pack1 used for primitive operations of T_unnecessary_use_clause.Use_Type.Pack1.Int1
+t_unnecessary_use_clause-use_type.adb:202:27: Error: UNNECESSARY_USE_CLAUSE: Primitive: "use" clause for Pack1 used for primitive operations of T_unnecessary_use_clause.Use_Type.Pack1.Tag1
+t_unnecessary_use_clause-use_type.adb:202:25: Delete:202:31
+t_unnecessary_use_clause-use_type.adb:202:33: Insert
+!
+!      use all type T_unnecessary_use_clause.Use_Type.Pack1.Int1;
+!      use all type T_unnecessary_use_clause.Use_Type.Pack1.Tag1;
+t_unnecessary_use_clause-use_type.adb:212:11: Error: UNNECESSARY_USE_CLAUSE: Operator: "use" clause for Pack1 used for operators of T_unnecessary_use_clause.Use_Type.Pack1.Int1
+t_unnecessary_use_clause-use_type.adb:212:7: Delete:212:16
+t_unnecessary_use_clause-use_type.adb:212:17: Insert
 !
 !      use type T_unnecessary_use_clause.Use_Type.Pack1.Int1;
-t_unnecessary_use_clause-use_type.adb:206:11: Error: UNNECESSARY_USE_CLAUSE: Operator: "use" clause for Pack1 used for operators of T_unnecessary_use_clause.Use_Type.Pack1.Int1
-t_unnecessary_use_clause-use_type.adb:206:11: Error: UNNECESSARY_USE_CLAUSE: Operator: "use" clause for Pack1 used for operators of T_unnecessary_use_clause.Use_Type.Pack1.Int2
-t_unnecessary_use_clause-use_type.adb:206:7: Delete:206:16
-t_unnecessary_use_clause-use_type.adb:206:17: Insert
+t_unnecessary_use_clause-use_type.adb:221:11: Error: UNNECESSARY_USE_CLAUSE: Operator: "use" clause for Pack1 used for operators of T_unnecessary_use_clause.Use_Type.Pack1.Int1
+t_unnecessary_use_clause-use_type.adb:221:11: Error: UNNECESSARY_USE_CLAUSE: Operator: "use" clause for Pack1 used for operators of T_unnecessary_use_clause.Use_Type.Pack1.Int2
+t_unnecessary_use_clause-use_type.adb:221:7: Delete:221:16
+t_unnecessary_use_clause-use_type.adb:221:17: Insert
 !
 !      use type T_unnecessary_use_clause.Use_Type.Pack1.Int1;
 !      use type T_unnecessary_use_clause.Use_Type.Pack1.Int2;
-t_unnecessary_use_clause-use_type.adb:217:11: Error: UNNECESSARY_USE_CLAUSE: Operator: "use" clause for Pack1 used for operators of T_unnecessary_use_clause.Use_Type.Pack1.Int2
-t_unnecessary_use_clause-use_type.adb:217:11: Error: UNNECESSARY_USE_CLAUSE: Primitive: "use" clause for Pack1 used for primitive operations of T_unnecessary_use_clause.Use_Type.Pack1.Int1
-t_unnecessary_use_clause-use_type.adb:217:7: Delete:217:16
-t_unnecessary_use_clause-use_type.adb:217:17: Insert
+t_unnecessary_use_clause-use_type.adb:232:11: Error: UNNECESSARY_USE_CLAUSE: Operator: "use" clause for Pack1 used for operators of T_unnecessary_use_clause.Use_Type.Pack1.Int2
+t_unnecessary_use_clause-use_type.adb:232:11: Error: UNNECESSARY_USE_CLAUSE: Primitive: "use" clause for Pack1 used for primitive operations of T_unnecessary_use_clause.Use_Type.Pack1.Int1
+t_unnecessary_use_clause-use_type.adb:232:7: Delete:232:16
+t_unnecessary_use_clause-use_type.adb:232:17: Insert
 !
 !      use type T_unnecessary_use_clause.Use_Type.Pack1.Int2;
 !      use all type T_unnecessary_use_clause.Use_Type.Pack1.Int1;
-t_unnecessary_use_clause-use_type.adb:229:11: Error: UNNECESSARY_USE_CLAUSE: Nested: "use" clause for Pack1 in scope of use clause for same package at t_unnecessary_use_clause-use_type.adb:228:11
-t_unnecessary_use_clause-use_type.adb:229:18: Error: UNNECESSARY_USE_CLAUSE: Nested: "use" clause for Pack2 in scope of use clause for same package at t_unnecessary_use_clause-use_type.adb:228:18
-t_unnecessary_use_clause-use_type.adb:229:7: Delete:229:23
-t_unnecessary_use_clause-use_type.adb:228:25: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Pack3
-t_unnecessary_use_clause-use_type.adb:228:18: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Pack2
-t_unnecessary_use_clause-use_type.adb:228:11: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Pack1
-t_unnecessary_use_clause-use_type.adb:228:7: Delete:228:30
+t_unnecessary_use_clause-use_type.adb:244:11: Error: UNNECESSARY_USE_CLAUSE: Nested: "use" clause for Pack1 in scope of use clause for same package at t_unnecessary_use_clause-use_type.adb:243:11
+t_unnecessary_use_clause-use_type.adb:244:18: Error: UNNECESSARY_USE_CLAUSE: Nested: "use" clause for Pack2 in scope of use clause for same package at t_unnecessary_use_clause-use_type.adb:243:18
+t_unnecessary_use_clause-use_type.adb:244:7: Delete:244:23
+t_unnecessary_use_clause-use_type.adb:243:25: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Pack3
+t_unnecessary_use_clause-use_type.adb:243:18: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Pack2
+t_unnecessary_use_clause-use_type.adb:243:11: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Pack1
+t_unnecessary_use_clause-use_type.adb:243:7: Delete:243:30
 t_unnecessary_use_clause-use_type.adb:6:13: Error: UNNECESSARY_USE_CLAUSE: Qualified: all uses of X_Unnecessary_Use_Clause.Int_1 are qualified
 t_unnecessary_use_clause-use_type.adb:6:4: Delete:6:43
 t_unnecessary_use_clause.adb:75:11: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Ada.Strings

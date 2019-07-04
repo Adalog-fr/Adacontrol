@@ -24,23 +24,25 @@
 --  covered by the GNU Public License.                              --
 ----------------------------------------------------------------------
 
--- Asis
-with
+with    -- Ada
+  Ada.Strings.Wide_Unbounded;
+
+with   -- Asis
   Asis.Clauses,
   Asis.Compilation_Units,
   Asis.Declarations,
   Asis.Elements,
   Asis.Expressions;
 
--- Adalog
-with
+
+with   -- Adalog
   Elements_Set,
   Scope_Manager,
   Thick_Queries,
   Utilities;
 
--- AdaControl
-with
+
+with   -- AdaControl
   Framework.Reports.Fixes,
   Framework.Language,
   Framework.Queries;
@@ -571,7 +573,7 @@ package body Rules.Unnecessary_Use_Clause is
                      if Is_Callable_Construct (Name) and then Is_Use_Type_Visible (Info.Elem, Name) then
                         if Expression_Kind (Name) = An_Operator_Symbol then
                            Current_User := Operator;
-                           Add (Info.Op_Type_List, Corresponding_Name_Definition (Simple_Name (Info.Elem)));
+                           Add (Info.Op_Type_List, Info.Elem);
                         else
                            Current_User := Primitive;
                         end if;
@@ -705,6 +707,7 @@ package body Rules.Unnecessary_Use_Clause is
                                                  and (Is_Package_Spec
                                                       or (Is_Package_Body
                                                           and Used_Elements.Current_Origin = Specification));
+            use Ada.Strings.Wide_Unbounded;
          begin
             if Used_Elements.Current_Origin /= Parent then
                if Info.User /= Nothing and Info.Spec_Unused and Rule_Used (Movable) then
@@ -747,17 +750,17 @@ package body Rules.Unnecessary_Use_Clause is
                      end if;
                   when Operator =>
                      if Rule_Used (Operator) and then Clause_Kind (Info.Use_Clause) /= A_Use_Type_Clause then
-                        for T : Defining_Name of Elements_In_Set (Info.Op_Type_List) loop
+                        for T : Unbounded_Wide_String of Names_In_Set (Info.Op_Type_List) loop
                            Report (Rule_Id,
                                    Ctl_Contexts (Operator),
                                    Get_Location (Info.Elem),
                                    "Operator: " & Clause_And_Name (Info) & " used for operators of "
-                                   & Full_Name_Image (T)
+                                   & To_Wide_String (T)
                                    & (if Child_Warning then " (possible usage in child units)" else ""));
                            Fixes.Insert (Insertions,
                                          Line_Delimiter
                                             & Indentation_Of (Info.Use_Clause) & "use type "
-                                            & Full_Name_Image (T) & ";",
+                                            & To_Wide_String (T) & ";",
                                          After,
                                          Info.Use_Clause);
                         end loop;
@@ -771,31 +774,31 @@ package body Rules.Unnecessary_Use_Clause is
 
                   when Primitive =>
                      if Rule_Used (Primitive) and then Clause_Kind (Info.Use_Clause) = A_Use_Package_Clause then
-                        for T : Defining_Name of Elements_In_Set (Info.Op_Type_List) loop
+                        for T : Unbounded_Wide_String of Names_In_Set (Info.Op_Type_List) loop
                            Report (Rule_Id,
                                    Ctl_Contexts (Operator),
                                    Get_Location (Info.Elem),
                                    "Operator: " & Clause_And_Name (Info) & " used for operators of "
-                                   & Full_Name_Image (T)
+                                   & To_Wide_String (T)
                                    & (if Child_Warning then " (possible usage in child units)" else ""));
                            Fixes.Insert (Insertions, Line_Delimiter
                                          & Indentation_Of (Info.Use_Clause) & "use type "
-                                         & Full_Name_Image (T) & ";",
+                                         & To_Wide_String (T) & ";",
                                          After, Info.Use_Clause);
                         end loop;
 
 
-                        for T : Defining_Name of Elements_In_Set (Info.Prim_Type_List) loop
+                        for T : Unbounded_Wide_String of Names_In_Set (Info.Prim_Type_List) loop
                            Report (Rule_Id,
                                    Ctl_Contexts (Primitive),
                                    Get_Location (Info.Elem),
                                    "Primitive: " & Clause_And_Name (Info) & " used for primitive operations of "
-                                   & Full_Name_Image (T)
+                                   & To_Wide_String (T)
                                    & (if Child_Warning then " (possible usage in child units)" else ""));
                            Fixes.Insert (Insertions, Line_Delimiter
                                          & Indentation_Of (Info.Use_Clause)
                                          & "use all type "
-                                         & Full_Name_Image (T) & ";",
+                                         & To_Wide_String (T) & ";",
                                          After, Info.Use_Clause);
                         end loop;
 

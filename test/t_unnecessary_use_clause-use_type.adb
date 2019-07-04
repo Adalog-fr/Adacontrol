@@ -158,16 +158,31 @@ begin
       Prim (V1);
    end;
 
+   declare                                          -- Use type of class-wide type
+      V1     : Pack1.Tag1;
+      V2, V3 : Pack1.Tag1'Class := V1;
+
+      use all type PACK1.TAG1'CLASS;
+      use all type PAck1.Tag1;
+   begin
+      if V3 = V2 then
+         null;
+      end if;
+      if Pack1.Tag1 (V3) = (null record) then
+         null;
+      end if;
+   end;
+
    ----------------- These are to check fixes, insertion of use [all] type
    declare
-      use Pack1;                 -- Primitive: "use" clause for Pack1 used for operators
+      use PACK1;                 -- Primitive: "use" clause for Pack1 used for operators
       P : Pack1.Int1;
    begin
       P := P + 1;
    end;
 
    declare
-      use Pack1;                 -- Primitive: "use" clause for Pack1 used for primitive operations
+      use pack1;                 -- Primitive: "use" clause for Pack1 used for primitive operations
       P : Pack1.Int1;
    begin
       P := -1;
