@@ -13,6 +13,8 @@ procedure Test_While_For_For is
    begin
       null;
    end P;
+
+   function F (I : Integer) return Integer is (I);
 begin
    V := 1;
    while V <= 10 loop                        -- While_for_for direct
@@ -153,5 +155,11 @@ begin
       end loop L4;
       V := V + 1;
    end loop L3;
+
+   V := 1;
+   while V <= F(10) loop                     -- OK (function call)
+      V := V + 1;
+      P (V, Y, Z);
+   end loop;
 
 end Test_While_For_For;

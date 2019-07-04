@@ -851,6 +851,27 @@ package body Rules.Simplifiable_Statements is
          Loop_Dir : Direction;
          Not_Changeable : exception;
 
+         procedure Check_Function_Call (Expr : Asis.Expression) is
+         begin
+            if Expression_Kind (Expr) = A_Function_Call then
+               case Operator_Kind (Called_Simple_Name (Expr)) is
+                  when Not_An_Operator =>
+                     -- A true function
+                     raise Not_Changeable;
+                  when A_Unary_Plus_Operator
+                     | A_Unary_Minus_Operator
+                     | A_Not_Operator
+                     =>
+                     -- Unary operators
+                     Check_Function_Call (Actual_Parameter (Function_Call_Parameters (Expr) (1)));
+                  when others =>
+                     -- Binary operators
+                     Check_Function_Call (Actual_Parameter (Function_Call_Parameters (Expr) (1)));
+                     Check_Function_Call (Actual_Parameter (Function_Call_Parameters (Expr) (2)));
+               end case;
+            end if;
+         end Check_Function_Call;
+
          procedure Check_Inner_Statements (Stmt : Asis.Element; Assignment_Allowed : in out Boolean) is
          -- Appropriate element_kinds:
          --   - A_Statement
@@ -1000,6 +1021,7 @@ package body Rules.Simplifiable_Statements is
                        A_Not_Equal_Operator
                      =>
                      Var := Actual_Parameter (Function_Call_Parameters (Cond) (1));
+                     Check_Function_Call (Actual_Parameter (Function_Call_Parameters (Cond) (2)));
                      if Expression_Kind (Var) = An_Identifier
                        and then Declaration_Kind (Corresponding_Name_Declaration
                                                   (Ultimate_Name (Var))) = A_Variable_Declaration
@@ -1015,6 +1037,7 @@ package body Rules.Simplifiable_Statements is
                      else
                         -- Some people may write while 10 > I ...
                         Var := Actual_Parameter (Function_Call_Parameters (Cond) (2));
+                        Check_Function_Call (Actual_Parameter (Function_Call_Parameters (Cond) (1)));
                         if Expression_Kind (Var) = An_Identifier
                           and then Declaration_Kind (Corresponding_Name_Declaration
                                                      (Ultimate_Name (Var))) = A_Variable_Declaration
@@ -1049,9 +1072,6 @@ package body Rules.Simplifiable_Statements is
             if Allowed then -- No assignment in loop
                return;
             end if;
-         exception
-            when Not_Changeable =>
-               return;
          end;
 
          case Loop_Dir is
@@ -1068,6 +1088,9 @@ package body Rules.Simplifiable_Statements is
                        Get_Location (The_Loop),
                        "while loop can be replaced with a reverse for loop");
          end case;
+      exception
+         when Not_Changeable =>
+            null;
       end Check_While_For_For;
 
    begin  -- Process_While_Statement

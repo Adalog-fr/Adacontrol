@@ -128,18 +128,18 @@ t_simplifiable_statements-test_unnecessary_if.adb:55:4: Delete:56:6
 t_simplifiable_statements-test_unnecessary_if.adb:56:14: Replace:56:18
 !not (V3 = 1 or else V1)
 t_simplifiable_statements-test_unnecessary_if.adb:57:1: Delete:61:0
-t_simplifiable_statements-test_while_for_for.adb:18:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
-t_simplifiable_statements-test_while_for_for.adb:23:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a reverse for loop
-t_simplifiable_statements-test_while_for_for.adb:27:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a reverse for loop
-t_simplifiable_statements-test_while_for_for.adb:31:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
-t_simplifiable_statements-test_while_for_for.adb:35:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
-t_simplifiable_statements-test_while_for_for.adb:39:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a reverse for loop
-t_simplifiable_statements-test_while_for_for.adb:43:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
-t_simplifiable_statements-test_while_for_for.adb:47:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a reverse for loop
-t_simplifiable_statements-test_while_for_for.adb:51:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
-t_simplifiable_statements-test_while_for_for.adb:55:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
-t_simplifiable_statements-test_while_for_for.adb:59:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
-t_simplifiable_statements-test_while_for_for.adb:63:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
-t_simplifiable_statements-test_while_for_for.adb:67:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
-t_simplifiable_statements-test_while_for_for.adb:71:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a reverse for loop
-t_simplifiable_statements-test_while_for_for.adb:75:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_while_for_for.adb:20:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_while_for_for.adb:25:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a reverse for loop
+t_simplifiable_statements-test_while_for_for.adb:29:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a reverse for loop
+t_simplifiable_statements-test_while_for_for.adb:33:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_while_for_for.adb:37:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_while_for_for.adb:41:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a reverse for loop
+t_simplifiable_statements-test_while_for_for.adb:45:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_while_for_for.adb:49:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a reverse for loop
+t_simplifiable_statements-test_while_for_for.adb:53:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_while_for_for.adb:57:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_while_for_for.adb:61:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_while_for_for.adb:65:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_while_for_for.adb:69:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_while_for_for.adb:73:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a reverse for loop
+t_simplifiable_statements-test_while_for_for.adb:77:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop

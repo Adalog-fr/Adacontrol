@@ -8908,13 +8908,13 @@ negation  of the condition). Typically:
 @end example
 @item
 ``while_for_for'': controls @code{@b{while}} loops that could be
-changed into @code{@b{for}} loops. More precisely, it controls @code{@b{while}} loops
-where:
+changed into @code{@b{for}} loops. More precisely, it controls
+@code{@b{while}} loops where:
 @itemize
 @item
 the condition of the @code{@b{while}} is a greater, greater or equal,
 less than, less than or equal, or not equal comparison involving only
-a simple variable on one side;
+a simple variable on one side and no function call on the other side;
 @item
 the variable is incremented/decremented exactly once in the loop, in
 the form of being the target of an addition or subtraction of  +1 or
@@ -8926,7 +8926,7 @@ the variable is not passed as an @code{@b{out}} or @code{@b{in out}}
 parameter to a procedure (or entry)
 @item
 if the ``no_exit'' modifier is given, the loop does not include an
-@code{@b{exit}} statement that applies to it
+@code{@b{exit}} statement that applies to it.
 @end itemize
 @end itemize
 
@@ -8972,6 +8972,14 @@ check case_statement (others_span, min 1);
 programmer is supposed to write this. However, experience shows that
 it is a good indicator of code written by people who did not get
 proper Ada training. Such code is certainly worth a peer review...
+
+``while_for_for'' does not control @code{@b{while}} loops where the
+comparison includes a call to a (regular) function, since it is
+necessary to reevaluate the function on every loop. This does not
+apply to operators, even if user-defined. Strictly speaking, nothing
+prevents an user-defined operator from having side-effects, but it is
+such a dubious programming style that a false positive in that case
+is acceptable.
 
 @subsection Limitation
 ``while_for_for'' may trigger false positives in some unlikely cases
