@@ -14,7 +14,7 @@
 #
 # include functions
 #
-. run_funcs.sh
+. ./run_funcs.sh
 
 ########################################################
 # Actual beginning

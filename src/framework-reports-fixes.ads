@@ -95,9 +95,10 @@ package Framework.Reports.Fixes is
 
    --------------------------------------------------------------------------------
    -- Incremental fixes
-
    -- An Incremental_Fix accumulates (in order) several fixes.
    -- The fix is emitted (and the Incremental_Fix is reset) by calling Flush
+   --------------------------------------------------------------------------------
+
    type Incremental_Fix is private;
    procedure Insert (Fix       : in out Incremental_Fix;
                      Text      :        Wide_String;

@@ -18,6 +18,11 @@ if [ "$1" = "-h" ] ; then
 fi
 
 list=`find fixed/res -maxdepth 1 -name "${1:-*}.ad[sb]" -printf "%f "`
+if [ -z $list ] ; then
+    echo "$1 not matched in fixed/res/"
+    exit;
+fi
+
 nb_fix=$(echo $list | wc -w)
 current=0
 for f in $list ; do
