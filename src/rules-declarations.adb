@@ -427,21 +427,21 @@ package body Rules.Declarations is
       procedure Check_Constructor (Decl : in Asis.Declaration) is
          Result_Type : constant Profile_Entry := Types_Profile (Decl).Result_Type;
          Formals     : constant Profile_Table := Types_Profile (Decl).Formals;
-         Result_Category : constant Type_Categories := Type_Category (Elem    => Result_Type.Name,
-                                                            Privacy => Follow_User_Private);
+         Result_Category : constant Type_Categories := Type_Category (Elem    => Result_Type.General_Name.Name,
+                                                                      Privacy => Follow_User_Private);
       begin
-         if Result_Type.Attribute = Class or Result_Category /= A_Tagged_Type
+         if Result_Type.General_Name.Attribute = Class or Result_Category /= A_Tagged_Type
          then
             return;
          end if;
 
          for Formal : Profile_Entry of Formals loop
-            if Is_Equal (Formal.Name, Result_Type.Name) then
+            if Is_Equal (Formal.General_Name.Name, Result_Type.General_Name.Name) then
                return;
             end if;
          end loop;
 
-         if Is_Primitive_Of (Enclosing_Element(Result_Type.Name), Decl) then
+         if Is_Primitive_Of (Enclosing_Element(Result_Type.General_Name.Name), Decl) then
             Do_Report (D_Constructor, Decl);
          end if;
       end Check_Constructor;

@@ -329,7 +329,8 @@ package body Rules.Object_Declarations.NRT_Utilities is
                                                               (Corresponding_Called_Function (Good_Expr)).Result_Type;
                begin
                   if Result_Profile.Access_Form = Not_An_Access_Definition then  -- we don't care about anonymous types
-                     return Is_Equal (Ultimate_Type_Declaration (Of_Type), Enclosing_Element (Result_Profile.Name));
+                     return Is_Equal (Ultimate_Type_Declaration (Of_Type),
+                                      Enclosing_Element (Result_Profile.General_Name.Name));
                   else
                      return False;
                   end if;
