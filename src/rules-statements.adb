@@ -176,7 +176,9 @@ package body Rules.Statements is
    begin
       case Action is
          when Clear =>
-            Rule_Used  := No_Rule;
+            Rule_Used         := No_Rule;
+            Called_Info       := (Value => None);
+            Small_Loop_Length := (Value => 0);
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := No_Rule;

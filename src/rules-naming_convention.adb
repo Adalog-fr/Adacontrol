@@ -508,9 +508,9 @@ package body Rules.Naming_Convention is
       case Action is
          when Clear =>
             Rule_Used := False;
-            Default_Case_Sensitivity := (Value => Off);
             Clear (Contexts);
-            Usage := (others => False);
+            Usage                    := (others => False);
+            Default_Case_Sensitivity := (Value => Off);
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := False;

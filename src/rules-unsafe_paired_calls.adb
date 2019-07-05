@@ -192,8 +192,10 @@ package body Rules.Unsafe_Paired_Calls is
    begin
       case Action is
          when Clear =>
-            Rules_Used  := 0;
+            Rules_Used := 0;
             Clear (Checked_Subprograms);
+            Conditionals_Allowed := (Value => On);
+            Name_As_Given        := (Value => Off);
          when Suspend =>
             Save_Used  := Rules_Used;
             Rules_Used := 0;

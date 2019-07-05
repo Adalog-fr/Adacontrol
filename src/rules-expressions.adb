@@ -236,6 +236,7 @@ package body Rules.Expressions is
          when Clear =>
             Rule_Used := (others => False);
             Clear (Usage);
+            Called_Info := (Value => None);
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := (others => False);

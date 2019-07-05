@@ -202,6 +202,7 @@ package body Rules.Max_Call_Depth is
                Clear (Call_Depths);
             end if;
             Clear (Forced_Entities);
+            Count_Expr_Fun_Calls := (Value => On);
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := False;

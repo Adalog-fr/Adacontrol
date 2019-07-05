@@ -216,7 +216,8 @@ package body Rules.Positional_Associations is
             for Store : Context_Store of Positional_Exceptions loop
                Clear (Store);
             end loop;
-            Rule_Used := Nothing_Used;
+            Rule_Used            := Nothing_Used;
+            Count_Prefix_Operand := (Value => On);
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := Nothing_Used;

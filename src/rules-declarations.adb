@@ -238,6 +238,7 @@ package body Rules.Declarations is
          when Clear =>
             Rule_Used := No_Rule_Used;
             Clear (Usage);
+            Limited_Initialization := (Value => Off);
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := No_Rule_Used;
