@@ -1,11 +1,15 @@
 separate (T_Simplifiable_Statements)
+----------------------------
+-- Test_For_In_For_For_Of --
+----------------------------
+
 procedure Test_For_In_For_For_Of is
    S1 : String (1 .. 10);
    S2 : String (1 .. 10);
    X  : Character;
    type Acc_Str is access String;
    Ptr : Acc_Str;
-   Mat : array (1..5, 1..5) of Boolean;
+   Mat : array (1 .. 5, 1 .. 5) of Boolean;
 begin
    L1 : for I in S1'Range loop         -- for_in_for_for_of
       X := S1 (I);
@@ -17,6 +21,10 @@ begin
          X := S1 (Inx);
       end;
    end loop L1;
+
+   for I in S1'Range loop              -- Not enough indexings
+      X := S1(I);
+   end loop;
 
    for I in 1 .. 9 loop                -- Index used in expression
       X := S1 (I + 1);
@@ -40,7 +48,7 @@ begin
       end;
    end loop;
 
-   for I in 1 .. 10 loop-- No indexing
+   for I in 1 .. 10 loop               -- No indexing
       null;
    end loop;
 
@@ -62,9 +70,10 @@ begin
       C :  constant String := "ABCD";
    begin
       for I in 1 .. 3 loop
-         X := F(I);
+         X := F (I);
       end loop;
       for I in 1 .. 3 loop             -- for_in_for_for_of
+         X := C (I);
          X := C (I);
       end loop;
    end;
@@ -84,7 +93,8 @@ begin
       V2 : Rec2;
    begin
       for I in V1.S'Range loop         -- for_in_for_for_of
-         X := V1.S(I);
+         X := V1.S (I);
+         X := V1.S (I);
       end loop;
       for I in V2.S'Range loop
          X := V2.S (I);

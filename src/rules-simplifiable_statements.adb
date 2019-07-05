@@ -41,12 +41,13 @@ with
 
 -- AdaControl
 with
-     Framework.Reports.Fixes,
-     Framework.Language;
+  Framework.Reports.Fixes,
+  Framework.Language,
+  Framework.Variables.Shared_Types;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Simplifiable_Statements is
-   use Framework, Framework.Control_Manager;
+   use Framework, Framework.Control_Manager, Framework.Variables, Framework.Variables.Shared_Types;
 
    type Subrules is (Stmt_All,
                      Stmt_Block,          Stmt_Dead,           Stmt_For_For_Slice, Stmt_For_In_For_For_Of,
@@ -65,6 +66,9 @@ package body Rules.Simplifiable_Statements is
    Usage     : array (Subrules) of Basic_Rule_Context;
    No_Exit   : Boolean := False;
 
+   -- Rule variable
+   Acceptable_Indexings : aliased Natural_Type.Object := (Value => 0);
+
    ----------
    -- Help --
    ----------
@@ -77,6 +81,8 @@ package body Rules.Simplifiable_Statements is
       User_Message;
       Help_On_Flags ("Parameter(s): [no_exit]");
       User_Message  ("no_exit can be given with ""all"" and ""while_for_for""");
+      User_Message ("Variables:");
+      Help_On_Variable (Rule_Id & ".Acceptable_Indexings");
    end Help;
 
    -----------------
@@ -137,8 +143,9 @@ package body Rules.Simplifiable_Statements is
    begin
       case Action is
          when Clear =>
-            Rule_Used  := Not_Used;
-            No_Exit   := False;
+            Rule_Used            := Not_Used;
+            No_Exit              := False;
+            Acceptable_Indexings := (Value => 0);
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := Not_Used;
@@ -1135,8 +1142,9 @@ package body Rules.Simplifiable_Statements is
 
          type For_Of_State is
             record
-               Indexing_Name : Asis.Defining_Name;  -- The control variable of the for in stmt
-               Indexed_Name  : Asis.Defining_Name;  -- The variable being indexed; if more than one => not changeable
+               Indexing_Name  : Asis.Defining_Name;  -- The control variable of the for in stmt
+               Indexed_Name   : Asis.Defining_Name;  -- The variable being indexed; if more than one => not changeable
+               Indexing_Count : Natural;             -- Count of indexings of Indexed_Name by Indexing_Name
             end record;
 
          procedure Pre_Operation (Element : in     Asis.Element;
@@ -1203,12 +1211,14 @@ package body Rules.Simplifiable_Statements is
                         end if;
                      end;
 
-                     State.Indexed_Name := Indexed_Var;
+                     State.Indexed_Name  := Indexed_Var;
                   elsif Variables_Proximity (State.Indexed_Name, Indexed_Var) /= Same_Variable then
                      Control := Terminate_Immediately;
                      return;
                   end if;
                end;
+               -- If we are here, we have a proper indexing
+               State.Indexing_Count := State.Indexing_Count + 1;
             end if;
          end Pre_Operation;
 
@@ -1219,7 +1229,7 @@ package body Rules.Simplifiable_Statements is
          procedure Traverse_For is new Traverse_Element (For_Of_State);
 
          Control : Traverse_Control := Continue;
-         State   : For_Of_State := (Indexing_Name => Indexing_Name, Indexed_Name => Nil_Element);
+         State   : For_Of_State := (Indexing_Name => Indexing_Name, Indexed_Name => Nil_Element, Indexing_Count => 0);
       begin  -- Check_For_Of
          for S : Asis.Statement of Thick_Queries.Statements (Stmt) loop
             Traverse_For (S, Control, State);
@@ -1228,7 +1238,10 @@ package body Rules.Simplifiable_Statements is
 
          -- Control is Terminate_Immediately if not changeable, Continue otherwise
          -- State.Indexed_Name is Nil_Element if the loop index has not been used for indexing
-         if Control = Continue and not Is_Nil (State.Indexed_Name) then
+         if Control = Continue
+           and not Is_Nil (State.Indexed_Name)
+           and State.Indexing_Count > Acceptable_Indexings.Value
+         then
             Report (Rule_Id,
                     Usage (Stmt_For_In_For_For_Of),
                     Get_Location (Stmt),
@@ -1498,4 +1511,6 @@ begin  -- Rules.Simplifiable_Statements
                                      Help_CB        => Help'Access,
                                      Add_Control_CB => Add_Control'Access,
                                      Command_CB     => Command'Access);
+   Framework.Variables.Register (Acceptable_Indexings'Access,
+                                 Variable_Name => Rule_Id & ".ACCEPTABLE_INDEXINGS");
 end Rules.Simplifiable_Statements;

@@ -1,1 +1,2 @@
+set simplifiable_statements.acceptable_indexings 1;
 check simplifiable_statements (no_exit all);

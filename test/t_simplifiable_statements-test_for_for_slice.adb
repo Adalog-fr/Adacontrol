@@ -6,7 +6,7 @@ procedure Test_For_For_Slice is
 begin
 
    -- Initialization case : V1 := (others => 0);
-   for I in V1'Range loop          -- Replaceable, also for_in_for_for_of
+   for I in V1'Range loop          -- Replaceable
       V1 (I) := 0;
    end loop;
 

@@ -8939,6 +8939,16 @@ search simplifiable_statements (if);
 check simplifiable_statements (no_exit while_for_for);
 @end example
 
+@subsection Variable
+The rule provides a variable to define the maximum number of allowed indexings for the @code{for_in_for_for_of} subrule.
+@need 400
+@multitable @columnfractions .25 .20 .55
+@item @b{Variable} @tab @b{Values} @tab @b{Effect}
+@item Acceptable_Indexings
+@tab <Integer> (default = 0)
+@tab @code{@b{for}} loops that use their loop index for indexing a variable up to the indicated number of times are not controlled by the @code{for_in_for_for_of} subrule.
+@end multitable
+
 @subsection Fixes
 The following subrules generate fixes:
 @itemize @bullet
