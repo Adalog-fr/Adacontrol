@@ -1,2 +1,6 @@
 set simplifiable_statements.acceptable_indexings 1;
-check simplifiable_statements (no_exit all);
+check simplifiable_statements (full_range no_exit all);
+go;
+clear simplifiable_statements;
+check simplifiable_statements; -- all defaults
+

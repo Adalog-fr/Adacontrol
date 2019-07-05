@@ -35,10 +35,11 @@ t_simplifiable_statements-test_dead.adb:84:4: Delete:84:10
 t_simplifiable_statements-test_for_for_slice.adb:9:4: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
 t_simplifiable_statements-test_for_for_slice.adb:14:4: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
 t_simplifiable_statements-test_for_for_slice.adb:19:4: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
-t_simplifiable_statements-test_for_in_for_for_of.adb:14:4: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
-t_simplifiable_statements-test_for_in_for_for_of.adb:63:7: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
-t_simplifiable_statements-test_for_in_for_for_of.adb:75:7: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
-t_simplifiable_statements-test_for_in_for_for_of.adb:95:7: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
+t_simplifiable_statements-test_for_in_for_for_of.adb:10:4: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
+t_simplifiable_statements-test_for_in_for_for_of.adb:59:7: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
+t_simplifiable_statements-test_for_in_for_for_of.adb:73:7: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
+t_simplifiable_statements-test_for_in_for_for_of.adb:113:4: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
+t_simplifiable_statements-test_for_in_for_for_of.adb:123:4: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
 t_simplifiable_statements-test_handler.adb:11:7: Error: SIMPLIFIABLE_STATEMENTS: useless exception handler
 t_simplifiable_statements-test_handler.adb:11:7: Delete:12:15
 t_simplifiable_statements-test_handler.adb:24:7: Error: SIMPLIFIABLE_STATEMENTS: useless exception handler
@@ -142,3 +143,155 @@ t_simplifiable_statements-test_while_for_for.adb:65:4: Error: SIMPLIFIABLE_STATE
 t_simplifiable_statements-test_while_for_for.adb:69:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
 t_simplifiable_statements-test_while_for_for.adb:73:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a reverse for loop
 t_simplifiable_statements-test_while_for_for.adb:77:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_block.adb:5:4: Error: SIMPLIFIABLE_STATEMENTS: unnecessary block statement
+t_simplifiable_statements-test_block.adb:5:4: Delete:6:6
+t_simplifiable_statements-test_block.adb:6:14: Delete:7:7
+t_simplifiable_statements-test_block.adb:9:4: Error: SIMPLIFIABLE_STATEMENTS: unnecessary block statement
+t_simplifiable_statements-test_block.adb:9:4: Delete:11:6
+t_simplifiable_statements-test_block.adb:11:14: Delete:13:4
+t_simplifiable_statements-test_dead.adb:15:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+t_simplifiable_statements-test_dead.adb:15:4: Delete:16:11
+t_simplifiable_statements-test_dead.adb:19:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:20:7: Delete:20:13
+t_simplifiable_statements-test_dead.adb:22:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+t_simplifiable_statements-test_dead.adb:22:4: Delete:24:14
+t_simplifiable_statements-test_dead.adb:25:4: Replace:25:6
+!
+t_simplifiable_statements-test_dead.adb:30:7: Error: SIMPLIFIABLE_STATEMENTS: choices cover no value
+t_simplifiable_statements-test_dead.adb:30:7: Delete:31:14
+t_simplifiable_statements-test_dead.adb:32:7: Error: SIMPLIFIABLE_STATEMENTS: choices cover no value
+t_simplifiable_statements-test_dead.adb:32:7: Delete:33:16
+t_simplifiable_statements-test_dead.adb:34:7: Error: SIMPLIFIABLE_STATEMENTS: choices cover no value
+t_simplifiable_statements-test_dead.adb:34:7: Delete:35:16
+t_simplifiable_statements-test_dead.adb:42:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+t_simplifiable_statements-test_dead.adb:42:4: Delete:44:10
+t_simplifiable_statements-test_dead.adb:61:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:62:7: Delete:65:11
+t_simplifiable_statements-test_dead.adb:63:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:64:7: Delete:65:11
+t_simplifiable_statements-test_dead.adb:67:4: Error: SIMPLIFIABLE_STATEMENTS: while loop is never executed
+t_simplifiable_statements-test_dead.adb:67:4: Delete:69:12
+t_simplifiable_statements-test_dead.adb:71:4: Error: SIMPLIFIABLE_STATEMENTS: for loop is never executed
+t_simplifiable_statements-test_dead.adb:71:4: Delete:73:12
+t_simplifiable_statements-test_dead.adb:82:4: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:83:4: Delete:84:10
+t_simplifiable_statements-test_dead.adb:83:4: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:84:4: Delete:84:10
+t_simplifiable_statements-test_for_for_slice.adb:9:4: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
+t_simplifiable_statements-test_for_for_slice.adb:9:4: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
+t_simplifiable_statements-test_for_for_slice.adb:14:4: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
+t_simplifiable_statements-test_for_for_slice.adb:19:4: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
+t_simplifiable_statements-test_for_in_for_for_of.adb:10:4: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
+t_simplifiable_statements-test_for_in_for_for_of.adb:21:4: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
+t_simplifiable_statements-test_for_in_for_for_of.adb:59:7: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
+t_simplifiable_statements-test_for_in_for_for_of.adb:73:7: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
+t_simplifiable_statements-test_for_in_for_for_of.adb:93:7: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
+t_simplifiable_statements-test_for_in_for_for_of.adb:108:4: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
+t_simplifiable_statements-test_for_in_for_for_of.adb:113:4: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
+t_simplifiable_statements-test_for_in_for_for_of.adb:118:4: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
+t_simplifiable_statements-test_for_in_for_for_of.adb:123:4: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
+t_simplifiable_statements-test_handler.adb:11:7: Error: SIMPLIFIABLE_STATEMENTS: useless exception handler
+t_simplifiable_statements-test_handler.adb:11:7: Delete:12:15
+t_simplifiable_statements-test_handler.adb:24:7: Error: SIMPLIFIABLE_STATEMENTS: useless exception handler
+t_simplifiable_statements-test_handler.adb:24:7: Delete:25:15
+t_simplifiable_statements-test_handler.adb:29:7: Error: SIMPLIFIABLE_STATEMENTS: useless exception handler
+t_simplifiable_statements-test_handler.adb:29:7: Delete:30:15
+t_simplifiable_statements-test_if.adb:7:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+t_simplifiable_statements-test_if.adb:7:4: Delete:8:11
+t_simplifiable_statements-test_if.adb:15:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+t_simplifiable_statements-test_if.adb:15:4: Delete:16:11
+t_simplifiable_statements-test_if.adb:11:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+t_simplifiable_statements-test_if.adb:24:4: Error: SIMPLIFIABLE_STATEMENTS: content of else path can be moved outside "if" statement
+t_simplifiable_statements-test_if.adb:37:13: Error: SIMPLIFIABLE_STATEMENTS: content of then path can be moved outside "if" statement
+t_simplifiable_statements-test_if_for_case.adb:25:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+t_simplifiable_statements-test_if_for_case.adb:31:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+t_simplifiable_statements-test_if_for_case.adb:41:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+t_simplifiable_statements-test_if_not.adb:7:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+t_simplifiable_statements-test_if_not.adb:7:4: Delete:8:11
+t_simplifiable_statements-test_if_not.adb:5:7: Error: SIMPLIFIABLE_STATEMENTS: Negative condition in "if-else" statement
+t_simplifiable_statements-test_if_not.adb:13:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+t_simplifiable_statements-test_if_not.adb:13:4: Delete:14:11
+t_simplifiable_statements-test_if_not.adb:11:9: Error: SIMPLIFIABLE_STATEMENTS: Negative condition in "if-else" statement
+t_simplifiable_statements-test_if_not.adb:19:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+t_simplifiable_statements-test_if_not.adb:19:4: Delete:20:11
+t_simplifiable_statements-test_if_not.adb:25:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+t_simplifiable_statements-test_if_not.adb:25:4: Delete:26:11
+t_simplifiable_statements-test_if_not.adb:33:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+t_simplifiable_statements-test_if_not.adb:33:4: Delete:34:11
+t_simplifiable_statements-test_if_not.adb:29:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+t_simplifiable_statements-test_if_not.adb:37:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+t_simplifiable_statements-test_loop.adb:5:4: Error: SIMPLIFIABLE_STATEMENTS: while loop has True condition
+t_simplifiable_statements-test_loop.adb:5:4: Delete:5:14
+t_simplifiable_statements-test_loop.adb:8:4: Error: SIMPLIFIABLE_STATEMENTS: while loop has True condition
+t_simplifiable_statements-test_loop.adb:8:4: Delete:8:13
+t_simplifiable_statements-test_loop.adb:11:4: Error: SIMPLIFIABLE_STATEMENTS: while loop is never executed
+t_simplifiable_statements-test_loop.adb:11:4: Delete:13:12
+t_simplifiable_statements-test_loop.adb:14:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_loop.adb:17:4: Error: SIMPLIFIABLE_STATEMENTS: simple loop can be changed to "while"
+t_simplifiable_statements-test_null.adb:8:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
+t_simplifiable_statements-test_null.adb:8:4: Delete:9:11
+t_simplifiable_statements-test_null.adb:6:7: Error: SIMPLIFIABLE_STATEMENTS: unnecessary null statement
+t_simplifiable_statements-test_null.adb:6:7: Delete:6:11
+t_simplifiable_statements-test_null.adb:14:7: Error: SIMPLIFIABLE_STATEMENTS: unnecessary null statement
+t_simplifiable_statements-test_null.adb:14:7: Delete:14:11
+t_simplifiable_statements-test_null.adb:18:7: Error: SIMPLIFIABLE_STATEMENTS: unnecessary null statement
+t_simplifiable_statements-test_null.adb:18:7: Delete:18:11
+t_simplifiable_statements-test_null.adb:24:7: Error: SIMPLIFIABLE_STATEMENTS: unnecessary null statement
+t_simplifiable_statements-test_null.adb:24:7: Delete:24:11
+t_simplifiable_statements-test_null.adb:28:7: Error: SIMPLIFIABLE_STATEMENTS: unnecessary null statement
+t_simplifiable_statements-test_null.adb:28:7: Delete:28:11
+t_simplifiable_statements-test_unnecessary_if.adb:7:4: Error: SIMPLIFIABLE_STATEMENTS: If statement can be replaced by direct use of logical expression into assignment/return
+t_simplifiable_statements-test_unnecessary_if.adb:7:4: Delete:8:6
+t_simplifiable_statements-test_unnecessary_if.adb:8:13: Replace:8:16
+!V3 = 1
+t_simplifiable_statements-test_unnecessary_if.adb:9:1: Delete:13:0
+t_simplifiable_statements-test_unnecessary_if.adb:13:4: Error: SIMPLIFIABLE_STATEMENTS: If statement can be replaced by direct use of logical expression into assignment/return
+t_simplifiable_statements-test_unnecessary_if.adb:13:4: Delete:14:6
+t_simplifiable_statements-test_unnecessary_if.adb:14:14: Replace:14:17
+!V3 = 1
+t_simplifiable_statements-test_unnecessary_if.adb:15:1: Delete:19:0
+t_simplifiable_statements-test_unnecessary_if.adb:19:4: Error: SIMPLIFIABLE_STATEMENTS: If statement can be replaced by inverted use of logical expression into assignment/return
+t_simplifiable_statements-test_unnecessary_if.adb:19:4: Delete:20:6
+t_simplifiable_statements-test_unnecessary_if.adb:20:13: Replace:20:17
+!V3 <= 1
+t_simplifiable_statements-test_unnecessary_if.adb:21:1: Delete:25:0
+t_simplifiable_statements-test_unnecessary_if.adb:25:4: Error: SIMPLIFIABLE_STATEMENTS: If statement can be replaced by inverted use of logical expression into assignment/return
+t_simplifiable_statements-test_unnecessary_if.adb:25:4: Delete:26:6
+t_simplifiable_statements-test_unnecessary_if.adb:26:14: Replace:26:18
+!V3 < 1
+t_simplifiable_statements-test_unnecessary_if.adb:27:1: Delete:31:0
+t_simplifiable_statements-test_unnecessary_if.adb:31:7: Error: SIMPLIFIABLE_STATEMENTS: Negative condition in "if-else" statement
+t_simplifiable_statements-test_unnecessary_if.adb:31:4: Error: SIMPLIFIABLE_STATEMENTS: If statement can be replaced by inverted use of logical expression into assignment/return
+t_simplifiable_statements-test_unnecessary_if.adb:31:4: Delete:32:6
+t_simplifiable_statements-test_unnecessary_if.adb:32:13: Replace:32:17
+!V3 = 1
+t_simplifiable_statements-test_unnecessary_if.adb:33:1: Delete:37:0
+t_simplifiable_statements-test_unnecessary_if.adb:37:4: Error: SIMPLIFIABLE_STATEMENTS: Both paths of if statement assign/return the same value
+t_simplifiable_statements-test_unnecessary_if.adb:43:4: Error: SIMPLIFIABLE_STATEMENTS: Both paths of if statement assign/return the same value
+t_simplifiable_statements-test_unnecessary_if.adb:49:4: Error: SIMPLIFIABLE_STATEMENTS: If statement can be replaced by inverted use of logical expression into assignment/return
+t_simplifiable_statements-test_unnecessary_if.adb:49:4: Delete:50:6
+t_simplifiable_statements-test_unnecessary_if.adb:50:14: Replace:50:18
+!not (V3 = 1 and V1)
+t_simplifiable_statements-test_unnecessary_if.adb:51:1: Delete:55:0
+t_simplifiable_statements-test_unnecessary_if.adb:55:4: Error: SIMPLIFIABLE_STATEMENTS: If statement can be replaced by inverted use of logical expression into assignment/return
+t_simplifiable_statements-test_unnecessary_if.adb:55:4: Delete:56:6
+t_simplifiable_statements-test_unnecessary_if.adb:56:14: Replace:56:18
+!not (V3 = 1 or else V1)
+t_simplifiable_statements-test_unnecessary_if.adb:57:1: Delete:61:0
+t_simplifiable_statements-test_while_for_for.adb:20:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_while_for_for.adb:25:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a reverse for loop
+t_simplifiable_statements-test_while_for_for.adb:29:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a reverse for loop
+t_simplifiable_statements-test_while_for_for.adb:33:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_while_for_for.adb:37:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_while_for_for.adb:41:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a reverse for loop
+t_simplifiable_statements-test_while_for_for.adb:45:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_while_for_for.adb:49:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a reverse for loop
+t_simplifiable_statements-test_while_for_for.adb:53:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_while_for_for.adb:57:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_while_for_for.adb:61:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_while_for_for.adb:65:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_while_for_for.adb:69:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_while_for_for.adb:73:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a reverse for loop
+t_simplifiable_statements-test_while_for_for.adb:77:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_while_for_for.adb:145:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_while_for_for.adb:150:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop

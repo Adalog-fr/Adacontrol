@@ -60,11 +60,12 @@ package body Rules.Simplifiable_Statements is
    use Subrules_Flags_Utilities;
 
    type Usage_Flags is array (True_Subrules) of Boolean;
-   Not_Used : constant Usage_Flags := (others => False);
-   Rule_Used : Usage_Flags := Not_Used;
-   Save_Used : Usage_Flags;
-   Usage     : array (Subrules) of Basic_Rule_Context;
-   No_Exit   : Boolean := False;
+   Not_Used   : constant Usage_Flags := (others => False);
+   Rule_Used  : Usage_Flags := Not_Used;
+   Save_Used  : Usage_Flags;
+   Usage      : array (Subrules) of Basic_Rule_Context;
+   No_Exit    : Boolean := False;
+   Full_Range : Boolean := False;
 
    -- Rule variable
    Acceptable_Indexings : aliased Natural_Type.Object := (Value => 0);
@@ -79,8 +80,9 @@ package body Rules.Simplifiable_Statements is
       User_Message  ("Rule: " & Rule_Id);
       User_Message  ("Control Ada statements that can be made simpler");
       User_Message;
-      Help_On_Flags ("Parameter(s): [no_exit]");
+      Help_On_Flags ("Parameter(s): [no_exit] [full_range]");
       User_Message  ("no_exit can be given with ""all"" and ""while_for_for""");
+      User_Message  ("full_range can be given with ""all"" and ""for_in_for_for_of""");
       User_Message ("Variables:");
       Help_On_Variable (Rule_Id & ".Acceptable_Indexings");
    end Help;
@@ -91,27 +93,41 @@ package body Rules.Simplifiable_Statements is
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language, Utilities;
-      Subrule        : Subrules;
-      No_Exit_Given : Boolean;
+      Subrule          : Subrules;
+      No_Exit_Given    : Boolean;
+      Full_Range_Given : Boolean;
    begin
       if Parameter_Exists then
          while Parameter_Exists loop
-            No_Exit_Given := Get_Modifier ("NO_EXIT");
+            No_Exit_Given    := Get_Modifier ("NO_EXIT");
+            Full_Range_Given := Get_Modifier ("FULL_RANGE");
+            if not No_Exit_Given then
+               -- In case Full_Range is given before No_Exit
+               No_Exit_Given := Get_Modifier ("NO_EXIT");
+            end if;
             Subrule := Get_Flag_Parameter (Allow_Any => False);
 
             if Subrule = Stmt_All then
                if Rule_Used /= Not_Used then
                   Parameter_Error (Rule_Id, "some statements already given");
                end if;
-               No_Exit   := No_Exit_Given;
-               Rule_Used := (others => True);
-               Usage     := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
+               No_Exit    := No_Exit_Given;
+               Full_Range := Full_Range_Given;
+               Rule_Used  := (others => True);
+               Usage      := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
             else
                if Subrule = Stmt_While_For_For then
                   No_Exit := No_Exit_Given;
                elsif No_Exit_Given then
                   Parameter_Error (Rule_Id, "no_exit allowed only with while_for_for");
                end if;
+
+               if Subrule = Stmt_For_In_For_For_Of then
+                  Full_Range := Full_Range_Given;
+               elsif Full_Range_Given then
+                  Parameter_Error (Rule_Id, "full_range allowed only with for_in_for_for_of");
+               end if;
+
 
                if Rule_Used (Subrule) then
                   if not Basic.Merge_Context (Usage (Subrule), Ctl_Kind, Ctl_Label) then
@@ -128,9 +144,10 @@ package body Rules.Simplifiable_Statements is
          if Rule_Used /= Not_Used then
             Parameter_Error (Rule_Id, "some statements already given");
          end if;
-         No_Exit   := False;
-         Rule_Used := (others => True);
-         Usage     := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
+         No_Exit    := False;
+         Full_Range := False;
+         Rule_Used  := (others => True);
+         Usage      := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
       end if;
    end Add_Control;
 
@@ -1137,7 +1154,7 @@ package body Rules.Simplifiable_Statements is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Statements;
       use Framework.Reports, Thick_Queries;
 
-      procedure Check_For_Of (Indexing_Name : Asis.Defining_Name) is
+      procedure Check_For_Of (Loop_Spec : Asis.Declaration) is
          use Asis.Iterator;
 
          type For_Of_State is
@@ -1229,7 +1246,9 @@ package body Rules.Simplifiable_Statements is
          procedure Traverse_For is new Traverse_Element (For_Of_State);
 
          Control : Traverse_Control := Continue;
-         State   : For_Of_State := (Indexing_Name => Indexing_Name, Indexed_Name => Nil_Element, Indexing_Count => 0);
+         State   : For_Of_State := (Indexing_Name  => Names (Loop_Spec) (1),
+                                    Indexed_Name   => Nil_Element,
+                                    Indexing_Count => 0);
       begin  -- Check_For_Of
          for S : Asis.Statement of Thick_Queries.Statements (Stmt) loop
             Traverse_For (S, Control, State);
@@ -1238,15 +1257,32 @@ package body Rules.Simplifiable_Statements is
 
          -- Control is Terminate_Immediately if not changeable, Continue otherwise
          -- State.Indexed_Name is Nil_Element if the loop index has not been used for indexing
-         if Control = Continue
-           and not Is_Nil (State.Indexed_Name)
-           and State.Indexing_Count > Acceptable_Indexings.Value
+         if Control = Terminate_Immediately
+           or Is_Nil (State.Indexed_Name)
+           or State.Indexing_Count <= Acceptable_Indexings.Value
          then
-            Report (Rule_Id,
-                    Usage (Stmt_For_In_For_For_Of),
-                    Get_Location (Stmt),
-                    """for ... in"" loop can be changed to ""for ... of"" loop");
+            return;
          end if;
+
+         if Full_Range then
+            declare
+               Loop_Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values
+                                                                    (Specification_Subtype_Definition (Loop_Spec));
+            begin
+               if (for some Bound of Loop_Bounds => Bound = Not_Static)
+                 or else Loop_Bounds /= Discrete_Constraining_Values (State.Indexed_Name)
+               then
+                  --Utilities.Trace ("loop", Loop_Bounds);
+                 -- Utilities.Trace ("indexed", Discrete_Constraining_Bounds (State.Indexed_Name));
+                  return;
+               end if;
+            end;
+         end if;
+
+         Report (Rule_Id,
+                 Usage (Stmt_For_In_For_For_Of),
+                 Get_Location (Stmt),
+                 """for ... in"" loop can be changed to ""for ... of"" loop");
       end Check_For_Of;
 
       procedure Check_Slice (Loop_Index : Asis.Defining_Name) is
@@ -1460,7 +1496,7 @@ package body Rules.Simplifiable_Statements is
                      end if;
 
                      if Rule_Used (Stmt_For_In_For_For_Of) then
-                        Check_For_Of (Names (Loop_Spec) (1));
+                        Check_For_Of (Loop_Spec);
                      end if;
 
                      if Rule_Used (Stmt_For_For_Slice) then

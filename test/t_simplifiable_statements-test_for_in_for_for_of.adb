@@ -1,8 +1,4 @@
 separate (T_Simplifiable_Statements)
-----------------------------
--- Test_For_In_For_For_Of --
-----------------------------
-
 procedure Test_For_In_For_For_Of is
    S1 : String (1 .. 10);
    S2 : String (1 .. 10);
@@ -11,7 +7,7 @@ procedure Test_For_In_For_For_Of is
    Ptr : Acc_Str;
    Mat : array (1 .. 5, 1 .. 5) of Boolean;
 begin
-   L1 : for I in S1'Range loop         -- for_in_for_for_of
+   L1 : for I in S1'Range loop         -- for_in_for_for_of x2
       X := S1 (I);
       X := S1 (I);
       X := S1 (L1.I);
@@ -22,11 +18,11 @@ begin
       end;
    end loop L1;
 
-   for I in S1'Range loop              -- Not enough indexings
+   for I in S1'Range loop              -- For_in_for_for_of x1, Not enough indexings
       X := S1(I);
    end loop;
 
-   for I in 1 .. 9 loop                -- Index used in expression
+   for I in 1 .. 10 loop                -- Index used in expression
       X := S1 (I + 1);
    end loop;
 
@@ -60,19 +56,21 @@ begin
          end record;
       V1, V2 : Rec;
    begin
-      for I in V1.Tab'Range loop       -- for_for_slice
+      for I in V1.Tab'Range loop       -- for_for_slice x2
          V1.Tab (I) := V2.Tab (I);
       end loop;
    end;
 
-   declare                             -- Indexing of function call
-      function F return String is ("ABCD");
-      C :  constant String := "ABCD";
+   declare
+      subtype String4 is String (1..4);
+      function F return String4 is ("ABCD");
+      C :  constant String4 := "ABCD";
    begin
-      for I in 1 .. 3 loop
+      for I in 1 .. 4 loop             -- Indexing of function call
+         X := F (I);
          X := F (I);
       end loop;
-      for I in 1 .. 3 loop             -- for_in_for_for_of
+      for I in 1 .. 4 loop             -- for_in_for_for_of x2
          X := C (I);
          X := C (I);
       end loop;
@@ -92,7 +90,7 @@ begin
       V1 : Rec1 (5);
       V2 : Rec2;
    begin
-      for I in V1.S'Range loop         -- for_in_for_for_of
+      for I in V1.S'Range loop         -- for_in_for_for_of x1, not full range
          X := V1.S (I);
          X := V1.S (I);
       end loop;
@@ -101,10 +99,30 @@ begin
       end loop;
    end;
 
-   for I in Mat'Range (1) loop         -- OK, multidimensional array
+   for I in Mat'Range (1) loop         -- multidimensional array
       for J in Mat'Range (2) loop
          Mat (I, J) := False;
       end loop;
+   end loop;
+
+   for I in 2 .. 10 loop               -- for_in_for_for_of x1, not full_range
+      X := S1 (I);
+      X := S1 (I);
+   end loop;
+
+   for I in S1'First .. S1'Last loop   -- for_in_for_for_of x2
+      X := S1 (I);
+      X := S1 (I);
+   end loop;
+
+   for I in S1'First .. S1'Last - 1 loop -- for_in_for_for_of x1, not full_range
+      X := S1 (I);
+      X := S1 (I);
+   end loop;
+
+   for I in S1'First .. S1'Last - 1 + 1 loop -- for_in_for_for_of x2
+      X := S1 (I);
+      X := S1 (I);
    end loop;
 
 end Test_For_In_For_For_Of;

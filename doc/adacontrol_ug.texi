@@ -8714,11 +8714,12 @@ various ways without changing the meaning of the program.
 @subsection Syntax
 @example
 <control_kind> simplifiable_statements [(<subrule> @{, <subrule>@})];
-<subrule> ::= [no_exit] all     | block          | dead        |
-              for_in_for_for_of | for_for_slice  | handler     |
-              if                | if_for_case    | if_not      |
-              loop              | loop_for_while | nested_path |
-              null              | unnecessary_if | [no_exit] while_for_for
+<subrule> ::= [no_exit] [full_range] all      | block          |
+              dead        | for_in_for_for_of | for_for_slice  |
+              handler     | if                | if_for_case    |
+              if_not      | loop              | loop_for_while |
+              nested_path | null              | unnecessary_if |
+              [no_exit] while_for_for
 @end example
 @subsection Action
 The parameters are subrule keywords:
@@ -8726,8 +8727,10 @@ The parameters are subrule keywords:
 @item
 ``all'' (or no subrule given): controls all simplifiable
 statements. If ``no_exit''is given, the ``while_for_for'' subrule will
-be given the ``no_exit'' modifier (explicitly specifying ``all'' is
-necessary only in this case);
+be given the ``no_exit'' modifier; if ``full_range'' is given, the
+``for_in_for_for_of'' subrule will be given the ``full_range''
+modifier. (Explicitly specifying ``all'' is necessary only in these
+cases);
 @item
 ``block'': controls block statements that have no labels, no
 declarations, and no exception handlers.
@@ -8761,6 +8764,10 @@ can be changed to:
    --  Do something with c
 @b{end} @b{loop};
 @end example
+If the ``full_range'' modifier is given, the rule controls only loops
+whose range is statically known to cover the whole range of the
+indexed variable.
+
 This subrule applies only to monodimensional arrays. Although
 @code{@b{for}} .. @code{@b{of}} loops can be used with
 multidimensional arrays, this usage is dubious in most
@@ -8977,6 +8984,12 @@ that covers no value at all; this can be checked with:
 @example
 check case_statement (others_span, min 1);
 @end example
+
+A @code{@b{for} .. @b{in}} loop whose index does not cover the
+totality of the range of the indexed variable can be replaced by a
+@code{@b{for} .. @b{of}} loop over a slice of the variable. However,
+some might prefer to keep using a  @code{@b{for} .. @b{in}} loop in
+that case, hence the modifier ``full_range''.
 
 ``loop'' may seem a strange thing to check, since no Ada
 programmer is supposed to write this. However, experience shows that
