@@ -1340,12 +1340,13 @@ package body Rules.Simplifiable_Statements is
                when A_Function_Call =>
                   -- we allow only predefined "+" and "-".
                   declare
-                     Op_Name : constant Asis.Name        := Called_Simple_Name (Expr);
-                     Op_Decl : constant Asis.Declaration := Corresponding_Name_Declaration (Op_Name);
+                     Op_Name : constant Asis.Name := Called_Simple_Name (Expr);
+                     Op_Decl : Asis.Declaration ;
                   begin
                      if Expression_Kind (Op_Name) /= An_Operator_Symbol then
                         return Bad;
                      end if;
+                     Op_Decl := Corresponding_Name_Declaration (Op_Name);
                      if not Is_Nil (Op_Decl) and then not Is_Predefined_Operator (Op_Decl) then
                          return Bad;
                      end if;
