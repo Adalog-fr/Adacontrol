@@ -253,6 +253,9 @@ if [ $SPEEDUP = 0 ] ; then
     else
         put_line "FAILED ($result)"
     fi
+
+    # Clean-up: makes remaining faster, and avoids tests failing due to different compilation order
+    rm *.ali *.adt
 fi
 
 #
