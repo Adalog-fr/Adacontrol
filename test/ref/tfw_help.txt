@@ -732,15 +732,19 @@ Parameter(s): conversion    | membership  | parentheses  | range   |
 Rule: SIMPLIFIABLE_STATEMENTS
 Control Ada statements that can be made simpler
 
-Parameter(s): [no_exit] all               | block          |
-                        dead              | for_for_slice  |
-                        for_in_for_for_of | handler        |
-                        if                | if_for_case    |
-                        if_not            | loop           |
-                        loop_for_while    | nested_path    |
-                        null              | unnecessary_if |
-                        while_for_for
+Parameter(s): [no_exit] [full_range] all               | block          |
+                                     dead              | for_for_slice  |
+                                     for_in_for_for_of | handler        |
+                                     if                | if_for_case    |
+                                     if_not            | loop           |
+                                     loop_for_while    | nested_path    |
+                                     null              | unnecessary_if |
+                                     while_for_for
 no_exit can be given with "all" and "while_for_for"
+full_range can be given with "all" and "for_in_for_for_of"
+Variables:
+Simplifiable_Statements.Acceptable_Indexings: 0 .. 2147483647 =  0
+Simplifiable_Statements.While_For_Expression: (Any, No_Function, Static) = Any
 ----
 Rule: STATEMENTS
 Control occurrences of Ada statements
@@ -1083,15 +1087,19 @@ Parameter(s): conversion    | membership  | parentheses  | range   |
 Rule: SIMPLIFIABLE_STATEMENTS
 Control Ada statements that can be made simpler
 
-Parameter(s): [no_exit] all               | block          |
-                        dead              | for_for_slice  |
-                        for_in_for_for_of | handler        |
-                        if                | if_for_case    |
-                        if_not            | loop           |
-                        loop_for_while    | nested_path    |
-                        null              | unnecessary_if |
-                        while_for_for
+Parameter(s): [no_exit] [full_range] all               | block          |
+                                     dead              | for_for_slice  |
+                                     for_in_for_for_of | handler        |
+                                     if                | if_for_case    |
+                                     if_not            | loop           |
+                                     loop_for_while    | nested_path    |
+                                     null              | unnecessary_if |
+                                     while_for_for
 no_exit can be given with "all" and "while_for_for"
+full_range can be given with "all" and "for_in_for_for_of"
+Variables:
+Simplifiable_Statements.Acceptable_Indexings: 0 .. 2147483647 =  0
+Simplifiable_Statements.While_For_Expression: (Any, No_Function, Static) = Any
 Variables: 
 Tag1: String = "##"
 Tag2: String = "##"

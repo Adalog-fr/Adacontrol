@@ -17,64 +17,64 @@ procedure Test_While_For_For is
    function F (I : Integer) return Integer is (I);
 begin
    V := 1;
-   while V <= 10 loop                        -- While_for_for direct
+   while V <= 10 loop                        -- While_for_for direct x2
       V := V + 1;
       P (V, Y, Z);
    end loop;
 
-   while 10 <= V loop                        -- While_for_for reverse
+   while 10 <= V loop                        -- While_for_for reverse x2
       V := V - 1;
    end loop;
 
-   while V > 10 loop                         -- While_for_for reverse
+   while V > 10 loop                         -- While_for_for reverse x2
       V := V - 1;
    end loop;
 
-   while 10 > V loop                         -- While_for_for direct
+   while 10 > V loop                         -- While_for_for direct x2
       V := V - (-1);
    end loop;
 
-   while V < 10 loop                         -- While_for_for direct
+   while V < 10 loop                         -- While_for_for direct x2
       V := Integer'Succ (V);
    end loop;
 
-   while V > 10 loop                         -- While_for_for reverse
+   while V > 10 loop                         -- While_for_for reverse x2
       V := Integer'Pred (V);
    end loop;
 
-   while V /= 10 loop                        -- While_for_for direct
+   while V /= 10 loop                        -- While_for_for direct x2
       V := Integer'Succ (V);
    end loop;
 
-   while V /= 1 loop                         -- While_for_for reverse
+   while V /= 1 loop                         -- While_for_for reverse x2
       V := V - 1;
    end loop;
 
-   while V <= 10 loop                        -- While_for_for direct (with renaming)
+   while V <= 10 loop                        -- While_for_for direct (with renaming) x2
       Ren := V + 1;
    end loop;
 
-   while V <= 10 loop                        -- While_for_for direct (with renaming)
+   while V <= 10 loop                        -- While_for_for direct (with renaming) x2
       V := Ren + 1;
    end loop;
 
-   while V <= 10 loop                        -- While_for_for direct (with renaming)
+   while V <= 10 loop                        -- While_for_for direct (with renaming) x2
       Ren := Ren + 1;
    end loop;
 
-   while Ren <= 10 loop                      -- While_for_for direct (with renaming)
+   while Ren <= 10 loop                      -- While_for_for direct (with renaming) x2
       V := V + 1;
    end loop;
 
-   while E <= B loop                         -- While_for_for direct
+   while E <= B loop                         -- While_for_for direct x2
       E := Enum'Succ (E);
    end loop;
 
-   while A < E loop                          -- While_for_for reverse
+   while A < E loop                          -- While_for_for reverse x2
       E := Enum'Pred (E);
    end loop;
 
-   L1 : while V <= 10 loop                   -- While_for_for direct (not same loop exited)
+   L1 : while V <= 10 loop                   -- While_for_for direct (not same loop exited) x2
       L2 : for I in 1 .. 10 loop
          if I = 2 then
             exit L2;
@@ -142,12 +142,12 @@ begin
       end if;
    end loop;
 
-   while V <= 10 loop                        -- OK (exit statement)
+   while V <= 10 loop                        -- While_for_for direct x1 (exit statement)
       exit when V = 3;
       V := V + 1;
    end loop;
 
-   L3 : while V <= 10 loop                   -- OK (exit statement, nested)
+   L3 : while V <= 10 loop                   -- While_for_for direct x1 (exit statement, nested)
       L4 : for I in 1 .. 10 loop
          if I = 2 then
             exit L3;
@@ -157,7 +157,7 @@ begin
    end loop L3;
 
    V := 1;
-   while V <= F(10) loop                     -- OK (function call)
+   while V <= F(10) loop                     -- While_for_for direct x1 (function call)
       V := V + 1;
       P (V, Y, Z);
    end loop;

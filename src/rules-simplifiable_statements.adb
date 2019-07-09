@@ -67,8 +67,12 @@ package body Rules.Simplifiable_Statements is
    No_Exit    : Boolean := False;
    Full_Range : Boolean := False;
 
+   type While_For_Expression_Kind is (Any, No_Function, Static);
+   package Expression_Kind_Type is new Discrete_Type (While_For_Expression_Kind);
+
    -- Rule variable
-   Acceptable_Indexings : aliased Natural_Type.Object := (Value => 0);
+   Acceptable_Indexings : aliased Natural_Type.Object          := (Value => 0);
+   While_For_Expression : aliased Expression_Kind_Type .Object := (Value => Any);
 
    ----------
    -- Help --
@@ -85,6 +89,7 @@ package body Rules.Simplifiable_Statements is
       User_Message  ("full_range can be given with ""all"" and ""for_in_for_for_of""");
       User_Message ("Variables:");
       Help_On_Variable (Rule_Id & ".Acceptable_Indexings");
+      Help_On_Variable (Rule_Id & ".While_For_Expression");
    end Help;
 
    -----------------
@@ -163,6 +168,7 @@ package body Rules.Simplifiable_Statements is
             Rule_Used            := Not_Used;
             No_Exit              := False;
             Acceptable_Indexings := (Value => 0);
+            While_For_Expression := (Value => Any);
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := Not_Used;
@@ -875,26 +881,39 @@ package body Rules.Simplifiable_Statements is
          Loop_Dir : Direction;
          Not_Changeable : exception;
 
-         procedure Check_Function_Call (Expr : Asis.Expression) is
-         begin
-            if Expression_Kind (Expr) = A_Function_Call then
-               case Operator_Kind (Called_Simple_Name (Expr)) is
-                  when Not_An_Operator =>
-                     -- A true function
+         procedure Check_Expression (Test_Expr : Asis.Expression) is
+            procedure Check_Function_Call (Expr : Asis.Expression) is
+            begin
+               if Expression_Kind (Expr) = A_Function_Call then
+                  case Operator_Kind (Called_Simple_Name (Expr)) is
+                     when Not_An_Operator =>
+                        -- A true function
+                        raise Not_Changeable;
+                     when A_Unary_Plus_Operator
+                        | A_Unary_Minus_Operator
+                        | A_Not_Operator
+                        =>
+                        -- Unary operators
+                        Check_Function_Call (Actual_Parameter (Function_Call_Parameters (Expr) (1)));
+                     when others =>
+                        -- Binary operators
+                        Check_Function_Call (Actual_Parameter (Function_Call_Parameters (Expr) (1)));
+                        Check_Function_Call (Actual_Parameter (Function_Call_Parameters (Expr) (2)));
+                  end case;
+               end if;
+            end Check_Function_Call;
+         begin  -- Check_Expression
+            case While_For_Expression.Value is
+               when Any =>
+                  return;
+               when No_Function =>
+                  Check_Function_Call (Test_Expr);
+               when Static =>
+                  if not Is_Static_Expression (Test_Expr) then
                      raise Not_Changeable;
-                  when A_Unary_Plus_Operator
-                     | A_Unary_Minus_Operator
-                     | A_Not_Operator
-                     =>
-                     -- Unary operators
-                     Check_Function_Call (Actual_Parameter (Function_Call_Parameters (Expr) (1)));
-                  when others =>
-                     -- Binary operators
-                     Check_Function_Call (Actual_Parameter (Function_Call_Parameters (Expr) (1)));
-                     Check_Function_Call (Actual_Parameter (Function_Call_Parameters (Expr) (2)));
-               end case;
-            end if;
-         end Check_Function_Call;
+                  end if;
+            end case;
+         end Check_Expression;
 
          procedure Check_Inner_Statements (Stmt : Asis.Element; Assignment_Allowed : in out Boolean) is
          -- Appropriate element_kinds:
@@ -1045,7 +1064,7 @@ package body Rules.Simplifiable_Statements is
                        A_Not_Equal_Operator
                      =>
                      Var := Actual_Parameter (Function_Call_Parameters (Cond) (1));
-                     Check_Function_Call (Actual_Parameter (Function_Call_Parameters (Cond) (2)));
+                     Check_Expression (Actual_Parameter (Function_Call_Parameters (Cond) (2)));
                      if Expression_Kind (Var) = An_Identifier
                        and then Declaration_Kind (Corresponding_Name_Declaration
                                                   (Ultimate_Name (Var))) = A_Variable_Declaration
@@ -1061,7 +1080,7 @@ package body Rules.Simplifiable_Statements is
                      else
                         -- Some people may write while 10 > I ...
                         Var := Actual_Parameter (Function_Call_Parameters (Cond) (2));
-                        Check_Function_Call (Actual_Parameter (Function_Call_Parameters (Cond) (1)));
+                        Check_Expression (Actual_Parameter (Function_Call_Parameters (Cond) (1)));
                         if Expression_Kind (Var) = An_Identifier
                           and then Declaration_Kind (Corresponding_Name_Declaration
                                                      (Ultimate_Name (Var))) = A_Variable_Declaration
@@ -1086,7 +1105,7 @@ package body Rules.Simplifiable_Statements is
                return;
          end case;
 
-         -- Here the condition is a comparison of a variable to an expression (or membership)
+         -- Here the condition is a comparison of a variable to an expression
          -- Check that there is only one (and appropriate) assignment to the variable in the direct statements
          -- of the loop, no assignment in compound statements, no use as [in] out or access parameter
          declare
@@ -1319,21 +1338,30 @@ package body Rules.Simplifiable_Statements is
                   end if;
 
                when A_Function_Call =>
-                  -- we allow only "+" and "-". TBSL: only predefined ones?
-                  if Expression_Kind (Called_Simple_Name (Expr)) /= An_Operator_Symbol then
-                     return Bad;
-                  end if;
-                  case Operator_Kind (Called_Simple_Name (Expr)) is
-                     when A_Plus_Operator | A_Minus_Operator =>
-                        declare
-                           Params : constant Asis.Expression_List := Function_Call_Parameters (Expr);
-                        begin
-                           return Indexing_Kind (Actual_Parameter (Params (1)))
-                               or Indexing_Kind (Actual_Parameter (Params (2)));
-                        end;
-                     when others =>
+                  -- we allow only predefined "+" and "-".
+                  declare
+                     Op_Name : constant Asis.Name        := Called_Simple_Name (Expr);
+                     Op_Decl : constant Asis.Declaration := Corresponding_Name_Declaration (Op_Name);
+                  begin
+                     if Expression_Kind (Op_Name) /= An_Operator_Symbol then
                         return Bad;
-                  end case;
+                     end if;
+                     if not Is_Nil (Op_Decl) and then not Is_Predefined_Operator (Op_Decl) then
+                         return Bad;
+                     end if;
+
+                     case Operator_Kind (Op_Name) is
+                        when A_Plus_Operator | A_Minus_Operator =>
+                           declare
+                              Params : constant Asis.Expression_List := Function_Call_Parameters (Expr);
+                           begin
+                              return Indexing_Kind (Actual_Parameter (Params (1)))
+                                or Indexing_Kind (Actual_Parameter (Params (2)));
+                           end;
+                        when others =>
+                           return Bad;
+                     end case;
+                  end;
 
                when A_Parenthesized_Expression =>
                   return Indexing_Kind (Expression_Parenthesized (Expr));
@@ -1549,4 +1577,6 @@ begin  -- Rules.Simplifiable_Statements
                                      Command_CB     => Command'Access);
    Framework.Variables.Register (Acceptable_Indexings'Access,
                                  Variable_Name => Rule_Id & ".ACCEPTABLE_INDEXINGS");
+   Framework.Variables.Register (While_For_Expression'Access,
+                                 Variable_Name => Rule_Id & ".WHILE_FOR_EXPRESSION");
 end Rules.Simplifiable_Statements;

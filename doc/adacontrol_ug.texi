@@ -8921,7 +8921,8 @@ changed into @code{@b{for}} loops. More precisely, it controls
 @item
 the condition of the @code{@b{while}} is a greater, greater or equal,
 less than, less than or equal, or not equal comparison involving only
-a simple variable on one side and no function call on the other side;
+a simple variable on one side and an expression on the other side whose acceptable
+elements depend on the rule variable @code{While_For_Expression}. See below.
 @item
 the variable is incremented/decremented exactly once in the loop, in
 the form of being the target of an addition or subtraction of  +1 or
@@ -8946,14 +8947,28 @@ search simplifiable_statements (if);
 check simplifiable_statements (no_exit while_for_for);
 @end example
 
-@subsection Variable
-The rule provides a variable to define the maximum number of allowed indexings for the @code{for_in_for_for_of} subrule.
+@subsection Variables
+The rule provides a variable to define the maximum number of allowed
+indexings for the @code{for_in_for_for_of} subrule.
+
+The rule provides a variable to define the complexity of expressions
+accepted by the @code{while_for_for} subrule for @code{@b{while}}
+loops to be considered changeable to @code{@b{for}} loops.
 @need 400
 @multitable @columnfractions .25 .20 .55
 @item @b{Variable} @tab @b{Values} @tab @b{Effect}
 @item Acceptable_Indexings
 @tab <Integer> (default = 0)
 @tab @code{@b{for}} loops that use their loop index for indexing a variable up to the indicated number of times are not controlled by the @code{for_in_for_for_of} subrule.
+@item While_For_Expression
+@tab any (default)
+@tab No restriction on the expression used for comparisons
+@item
+@tab No_Function
+@tab The expression must not contain any (non-operator) function call.
+@item
+@tab Static
+@tab Only comparison with static expressions are accepted.
 @end multitable
 
 @subsection Fixes
@@ -8996,13 +9011,11 @@ programmer is supposed to write this. However, experience shows that
 it is a good indicator of code written by people who did not get
 proper Ada training. Such code is certainly worth a peer review...
 
-``while_for_for'' does not control @code{@b{while}} loops where the
-comparison includes a call to a (regular) function, since it is
-necessary to reevaluate the function on every loop. This does not
-apply to operators, even if user-defined. Strictly speaking, nothing
-prevents an user-defined operator from having side-effects, but it is
-such a dubious programming style that a false positive in that case
-is acceptable.
+When the value ``any'' is given for the variable
+@code{While_For_Expression}, the ``while_for_for'' subrule will not
+signal any false-negative; with the value ``static'', the subrule will
+not signal any false-positive. The value ``no_function'' is an
+acceptable compromise in-between.
 
 @subsection Limitation
 ``while_for_for'' may trigger false positives in some unlikely cases

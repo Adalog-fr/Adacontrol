@@ -295,3 +295,4 @@ t_simplifiable_statements-test_while_for_for.adb:73:4: Error: SIMPLIFIABLE_STATE
 t_simplifiable_statements-test_while_for_for.adb:77:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
 t_simplifiable_statements-test_while_for_for.adb:145:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
 t_simplifiable_statements-test_while_for_for.adb:150:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_while_for_for.adb:160:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
