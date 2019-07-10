@@ -1,52 +1,49 @@
+=============
+== V1.21r3 ==
+=============
+
+New rules:
+----------
+Max_primitives
 
 Changes to existing rules:
 --------------------------
 (several rules)
    allow a Count control to be specified in addition to a check/search control.
 
+Declarations:
+   add subrule constructor
+
 Derivations:
    add subrule Max_Depth
    check overriding indicator of task entries and protected operations
-
-With_clauses:
-   add subrules regular, private, limited, limited_private
-
-=============
-== V1.21b2 ==
-=============
-
-Changes to existing rules:
---------------------------
-return_types
+   check overriding indicator of types derived from formal type
+   
+Return_Types
    add subrule type
 
-statements:
+Simplifiable_Expressions:
+   add subrule membership
+
+Simplifiable_Statements:
+   add subrule for_in_for_for_of
+
+Statements:
    add subrule backward_goto
    
-unnecessary_use_clause:
+Unnecessary_Use_Clause:
+   Fixes: if all packages are removed, remove the whole clause.
    fixed some spurious messages in cases of complicated visibilities
    added fixes when use clause replaceable by use [all] type clause
+
+With_Clauses:
+   add subrules regular, private, limited, limited_private
+   Fixes: if all packages are removed, remove the whole clause.
 
 adactl_fix:
 -----------
 Ignore fixable files that are not available
-
-
-=============
-== V1.21b1 ==
-=============
-
-Changes to existing rules:
---------------------------
-declarations:
-   add subrule constructor
-
-simplifiable_statements:
-   add subrule for_in_for_for_of
-
-simplifiable_expressions:
-   add subrule membership
-
+Improve resolution of conflicts
    
 =============
 == V1.20r9 ==

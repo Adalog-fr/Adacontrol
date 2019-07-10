@@ -1,7 +1,7 @@
 \input texinfo   @c -*-texinfo-*-
 @c %**start of header
 @setfilename adacontrol_ug.info
-@settitle AdaControl User Guide V1.21b2
+@settitle AdaControl User Guide V1.21r3
 @c %**end of header
 @macro rule{text}
 @sp 1
@@ -335,7 +335,7 @@ Using Static Analysis'', @i{proceedings of the ACM SIGAda Annual International C
 Like any ASIS application, AdaControl can be run only if the compiler
 available on the system has exactly the same version as the one used
 to compile AdaControl itself. The executable distribution of
-AdaControl will work only with GNAT version Community Edition 2018, as
+AdaControl will work only with GNAT version Community Edition 2019, as
 distributed by AdaCore. If you are using any other version,  please
 use the source distribution of AdaControl and compile it as indicated
 below.

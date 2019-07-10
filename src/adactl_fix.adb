@@ -40,7 +40,7 @@ procedure Adactl_Fix is
    use Ada.Strings.Unbounded;
    use Ada.Text_IO;
 
-   Version : constant String    := "Adactl_Fix V1.1b1";
+   Version : constant String    := "Adactl_Fix V1.1r2";
    Marker  : constant Character := '!';
 
    --------------------------------------------
