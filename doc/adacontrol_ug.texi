@@ -630,7 +630,7 @@ support requires AdaGide version 7.42 or above.
 Integration into GNATDashboard is provided in a separate package that
 you can download from the same source that you obtained AdaControl
 from. It is provided as a .zip file that contains two files:
-@code{adacontrol-plugin-1.0b.jar} and @code{adacontrol.py}.
+@code{adacontrol-plugin-1.1r.jar} and @code{adacontrol.py}.
 
 Of course, the prerequisite is that you have a working installation of
 GNATDashboard, including SonarQube and its sonnar-scanner
@@ -3536,7 +3536,8 @@ check Assignments (type, System.Address);
 
 -- Check assignments to components of an object of a type derived from
 -- Stream_Element_Array
-check Assignments (type, component ancestor Ada.Streams.Stream_Element_Array);
+check Assignments (type,
+                   component ancestor Ada.Streams.Stream_Element_Array);
 
 -- Warn for assignments involving array sliding:
 search Assignments (sliding);
@@ -4644,12 +4645,13 @@ operations of derived types.
 <control_kind> derivations (from, <entity>|<category>
                                @{, <entity>|<category>@})
 <control_kind> derivations (max_parents, <value>)
-<control_kind> derivations (max_depth, [tagged | untagged | task | protected] <value>)
+<control_kind> derivations (max_depth, @{<type kind>@} <value>)
 <control_kind> derivations (indicator
                             [, overriding  | not_overriding]
                             [, tagged      | untagged]
                             [, declaration ]
                             [, body_required | body_forbidden])
+<type kind> ::= tagged | untagged | task | protected
 @end example
 
 @subsection Action
@@ -4733,7 +4735,7 @@ progenitors, plus 1.  <value> is the maximum @i{allowed} depth,
 i.e. the rule is triggered when the number of parents is strictly
 greater than <value>.
 
-If one or several modifiers ``tagged'', ``untagged'', ``task'', or
+If one or several <type kind> ``tagged'', ``untagged'', ``task'', or
 ``protected'' is given the rule applies only to derivations of tagged,
 untagged, task, or protected types respectively. Without modifiers, the
 rule applies to all forms of derived types.
