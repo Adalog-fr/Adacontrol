@@ -43,7 +43,7 @@ Downward_View_Conversions:
 
 -- 9.1.2.10 Too_Many_Primitives
 "Too_Many_Primitives:5":
-   check max_primitives (visible tagged 5);
+   check max_primitives (visible, tagged 5);
 
 Visible_Components:
    check declarations (public record_type, public extension);

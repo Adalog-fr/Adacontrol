@@ -453,7 +453,8 @@ Parameter(2): <maximum allowed nesting level>
 Rule: MAX_PRIMITIVES
 Control types that have more primitive operations than the indicated maximum
 
-Parameter(2): [visible | total] [tagged | untagged] <max allowed primitives>
+Parameter (1): visible | total
+Parameter (2): [tagged | untagged] <max allowed primitives>
 ----
 Rule: MAX_SIZE
 Control the maximum length of Ada statements

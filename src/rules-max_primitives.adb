@@ -65,23 +65,21 @@ package body Rules.Max_Primitives is
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
 
-   type Primitives_Visibility is (PV_Visible, PV_Total);
-   package Filter_Visibility is new Modifier_Utilities (Modifiers => Primitives_Visibility,
-                                                        Prefix    => "PV_");
-   subtype Visibility_Filter_Set is Filter_Visibility.Modifier_Set;
+   type SR_Visibility is (PV_Visible, PV_Total);
+   package Visibility_Flag_Utilities is new Flag_Utilities (Flags => SR_Visibility, Prefix => "PV_");
 
    type Primitives_Filter is (PF_Tagged, PF_Untagged);
    package Filter_Modifiers is new Modifier_Utilities (Modifiers => Primitives_Filter,
                                                        Prefix    => "PF_");
    subtype Filter_Set is Filter_Modifiers.Modifier_Set;
 
-   Ctl_Labels : array (Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-   Maximum    : array (Control_Kinds, Primitives_Visibility, Primitives_Filter) of Asis.ASIS_Natural :=
+   Ctl_Labels : array (Control_Kinds, SR_Visibility) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+   Maximum    : array (Control_Kinds, SR_Visibility, Primitives_Filter) of Asis.ASIS_Natural :=
      (others => (others => (others => Asis.ASIS_Natural'Last)));
 
    package Types_Table is new Framework.Symbol_Table.Data_Access (ASIS_Natural);
 
-   procedure Post_Process_Spec (Visibility : Primitives_Visibility);
+   procedure Post_Process_Spec (Visibility : SR_Visibility);
 
 
    ----------
@@ -93,7 +91,8 @@ package body Rules.Max_Primitives is
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control types that have more primitive operations than the indicated maximum");
       User_Message;
-      User_Message ("Parameter(2): [visible | total] [tagged | untagged] <max allowed primitives>");
+      Visibility_Flag_Utilities.Help_On_Flags ("Parameter (1):");
+      User_Message ("Parameter (2): [tagged | untagged] <max allowed primitives>");
    end Help;
 
 
@@ -104,8 +103,8 @@ package body Rules.Max_Primitives is
    procedure Add_Control (Ctl_Label : in Wide_String;
                           Ctl_Kind  : in Control_Kinds)
    is
-      use Filter_Modifiers, Filter_Visibility;
-      Visibility : Visibility_Filter_Set;
+      use Filter_Modifiers;
+      Visibility : SR_Visibility;
       Filters    : Filter_Set;
       Bound      : ASIS_Natural;
    begin
@@ -113,11 +112,7 @@ package body Rules.Max_Primitives is
          Parameter_Error (Rule_Id, "Maximum value required");
       end if;
 
-      Visibility := Filter_Visibility.Get_Modifier_Set;
-
-      if Visibility = Filter_Visibility.Empty_Set then
-         Visibility (PV_Total) := True;
-      end if;
+      Visibility := Visibility_Flag_Utilities.Get_Flag_Parameter (Allow_Any => False);
 
       Filters := Filter_Modifiers.Get_Modifier_Set;
 
@@ -127,20 +122,18 @@ package body Rules.Max_Primitives is
 
       Bound := Get_Integer_Parameter (Min => 0, Max => Asis.ASIS_Natural'Last - 1);
 
-      for Visibility_Kind in Primitives_Visibility loop
-         for Pf in Primitives_Filter loop
-            if Visibility (Visibility_Kind) and Filters (Pf) then
-               if Maximum (Ctl_Kind, Visibility_Kind, Pf) /= Asis.ASIS_Natural'Last then
-                  Parameter_Error (Rule_Id, "Maximum primitives already given for "
-                                   & Primitives_Filter'Wide_Image (Pf)
-                                   & ' ' & Control_Kinds'Wide_Image(Ctl_Kind));
-               end if;
-               Maximum (Ctl_Kind, Visibility_Kind, Pf) := Bound;
+      for Pf in Primitives_Filter loop
+         if Filters (Pf) then
+            if Maximum (Ctl_Kind, Visibility, Pf) /= Asis.ASIS_Natural'Last then
+               Parameter_Error (Rule_Id, "Maximum primitives already given for "
+                                & Primitives_Filter'Wide_Image (Pf)
+                                & ' ' & Control_Kinds'Wide_Image (Ctl_Kind));
             end if;
-         end loop;
+            Maximum (Ctl_Kind, Visibility, Pf) := Bound;
+         end if;
       end loop;
 
-      Ctl_Labels (Ctl_Kind) := To_Unbounded_Wide_String (Ctl_Label);
+      Ctl_Labels (Ctl_Kind, Visibility) := To_Unbounded_Wide_String (Ctl_Label);
       Rule_Used := True;
    exception
       when Constraint_Error =>
@@ -344,7 +337,7 @@ package body Rules.Max_Primitives is
    -- Post_Process_Spec --
    -----------------------
 
-   procedure Post_Process_Spec (Visibility : Primitives_Visibility) is
+   procedure Post_Process_Spec (Visibility : SR_Visibility) is
       ------------
       -- Action --
       ------------
@@ -374,7 +367,7 @@ package body Rules.Max_Primitives is
                Good_Entity := Corresponding_Full_Type_Declaration (Enclosing_Element (Entity));
             end if;
             Report (Rule_Id   => Rule_Id,
-                    Ctl_Label => To_Wide_String (Ctl_Labels (Ctl_Kind)),
+                    Ctl_Label => To_Wide_String (Ctl_Labels (Ctl_Kind, Visibility)),
                     Ctl_Kind  => Ctl_Kind,
                     Loc       => (if Is_From_Instance then Get_Location (Ultimate_Enclosing_Instantiation (Good_Entity))
                                   else Get_Location (Good_Entity)),
