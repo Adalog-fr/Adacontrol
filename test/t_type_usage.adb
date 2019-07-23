@@ -23,7 +23,7 @@ procedure T_Type_Usage is
    type Table_Size1 is array (Enum1) of Character with Size => 100; -- Size
    type Table_Size2 is array (Enum1) of Character; -- Size
    for Table_Size2'Size use 100;
-   type Table_Size3 is array (Integer) of Character with Size => 16#8000_0000_0#; -- Index_Integer
+   type Table_Size3 is array (Integer range 1..10) of Character with Size => 10*Character'Size; -- Index_Integer
    type Table_Component_Size1 is array (Index) of Character with Component_Size => 10;
    T   : Table_Pack1;
    Id  : Index;

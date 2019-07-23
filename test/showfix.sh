@@ -6,11 +6,15 @@
 #   ./showfix [<pattern>]
 #   ./showfix -h
 
-if [ "${OSTYPE:-}" = "linux-gnu" ] ; then
-    MERGE='/usr/bin/meld'
-else
-    MERGE='c:/Program Files (x86)/Meld/Meld.exe'
-fi
+# At Adalog, we use meld. Replace with your favorite diff tool...
+case $(uname) in
+    *win*|*Win*|*WIN*)  # Windows, Cygwin...
+        MERGE=`where meld | tr -d \\\\r  | tr '\\\\' '/'`
+        ;;
+    *)                  # Assume *nix
+        MERGE=`which meld`
+	;;
+esac
 
 if [ "$1" = "-h" ] ; then
     echo "usage: showfix [<pattern>]"
@@ -18,7 +22,7 @@ if [ "$1" = "-h" ] ; then
 fi
 
 list=`find fixed/res -maxdepth 1 -name "${1:-*}.ad[sb]" -printf "%f "`
-if [ -z $list ] ; then
+if [ -z "$list" ] ; then
     echo "$1 not matched in fixed/res/"
     exit;
 fi
