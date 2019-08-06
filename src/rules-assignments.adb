@@ -1299,8 +1299,9 @@ package body Rules.Assignments is
                      return Attribute_Kind (Prefix (Simple_E)) = A_Class_Attribute;
                   end if;
                   return Is_Class_Wide_Subtype (Type_Declaration_View (Corresponding_Name_Declaration
-                                                                       (Converted_Or_Qualified_Subtype_Mark
-                                                                        (Simple_E))));
+                                                                       (Simple_Name
+                                                                        (Converted_Or_Qualified_Subtype_Mark
+                                                                         (Simple_E)))));
                when An_Indexed_Component | A_Slice =>
                   -- array elements cannot be class-wide
                   return False;
