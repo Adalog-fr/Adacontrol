@@ -674,7 +674,7 @@ put a @code{@b{pragma} Ada_05} (or @code{@b{pragma} Ada_12;}) on top
 of every compilation unit that uses Ada-2005/2012 features;
 @item
 generate the tree files manually (@pxref{Generating tree files
-manually}) with the ``-gnat05'' (or ``-gnat12)'') option. Note that
+manually}) with the ``-gnat05'' (or ``-gnat12'') option. Note that
 this allows you to pass any other GNAT option as well.
 @end itemize
 

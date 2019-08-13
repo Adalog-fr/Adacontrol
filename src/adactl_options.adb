@@ -374,6 +374,8 @@ package body Adactl_Options is
          when Occur: Project_Error =>
             Option_Error (Ada.Exceptions.Exception_Message (Occur));
       end;
+
+
       --
       -- Options that are translated into the command language
       --

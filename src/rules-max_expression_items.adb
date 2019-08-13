@@ -66,12 +66,13 @@ package body Rules.Max_Expression_Items is
 
 
    type Counting_Kind is (Fixed, Summ, Max, Failure);
+   pragma Assert (Failure = Counting_Kind'Last, Message => "Failure must stay last");
    -- How the complexity of expressions is counted
    -- Fixed:   Complexity is a fixed value, given by Value parameter (see Counting_Mode)
    -- Summ:    Complexity is the summ of the complexities of subexpressions
    -- Max:     Complexity is the maximum of the complexities of subexpressions
    -- Failure: Expr is special and is not expected to be encountered during traversal
-   -- Failure must stay last
+
    subtype Dependent_Kind is Counting_Kind range Summ  .. Max;
 
    type Counting_Mode is
@@ -85,7 +86,7 @@ package body Rules.Max_Expression_Items is
    -- How to compute complexity of any expression. Elements with no subexpressions must be Fixed, Fixed
    Expr_Mode : constant array (Asis.Expression_Kinds) of Counting_Mode :=
    --                                                         Subexpr_Kind  Root_Kind   Is_Root  Value
-                 (Not_An_Expression                       => (Failure,      Failure, others => <>),
+                 (Not_An_Expression                       => (Failure,      Failure,    others => <>),
 
                   A_Box_Expression                        => (Fixed,        Fixed,      False,   1),
 
@@ -140,6 +141,7 @@ package body Rules.Max_Expression_Items is
 
    Ctl_Labels : array (Control_Kinds) of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
    Maximum    : array (Control_Kinds) of Asis.ASIS_Natural := (others => Asis.ASIS_Natural'Last);
+
    ----------
    -- Help --
    ----------
@@ -259,19 +261,15 @@ package body Rules.Max_Expression_Items is
             Result := Eval_Complexity (Converted_Or_Qualified_Expression (Expr), As_Root => False);
 
          when An_Indexed_Component =>
-            declare
-               Indices : constant Asis.Expression_List := Index_Expressions (Expr);
-            begin
-               Result := 0;
-               for I : Asis.Expression of Indices loop
-                  case Dependent_Kind (Good_Kind) is
-                     when Summ =>
-                        Result := Result + Eval_Complexity (I, As_Root => False);
-                     when Max =>
-                        Result := Asis_Natural'Max (Result, Eval_Complexity (I, As_Root => False));
-                  end case;
-               end loop;
-            end;
+            Result := 0;
+            for I : Asis.Expression of Index_Expressions (Expr) loop
+               case Dependent_Kind (Good_Kind) is
+                  when Summ =>
+                     Result := Result + Eval_Complexity (I, As_Root => False);
+                  when Max =>
+                     Result := Asis_Natural'Max (Result, Eval_Complexity (I, As_Root => False));
+               end case;
+            end loop;
 
          when An_And_Then_Short_Circuit | An_Or_Else_Short_Circuit =>
             case Dependent_Kind (Good_Kind) is
@@ -286,76 +284,64 @@ package body Rules.Max_Expression_Items is
             end case;
 
          when A_Function_Call =>
-            declare
-               Params : constant Asis.Association_List := Function_Call_Parameters (Expr);
-            begin
-               Result := 0;
-               for P : Asis.Association of Params loop
-                  case Dependent_Kind (Good_Kind) is
-                     when Summ =>
-                        Result := Result + Eval_Complexity (Actual_Parameter (P), As_Root => False);
-                     when Max =>
-                        Result := Asis_Natural'Max (Result, Eval_Complexity (Actual_Parameter (P), As_Root => False));
-                  end case;
-               end loop;
-            end;
+            Result := 0;
+            for P : Asis.Association of Function_Call_Parameters (Expr) loop
+               case Dependent_Kind (Good_Kind) is
+                  when Summ =>
+                     Result := Result + Eval_Complexity (Actual_Parameter (P), As_Root => False);
+                  when Max =>
+                     Result := Asis_Natural'Max (Result, Eval_Complexity (Actual_Parameter (P), As_Root => False));
+               end case;
+            end loop;
 
          when An_If_Expression | A_Case_Expression =>
-            declare
-               Paths : constant Asis.Path_List := Expression_Paths (Expr);
-            begin
-               Result := 0;
-               for P : Path of Paths loop
-                  case Dependent_Kind (Good_Kind) is
-                     when Summ =>
-                        Result := Result + Eval_Complexity (Dependent_Expression (P), As_Root => False);
-                     when Max =>
-                        Result := Asis_Natural'Max (Result, Eval_Complexity (Dependent_Expression (P),
-                                                                             As_Root => False));
-                  end case;
-               end loop;
-            end;
+            Result := 0;
+            for P : Path of Expression_Paths (Expr) loop
+               case Dependent_Kind (Good_Kind) is
+                  when Summ =>
+                     Result := Result + Eval_Complexity (Dependent_Expression (P), As_Root => False);
+                  when Max =>
+                     Result := Asis_Natural'Max (Result, Eval_Complexity (Dependent_Expression (P),
+                                                                          As_Root => False));
+               end case;
+            end loop;
 
          when An_In_Membership_Test | A_Not_In_Membership_Test =>
-            declare
-               Choices : constant Asis.Element_List := Membership_Test_Choices (Expr);
-            begin
-               Result := Eval_Complexity (Membership_Test_Expression (Expr), As_Root => False);
-               for C : Asis.Element of Choices loop
-                  if Element_Kind (C) = An_Expression then
-                     case Dependent_Kind (Good_Kind) is
-                        when Summ =>
-                           Result := Result + Eval_Complexity (C, As_Root => False);
-                        when Max =>
-                           Result := Asis_Natural'Max (Result, Eval_Complexity (C, As_Root => False));
-                     end case;
-                  else  -- A constraint
-                     case Constraint_Kind (C) is
-                        when A_Range_Attribute_Reference =>
-                           case Dependent_Kind (Good_Kind) is
-                              when Summ =>
-                                 Result := Result + Eval_Complexity (Range_Attribute (C), As_Root => False);
-                              when Max =>
-                                 Result := Asis_Natural'Max (Result, Eval_Complexity (Range_Attribute (C),
-                                                                                      As_Root => False));
-                           end case;
-                        when A_Simple_Expression_Range =>
-                           case Dependent_Kind (Good_Kind) is
-                              when Summ =>
-                                 Result := Result + Eval_Complexity (Lower_Bound (C), As_Root => False);
-                                 Result := Result + Eval_Complexity (Upper_Bound (C), As_Root => False);
-                              when Max =>
-                                 Result := Asis_Natural'Max (Result, Eval_Complexity (Lower_Bound (C),
-                                                                                      As_Root => False));
-                                 Result := Asis_Natural'Max (Result, Eval_Complexity (Upper_Bound (C),
-                                                                                      As_Root => False));
-                           end case;
-                        when others =>
-                           Failure ("Eval_Complexity: unexpected constraint", C);
-                     end case;
-                  end if;
-               end loop;
-            end;
+            Result := Eval_Complexity (Membership_Test_Expression (Expr), As_Root => False);
+            for C : Asis.Element of Membership_Test_Choices (Expr) loop
+               if Element_Kind (C) = An_Expression then
+                  case Dependent_Kind (Good_Kind) is
+                     when Summ =>
+                        Result := Result + Eval_Complexity (C, As_Root => False);
+                     when Max =>
+                        Result := Asis_Natural'Max (Result, Eval_Complexity (C, As_Root => False));
+                  end case;
+               else  -- A constraint
+                  case Constraint_Kind (C) is
+                     when A_Range_Attribute_Reference =>
+                        case Dependent_Kind (Good_Kind) is
+                           when Summ =>
+                              Result := Result + Eval_Complexity (Range_Attribute (C), As_Root => False);
+                           when Max =>
+                              Result := Asis_Natural'Max (Result, Eval_Complexity (Range_Attribute (C),
+                                                          As_Root => False));
+                        end case;
+                     when A_Simple_Expression_Range =>
+                        case Dependent_Kind (Good_Kind) is
+                           when Summ =>
+                              Result := Result + Eval_Complexity (Lower_Bound (C), As_Root => False);
+                              Result := Result + Eval_Complexity (Upper_Bound (C), As_Root => False);
+                           when Max =>
+                              Result := Asis_Natural'Max (Result, Eval_Complexity (Lower_Bound (C),
+                                                          As_Root => False));
+                              Result := Asis_Natural'Max (Result, Eval_Complexity (Upper_Bound (C),
+                                                          As_Root => False));
+                        end case;
+                     when others =>
+                        Failure ("Eval_Complexity: unexpected constraint", C);
+                  end case;
+               end if;
+            end loop;
 
          when A_For_All_Quantified_Expression | A_For_Some_Quantified_Expression =>
             -- TBSL What to do with the iterator?
