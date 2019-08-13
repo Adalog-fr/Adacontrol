@@ -1313,6 +1313,10 @@ package body Rules.Assignments is
                      when An_Element_Iterator_Specification =>
                         -- Certainly not class-wide...
                         return False;
+                     when A_Protected_Type_Declaration | A_Task_Type_Declaration =>
+                        -- This happens when the prefix is the name of a protected or task type within its own body
+                        -- designating the current object
+                        return False;
                      when others =>
                         return Is_Class_Wide_Subtype (Object_Declaration_View (Decl));
                   end case;

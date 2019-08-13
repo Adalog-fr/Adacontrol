@@ -176,7 +176,7 @@ begin
 
    -- Protected types         Mantis 0000009
    declare
-      protected Prot is
+      protected type Prot is
          procedure P;
       private
          F1 : Integer;
