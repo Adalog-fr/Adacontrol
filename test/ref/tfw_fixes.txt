@@ -1,0 +1,110 @@
+tfw_fixes.ads:1:1: Found: WITH_CLAUSES: With clause uses multiple names
+tfw_fixes.ads:1:1: Replace:1:40
+!with Ada.Text_IO;
+tfw_fixes.ads:1:41: Insert
+!
+!with Ada.Strings.Unbounded;
+tfw_fixes.ads:1:1: Found: WITH_CLAUSES: Regular with clause
+tfw_fixes.ads:2:1: Found: WITH_CLAUSES: Regular with clause
+tfw_fixes.ads:3:1: Found: WITH_CLAUSES: With clause uses multiple names
+tfw_fixes.ads:3:1: Replace:3:50
+!with Ada.Wide_Text_IO;
+tfw_fixes.ads:3:51: Insert
+!
+!with Ada.Strings.Wide_Unbounded;
+tfw_fixes.ads:3:1: Found: WITH_CLAUSES: Regular with clause
+tfw_fixes.ads:9:11: Error: STYLE: Wrong casing of "Page", should be "PAGE"
+tfw_fixes.ads:9:11: Replace:9:14
+!PAGE
+tfw_fixes.ads:9:17: Found: STYLE: pragma does not start line
+tfw_fixes.ads:9:17: Insert
+!
+!   
+tfw_fixes.ads:1:6: Found: WITH_CLAUSES: With clause for Ada.Text_IO can be changed to private with
+tfw_fixes.ads:1:1: Insert
+!private 
+tfw_fixes.ads:17:4: Error: NAMING_CONVENTION: Name does not follow naming rule for "all": "int"
+tfw_fixes.ads:17:4: Refactor:17:6
+tfw_fixes.ads:18:19: Error: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
+tfw_fixes.ads:18:19: Replace:18:31
+!Int
+tfw_fixes.ads:19:13: Error: STYLE: Wrong casing of ""aNd"", should be ""and""
+tfw_fixes.ads:19:13: Replace:19:17
+!"and"
+tfw_fixes.adb:1:1: Found: WITH_CLAUSES: With clause uses multiple names
+tfw_fixes.adb:1:1: Replace:1:58
+!with Ada.Text_IO;
+tfw_fixes.adb:1:59: Insert
+!
+!with Ada.Strings.Unbounded;
+!with Xfw_Fixes.Child2;
+tfw_fixes.adb:1:1: Found: WITH_CLAUSES: Regular with clause
+tfw_fixes.adb:1:6: Found: WITH_CLAUSES: With clause for Ada.Text_IO redundant with clause at tfw_fixes.ads:1:6
+tfw_fixes.adb:1:19: Found: WITH_CLAUSES: With clause for Ada.Strings.Unbounded redundant with clause at tfw_fixes.ads:1:19
+tfw_fixes.adb:1:6: Delete:1:18
+tfw_fixes.adb:1:19: Delete:1:41
+tfw_fixes.adb:2:1: Found: WITH_CLAUSES: With clause uses multiple names
+tfw_fixes.adb:2:1: Replace:2:64
+!with Ada.Calendar;
+tfw_fixes.adb:2:65: Insert
+!
+!with Ada.Wide_Text_IO;
+!with Ada.Strings.Wide_Unbounded;
+tfw_fixes.adb:2:1: Found: WITH_CLAUSES: Regular with clause
+tfw_fixes.adb:2:20: Found: WITH_CLAUSES: With clause for Ada.Wide_Text_IO redundant with clause at tfw_fixes.ads:3:6
+tfw_fixes.adb:2:38: Found: WITH_CLAUSES: With clause for Ada.Strings.Wide_Unbounded redundant with clause at tfw_fixes.ads:3:24
+tfw_fixes.adb:2:18: Delete:2:35
+tfw_fixes.adb:2:36: Delete:2:63
+tfw_fixes.adb:8:4: Error: COMMENTS: "begin" has no unit name comment for Console_Log
+tfw_fixes.adb:8:9: Insert
+!  -- Console_Log
+tfw_fixes.ads:3:6: Found: WITH_CLAUSES: With clause for Ada.Wide_Text_IO can be moved to body
+tfw_fixes.ads:3:24: Found: WITH_CLAUSES: With clause for Ada.Strings.Wide_Unbounded can be moved to body
+tfw_fixes.adb:7:29: Error: UNNECESSARY_USE_CLAUSE: Primitive: "use" clause for Ada.Strings.Wide_Unbounded used for primitive operations of Ada.Strings.Wide_Unbounded.Unbounded_Wide_String
+tfw_fixes.adb:7:27: Delete:7:54
+tfw_fixes.adb:7:56: Insert
+!
+!      use all type Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+tfw_fixes.adb:37:4: Error: COMMENTS: "begin" has no unit name comment for Hello
+tfw_fixes.adb:37:9: Insert
+!  -- Hello
+tfw_fixes.adb:17:11: Error: UNNECESSARY_USE_CLAUSE: Nested: "use" clause for Ada.Text_IO in scope of use clause for same package at tfw_fixes.ads:5:5
+tfw_fixes.adb:17:7: Delete:17:22
+tfw_fixes.adb:21:7: Error: COMMENTS: "begin" has no unit name comment for World
+tfw_fixes.adb:21:12: Insert
+!  -- World
+tfw_fixes.adb:24:10: Found: SIMPLIFIABLE_STATEMENTS: empty else path
+tfw_fixes.adb:24:10: Delete:25:17
+tfw_fixes.adb:28:10: Found: SIMPLIFIABLE_STATEMENTS: condition is always false
+tfw_fixes.adb:28:10: Replace:32:16
+!Put_Line ("!");
+tfw_fixes.adb:43:10: Found: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+tfw_fixes.adb:44:10: Delete:47:14
+tfw_fixes.adb:45:10: Found: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+tfw_fixes.adb:46:10: Delete:47:14
+tfw_fixes.adb:49:7: Found: SIMPLIFIABLE_STATEMENTS: while loop is never executed
+tfw_fixes.adb:49:7: Delete:51:15
+tfw_fixes.adb:6:14: Error: REDUCEABLE_SCOPE: Console_Log is not used
+tfw_fixes.ads:6:5: Error: REDUCEABLE_SCOPE: "use" clause for Xfw_Fixes.Child is not necessary
+tfw_fixes.ads:6:1: Delete:6:20
+tfw_fixes.adb:58:17: Error: UNNECESSARY_USE_CLAUSE: Operator: "use all type" clause for Xfw_Fixes.Child2.Mod_Type2 used for operators of Xfw_Fixes.Child2.Mod_Type2
+tfw_fixes.adb:57:17: Error: UNNECESSARY_USE_CLAUSE: Operator: "use all type" clause for Xfw_Fixes.Child2.Mod_Type1 used for operators of Xfw_Fixes.Child2.Mod_Type1
+tfw_fixes.adb:58:4: Delete:58:43
+tfw_fixes.ads:6:5: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Xfw_Fixes.Child (possible usage in child units)
+tfw_fixes.adb:57:4: Delete:57:43
+tfw_fixes.ads:6:1: Delete:6:20
+tfw_fixes.adb:57:44: Insert
+!
+!   use type Xfw_Fixes.Child2.Mod_Type1;
+tfw_fixes.adb:58:44: Insert
+!
+!   use type Xfw_Fixes.Child2.Mod_Type2;
+tfw_fixes.adb:2:6: Found: WITH_CLAUSES: Unnecessary with clause for "Ada.Calendar"
+tfw_fixes.ads:2:6: Found: WITH_CLAUSES: Unnecessary with clause for "Xfw_Fixes.Child" (possible use in child units)
+tfw_fixes.adb:2:6: Delete:2:19
+tfw_fixes.ads:1:19: Found: WITH_CLAUSES: Unnecessary with clause for "Ada.Strings.Unbounded" (possible use in child units)
+tfw_fixes.ads:2:1: Delete:2:21
+tfw_fixes.ads:1:17: Delete:1:39
+tfw_fixes.ads:19:13: Error: REDUCEABLE_SCOPE: "aNd" is not used
+tfw_fixes.ads:11:14: Error: REDUCEABLE_SCOPE: Declaration of Hello can be moved into package body
+tfw_fixes.ads:18:4: Error: REDUCEABLE_SCOPE: X is not used
