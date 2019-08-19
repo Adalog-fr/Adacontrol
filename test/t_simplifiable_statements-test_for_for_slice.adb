@@ -25,6 +25,9 @@ begin
       V1 (I) := V1 (I + I);        -- More than one reference to index
    end loop;
    for I in V1'Range loop
+      V1 (I) := V1 (1 - I);        -- Index on RHS of "-"
+   end loop;
+   for I in V1'Range loop
       V1 (I) := V1 (I * 2);        -- Not "+" or "-"
    end loop;
    for I in V1'Range loop

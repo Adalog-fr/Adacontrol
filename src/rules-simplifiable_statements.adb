@@ -1291,8 +1291,6 @@ package body Rules.Simplifiable_Statements is
                if (for some Bound of Loop_Bounds => Bound = Not_Static)
                  or else Loop_Bounds /= Discrete_Constraining_Values (State.Indexed_Name)
                then
-                  --Utilities.Trace ("loop", Loop_Bounds);
-                 -- Utilities.Trace ("indexed", Discrete_Constraining_Bounds (State.Indexed_Name));
                   return;
                end if;
             end;
@@ -1311,18 +1309,20 @@ package body Rules.Simplifiable_Statements is
          use Asis.Expressions;
 
          type Indexing_Expr_Kind is (Bad, Good, Good_With_Index);
-         function "or" (Left, Right : Indexing_Expr_Kind) return Indexing_Expr_Kind is
+         function Oper_Expr_Kind (Op : Asis.Expression; Left, Right : Indexing_Expr_Kind) return Indexing_Expr_Kind is
          begin
             if Left = Bad or Right = Bad then
                return Bad;
             elsif Left = Good and Right = Good then
                return Good;
+            elsif Operator_Kind (Op) = A_Minus_Operator and then Right = Good_With_Index then
+               return Bad;
             elsif Left = Good_With_Index xor Right = Good_With_Index then
                return Good_With_Index;
             else -- Good_With_Index or Good_With_Index
                return Bad;
             end if;
-         end "or";
+         end Oper_Expr_Kind;
 
          function Indexing_Kind (Expr : Asis.Expression) return Indexing_Expr_Kind is
          begin
@@ -1356,8 +1356,9 @@ package body Rules.Simplifiable_Statements is
                            declare
                               Params : constant Asis.Expression_List := Function_Call_Parameters (Expr);
                            begin
-                              return Indexing_Kind (Actual_Parameter (Params (1)))
-                                or Indexing_Kind (Actual_Parameter (Params (2)));
+                              return Oper_Expr_Kind (Op_Name,
+                                                     Indexing_Kind (Actual_Parameter (Params (1))),
+                                                     Indexing_Kind (Actual_Parameter (Params (2))));
                            end;
                         when others =>
                            return Bad;
@@ -1383,7 +1384,7 @@ package body Rules.Simplifiable_Statements is
                when An_Assignment_Statement =>
                   LHS := Assignment_Variable_Name (S);
                   RHS := Assignment_Expression    (S);
-                  if        Expression_Kind (LHS) /= An_Indexed_Component
+                  if         Expression_Kind (LHS) /= An_Indexed_Component
                     or else (Expression_Kind (RHS) /= An_Indexed_Component and Indexing_Kind (RHS) /= Good)
                   then
                      return;

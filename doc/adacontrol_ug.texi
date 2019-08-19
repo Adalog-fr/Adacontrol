@@ -8756,7 +8756,7 @@ corresponding array, often resulting in simpler code. For example:
    @b{for} I @b{in} S'range @b{loop}
       --  Do something with S(I)
    @b{end} @b{loop};
-end;
+@b{end};
 @end example
 can be changed to:
 @example
@@ -8778,6 +8778,20 @@ cases.
 assignments between array elements, and where the indexing and the
 value assigned are such that the loop may be replaced by a single
 slice assignment, a full array assignment, or an aggregate assignment.
+For example (where S is some String),
+@example
+@b{for} I @b{in} S'First .. S'Last-1 @b{loop}
+   S (I+1) := S(I);
+@b{end} @b{loop};
+@b{for} I @b{in} S'Range @b{loop}
+   S (I) := ' '; 
+@b{end} @b{loop};   
+@end example
+can be changed to:
+@example
+S(S'First + 1 .. S'Last) := S(S'First .. S'Last - 1);
+S := (others => ' ');
+@end example
 @item
 ``handler'': controls ``trivial'' exception handlers, i.e. handlers
 whose sequence of statements includes only a single @code{@b{raise}}
