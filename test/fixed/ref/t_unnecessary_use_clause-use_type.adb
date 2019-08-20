@@ -184,6 +184,24 @@ begin
       end if;
    end;
 
+   ----------------- Special cases that created false positives in the past
+
+   declare     -- SF 000055
+      package My_Math is
+         type Real is digits 15 range -1.79E308 .. 1.79E308;
+      end My_Math;
+
+      package Lem is
+         subtype Real is My_Math.Real;
+         use type My_Math.Real;
+
+         Max_Speed : constant := 10_000.0;
+         type Speed_Range is new Real range -Max_Speed .. +Max_Speed;
+      end Lem;
+   begin
+      null;
+   end;
+
    ----------------- These are to check fixes, insertion of use [all] type
    declare
       
