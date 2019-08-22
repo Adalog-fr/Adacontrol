@@ -1,5 +1,5 @@
 =============
-== V1.21b4 ==
+== V1.21r5 ==
 =============
 
 General:
@@ -11,6 +11,7 @@ Changes to existing rules:
 unnecessary_use_clause:
    Add rule variable Max_Replacements to select the maximum of use type and
    use all type clauses that can replace a use clause.
+
 
 =============
 == V1.21r3 ==
