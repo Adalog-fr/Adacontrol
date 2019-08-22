@@ -4,12 +4,32 @@ t_unnecessary_use_clause-sep.adb:2:5: Error: UNNECESSARY_USE_CLAUSE: Unused: "us
 t_unnecessary_use_clause-sep.adb:2:1: Delete:2:31
 t_unnecessary_use_clause.adb:17:8: Error: UNNECESSARY_USE_CLAUSE: Nested: "use" clause for Ada.Strings.Fixed in scope of use clause for same package at t_unnecessary_use_clause.adb:15:8
 t_unnecessary_use_clause.adb:17:4: Delete:17:25
-t_unnecessary_use_clause.adb:33:14: Error: UNNECESSARY_USE_CLAUSE: Nested: use clause for Pack2 inside nested unit Proc2
-t_unnecessary_use_clause.adb:33:10: Delete:33:19
-t_unnecessary_use_clause.adb:63:11: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Pack5
-t_unnecessary_use_clause.adb:63:7: Delete:63:16
-t_unnecessary_use_clause.adb:67:8: Error: UNNECESSARY_USE_CLAUSE: Nested: use clause for T_Unnecessary_Use_Clause inside same package
-t_unnecessary_use_clause.adb:67:4: Delete:67:32
+t_unnecessary_use_clause-max_replacement.adb:67:11: Error: UNNECESSARY_USE_CLAUSE: Nested: "use" clause for Pack2 in scope of use clause for same package at t_unnecessary_use_clause-max_replacement.adb:33:8
+t_unnecessary_use_clause-max_replacement.adb:67:7: Delete:67:16
+t_unnecessary_use_clause-max_replacement.adb:45:8: Error: UNNECESSARY_USE_CLAUSE: Operator: "use" clause for Pack3 used for operators of T_unnecessary_use_clause.Max_Replacement.Pack3.Int
+t_unnecessary_use_clause-max_replacement.adb:12:8: Error: UNNECESSARY_USE_CLAUSE: Operator: "use" clause for Pack1 used for operators of T_unnecessary_use_clause.Max_Replacement.Pack1.P1_T1
+t_unnecessary_use_clause-max_replacement.adb:12:8: Error: UNNECESSARY_USE_CLAUSE: Operator: "use" clause for Pack1 used for operators of T_unnecessary_use_clause.Max_Replacement.Pack1.P1_T2
+t_unnecessary_use_clause-max_replacement.adb:12:8: Error: UNNECESSARY_USE_CLAUSE: Operator: "use" clause for Pack1 used for operators of T_unnecessary_use_clause.Max_Replacement.Pack1.P1_T3
+t_unnecessary_use_clause-max_replacement.adb:12:8: Error: UNNECESSARY_USE_CLAUSE: Operator: "use" clause for Pack1 used for operators of T_unnecessary_use_clause.Max_Replacement.Pack1.P1_T4
+t_unnecessary_use_clause-max_replacement.adb:12:8: Error: UNNECESSARY_USE_CLAUSE: Operator: "use" clause for Pack1 used for operators of T_unnecessary_use_clause.Max_Replacement.Pack1.P1_T5
+t_unnecessary_use_clause-max_replacement.adb:45:4: Delete:45:13
+t_unnecessary_use_clause-max_replacement.adb:12:4: Delete:12:13
+t_unnecessary_use_clause-max_replacement.adb:12:14: Insert
+!
+!   use type T_unnecessary_use_clause.Max_Replacement.Pack1.P1_T1;
+!   use type T_unnecessary_use_clause.Max_Replacement.Pack1.P1_T2;
+!   use type T_unnecessary_use_clause.Max_Replacement.Pack1.P1_T3;
+!   use type T_unnecessary_use_clause.Max_Replacement.Pack1.P1_T4;
+!   use type T_unnecessary_use_clause.Max_Replacement.Pack1.P1_T5;
+t_unnecessary_use_clause-max_replacement.adb:45:14: Insert
+!
+!   use type T_unnecessary_use_clause.Max_Replacement.Pack3.Int;
+t_unnecessary_use_clause.adb:35:14: Error: UNNECESSARY_USE_CLAUSE: Nested: use clause for Pack2 inside nested unit Proc2
+t_unnecessary_use_clause.adb:35:10: Delete:35:19
+t_unnecessary_use_clause.adb:65:11: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Pack5
+t_unnecessary_use_clause.adb:65:7: Delete:65:16
+t_unnecessary_use_clause.adb:69:8: Error: UNNECESSARY_USE_CLAUSE: Nested: use clause for T_Unnecessary_Use_Clause inside same package
+t_unnecessary_use_clause.adb:69:4: Delete:69:32
 t_unnecessary_use_clause-use_type.adb:5:13: Error: UNNECESSARY_USE_CLAUSE: Nested: "use type" clause for Ada.Text_IO.Count in scope of use clause for Ada.Text_IO at t_unnecessary_use_clause.adb:9:8
 t_unnecessary_use_clause-use_type.adb:5:4: Delete:5:30
 t_unnecessary_use_clause-use_type.adb:8:13: Error: UNNECESSARY_USE_CLAUSE: Nested: "use type" clause for X_Unnecessary_Use_Clause.Int_1 in scope of use type or use all type clause for same type at t_unnecessary_use_clause-use_type.adb:6:13
@@ -128,17 +148,17 @@ t_unnecessary_use_clause-use_type.adb:261:11: Error: UNNECESSARY_USE_CLAUSE: Unu
 t_unnecessary_use_clause-use_type.adb:261:7: Delete:261:30
 t_unnecessary_use_clause-use_type.adb:6:13: Error: UNNECESSARY_USE_CLAUSE: Qualified: all uses of X_Unnecessary_Use_Clause.Int_1 are qualified
 t_unnecessary_use_clause-use_type.adb:6:4: Delete:6:43
-t_unnecessary_use_clause.adb:75:11: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Ada.Strings
-t_unnecessary_use_clause.adb:75:7: Delete:75:22
-t_unnecessary_use_clause.adb:55:8: Error: UNNECESSARY_USE_CLAUSE: Qualified: all uses of Pack4 are qualified
-t_unnecessary_use_clause.adb:49:8: Error: UNNECESSARY_USE_CLAUSE: Operator: "use" clause for Pack3 used for operators of T_unnecessary_use_clause.Pack3.Int
-t_unnecessary_use_clause.adb:55:4: Delete:55:13
+t_unnecessary_use_clause.adb:77:11: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Ada.Strings
+t_unnecessary_use_clause.adb:77:7: Delete:77:22
+t_unnecessary_use_clause.adb:57:8: Error: UNNECESSARY_USE_CLAUSE: Qualified: all uses of Pack4 are qualified
+t_unnecessary_use_clause.adb:51:8: Error: UNNECESSARY_USE_CLAUSE: Operator: "use" clause for Pack3 used for operators of T_unnecessary_use_clause.Pack3.Int
+t_unnecessary_use_clause.adb:57:4: Delete:57:13
 t_unnecessary_use_clause.adb:2:18: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for System
-t_unnecessary_use_clause.adb:49:4: Delete:49:13
+t_unnecessary_use_clause.adb:51:4: Delete:51:13
 t_unnecessary_use_clause.ads:3:8: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Ada.Command_Line (possible usage in child units)
 t_unnecessary_use_clause.adb:2:14: Delete:2:24
 t_unnecessary_use_clause.ads:3:8: Delete:3:25
-t_unnecessary_use_clause.adb:49:14: Insert
+t_unnecessary_use_clause.adb:51:14: Insert
 !
 !   use type T_unnecessary_use_clause.Pack3.Int;
 x_unnecessary_use_clause.ads:2:37: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Ada.numerics (possible usage in child units)

@@ -1,2 +1,3 @@
+set unnecessary_use_clause.max_replacements 5;
 check unnecessary_use_clause;
 

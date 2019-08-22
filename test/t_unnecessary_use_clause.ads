@@ -6,6 +6,8 @@ package T_unnecessary_use_clause is
 
    procedure Sep;
 
+   procedure Max_Replacement;
+
    package Parent_Pack is
       Data : Integer;
    end Parent_Pack;

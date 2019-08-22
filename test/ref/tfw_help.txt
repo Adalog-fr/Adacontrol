@@ -918,6 +918,8 @@ Control use clauses that can be removed, moved, or changed to use [all] type.
 
 Parameter(s): unused  | qualified | operator | primitive | nested |
               movable
+Variables:
+Unnecessary_Use_Clause.Max_Replacements: 0 .. 2147483647 =  2147483647
 ----
 Rule: UNSAFE_ELABORATION
 Controls elaboration code of (generic) packages that may cause elaboration issues

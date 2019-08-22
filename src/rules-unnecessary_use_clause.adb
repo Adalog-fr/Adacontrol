@@ -45,11 +45,13 @@ with   -- Adalog
 with   -- AdaControl
   Framework.Reports.Fixes,
   Framework.Language,
-  Framework.Queries;
+  Framework.Queries,
+  Framework.Variables,
+  Framework.Variables.Shared_Types;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Unnecessary_Use_Clause is
-   use Framework, Framework.Control_Manager, Utilities, Elements_Set;
+   use Framework, Framework.Control_Manager, Framework.Variables.Shared_Types, Utilities, Elements_Set;
 
    -- Algorithm:
    -- We use a Scoped_Store to maintain a list of active use clauses. In case of multiple elements
@@ -112,6 +114,8 @@ package body Rules.Unnecessary_Use_Clause is
    -- Useful subtype for case statements dealing only with use clauses:
    subtype Use_Clause_Kinds is Asis.Clause_Kinds range Asis.A_Use_Package_Clause .. Asis.A_Use_All_Type_Clause;
 
+   Max_Replacements : aliased Natural_Type.Object := (Value => Natural'Last);
+
    ----------
    -- Help --
    ----------
@@ -123,6 +127,8 @@ package body Rules.Unnecessary_Use_Clause is
       User_Message ("Control use clauses that can be removed, moved, or changed to use [all] type.");
       User_Message;
       Help_On_Flags ("Parameter(s):");
+      User_Message ("Variables:");
+      Framework.Variables.Help_On_Variable (Rule_Id & ".Max_Replacements");
    end Help;
 
    -----------------
@@ -164,7 +170,8 @@ package body Rules.Unnecessary_Use_Clause is
    begin
       case Action is
          when Clear =>
-            Rule_Used  := Not_Used;
+            Rule_Used        := Not_Used;
+            Max_Replacements := (Value => Natural'Last);
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := Not_Used;
@@ -749,7 +756,9 @@ package body Rules.Unnecessary_Use_Clause is
                         Fixes.List_Remove (Deletions, Info.Position, From => Info.Use_Clause);
                      end if;
                   when Operator =>
-                     if Rule_Used (Operator) and then Clause_Kind (Info.Use_Clause) /= A_Use_Type_Clause then
+                     if Rule_Used (Operator) and then Clause_Kind (Info.Use_Clause) /= A_Use_Type_Clause
+                       and then Size (Info.Op_Type_List) <= Max_Replacements.Value
+                     then
                         for T : Unbounded_Wide_String of Names_In_Set (Info.Op_Type_List) loop
                            Report (Rule_Id,
                                    Ctl_Contexts (Operator),
@@ -773,7 +782,9 @@ package body Rules.Unnecessary_Use_Clause is
                      end if;
 
                   when Primitive =>
-                     if Rule_Used (Primitive) and then Clause_Kind (Info.Use_Clause) = A_Use_Package_Clause then
+                     if Rule_Used (Primitive) and then Clause_Kind (Info.Use_Clause) = A_Use_Package_Clause
+                       and then Size (Info.Op_Type_List) + Size (Info.Prim_Type_List) <= Max_Replacements.Value
+                     then
                         for T : Unbounded_Wide_String of Names_In_Set (Info.Op_Type_List) loop
                            Report (Rule_Id,
                                    Ctl_Contexts (Operator),
@@ -829,4 +840,6 @@ begin  -- Rules.Unnecessary_Use_Clause
                                      Add_Control_CB => Add_Control'Access,
                                      Command_CB     => Command'Access,
                                      Prepare_CB     => Prepare'Access);
+   Framework.Variables.Register (Max_Replacements'Access,
+                                 Variable_Name => Rule_Id & ".MAX_REPLACEMENTS");
 end Rules.Unnecessary_Use_Clause;

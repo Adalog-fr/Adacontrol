@@ -16,6 +16,8 @@ package body T_unnecessary_use_clause is
    procedure Sep is separate;
            -- Nested: In scope of outer clause
 
+   procedure Max_Replacement is separate;
+
    package body Pack1 is
       procedure Proc is begin null; end;
    begin
