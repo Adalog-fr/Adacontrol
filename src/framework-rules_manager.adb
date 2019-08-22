@@ -438,7 +438,7 @@ package body Framework.Rules_Manager is
    --------------------
 
    procedure Report_Timings (Global_Report : Boolean) is
-      use Utilities;
+      use Framework.Reports, Utilities;
       Total_Rules_Time : Duration := 0.0;
 
       procedure Add_One_Timing (Rule : Unbounded_Wide_String; Info : in out Rule_Info) is
@@ -465,10 +465,9 @@ package body Framework.Rules_Manager is
             return;
          end if;
 
-         User_Message (To_Title (To_Wide_String (Rule)) & ": ",     Stay_On_Line => True);
-         User_Message (Format_Duration (Info.Total_Time, Aft => 3), Stay_On_Line => True);
-         User_Message (" (" & Format_Duration ((Info.Total_Time * 100)/Total_Rules_Time, Aft => 1) & "%)");
-
+         Report_Timings (Rule             => To_Title (To_Wide_String (Rule)),
+                         Duration         => Format_Duration (Info.Total_Time, Aft => 3),
+                         Percent_Duration => Format_Duration ((Info.Total_Time * 100)/Total_Rules_Time, Aft => 1));
          Info.Total_Time := 0.0;
       end Report_One_Timing;
 
@@ -494,8 +493,10 @@ package body Framework.Rules_Manager is
 
       Add_All_Timings (Rule_Map);
 
-      User_Message;
-      User_Message ("Rules timing statistics (in s.)");
+      if Current_Format not in CSV | CSVX | None then
+         User_Message;
+         User_Message ("Rules timing statistics (in s.)");
+      end if;
       Report_All_Timings (Rule_Map);
 
    end Report_Timings;

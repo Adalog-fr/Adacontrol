@@ -111,4 +111,6 @@ package Framework.Reports is
 
    procedure Init_Stats  (Rule : Wide_String; Label : Wide_String);
    procedure Report_Stats;
+
+   procedure Report_Timings (Rule, Duration, Percent_Duration : Wide_String);
 end Framework.Reports;

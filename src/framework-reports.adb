@@ -940,6 +940,25 @@ package body Framework.Reports is
       New_Line;
    end Report_Stats;
 
+   --------------------
+   -- Report_Timings --
+   --------------------
+
+   procedure Report_Timings (Rule, Duration, Percent_Duration : Wide_String) is
+      use Utilities;
+   begin
+      case Current_Format is
+         when CSV | CSVX | None =>
+            User_Message (Rule & CSV_Separator (Format_Option.Value),     Stay_On_Line => True);
+            User_Message (Duration & CSV_Separator (Format_Option.Value), Stay_On_Line => True);
+            User_Message (Percent_Duration & "%");
+         when others =>
+            User_Message (Rule & ": ",     Stay_On_Line => True);
+            User_Message (Duration, Stay_On_Line => True);
+            User_Message (" (" & Percent_Duration & "%)");
+      end case;
+   end Report_Timings;
+
 begin  -- Framework.Reports
    Register (Active_Warning_Option'Access,   Variable_Name => "WARNING");
    Register (Warning_As_Error_Option'Access, Variable_Name => "WARNING_AS_ERROR");
