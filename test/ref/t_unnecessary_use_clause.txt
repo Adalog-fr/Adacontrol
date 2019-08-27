@@ -148,8 +148,15 @@ t_unnecessary_use_clause-use_type.adb:261:11: Error: UNNECESSARY_USE_CLAUSE: Unu
 t_unnecessary_use_clause-use_type.adb:261:7: Delete:261:30
 t_unnecessary_use_clause-use_type.adb:6:13: Error: UNNECESSARY_USE_CLAUSE: Qualified: all uses of X_Unnecessary_Use_Clause.Int_1 are qualified
 t_unnecessary_use_clause-use_type.adb:6:4: Delete:6:43
-t_unnecessary_use_clause.adb:77:11: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Ada.Strings
-t_unnecessary_use_clause.adb:77:7: Delete:77:22
+t_unnecessary_use_clause.adb:83:11: Error: UNNECESSARY_USE_CLAUSE: Qualified: all uses of Ada.Strings are qualified
+t_unnecessary_use_clause.adb:83:7: Delete:83:22
+t_unnecessary_use_clause.adb:91:11: Error: UNNECESSARY_USE_CLAUSE: Primitive: "use" clause for Ada.Strings used for primitive operations of Ada.Strings.Alignment
+t_unnecessary_use_clause.adb:91:7: Delete:91:22
+t_unnecessary_use_clause.adb:91:23: Insert
+!
+!      use all type Ada.Strings.Alignment;
+t_unnecessary_use_clause.adb:99:11: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Ada.Strings
+t_unnecessary_use_clause.adb:99:7: Delete:99:22
 t_unnecessary_use_clause.adb:57:8: Error: UNNECESSARY_USE_CLAUSE: Qualified: all uses of Pack4 are qualified
 t_unnecessary_use_clause.adb:51:8: Error: UNNECESSARY_USE_CLAUSE: Operator: "use" clause for Pack3 used for operators of T_unnecessary_use_clause.Pack3.Int
 t_unnecessary_use_clause.adb:57:4: Delete:57:13

@@ -630,6 +630,8 @@ package body Rules.Unnecessary_Use_Clause is
       -- However, names that correspond to defaulted associations for "is box" formal subprograms
       -- follow the visibility rules at the point of instantiation, and must therefore be processed
       -- here.
+      -- Special case: generic formal instantiations are checked only for names that are actually given, and
+      -- therefore not use the normalized form of Generic_Actual_Part.
       use Asis, Asis.Declarations, Asis.Expressions, Asis.Elements;
    begin
       if Rule_Used = Not_Used then
@@ -637,7 +639,10 @@ package body Rules.Unnecessary_Use_Clause is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      for Assoc : Asis.Association of Generic_Actual_Part (Instantiation, Normalized => True) loop
+      for Assoc : Asis.Association
+        of Generic_Actual_Part (Instantiation,
+                                Normalized => Declaration_Kind (Instantiation) /= A_Formal_Package_Declaration)
+      loop
          if Is_Defaulted_Association (Assoc)
            and then Default_Kind (Enclosing_Element (Formal_Parameter (Assoc))) = A_Box_Default
          then
