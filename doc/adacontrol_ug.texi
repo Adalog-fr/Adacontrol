@@ -1001,10 +1001,8 @@ includes an indication of the run number if there are more than one
 
 The ``-d'' option enables debug mode. This mode provides more
 information in case of an internal program error, and is of little
-interest for the casual user. Note that if you hit Ctrl-C in debug
-mode, AdaControl aborts with a message telling the currently active
-rule and module. This can be useful if you suspect AdaControl to be
-stuck in an infinite loop.
+interest for the casual user, unless you want to report a problem.
+@xref{In case of trouble}.
 
 In debug mode, AdaControl may also, in rare occasions (and only with
 some versions of GNAT), display ASIS ``bug boxes''; this does not mean
@@ -2082,18 +2080,26 @@ compiling on-the-fly is more efficient than loading tree files, or not.
 
 @node In case of trouble,  , Optimizing Adacontrol, Program Usage
 @section In case of trouble
-@subsection Known issues
-If you are using an old version of GNAT and your project includes
-source files located in several directories, the ADA_INCLUDE_PATH
-environment variable may not be considered by ASIS, resulting in error
-messages that tell you that the bodies of some units have not been
-found (and hence have not been processed). This problem has been fixed
-in GNAT dated later than Sept. 1st, 2006. If this happens, either
-provide your source directories as ``-I'' options (@pxref{ASIS
-options}), or generate the tree files manually (@pxref{Generating tree
-files manually}). Note that this problem does not happen if you are
-using a project file (@pxref{Project files}), nor if you are
-running AdaControl from GPS.
+If you encounter a problem while using AdaControl, you are very
+welcome to report it through our
+@url{https://sourceforge.net/p/adacontrol/tickets/,bug tracking
+system} (under Windows, you can click on ``Report problem'' in the
+AdaControl Start menu). Please include the exact control and the unit
+that caused the problem, as well as the captured output of the program
+(with ``-dx'' option).
+
+@subsection AdaControl stuck in infinite loop
+If AdaControl seems to be frozen, first make sure that it is not
+simply slow (some rules may require quite a lot of time on big
+units). Check for example if the size of the result file is
+growing. If it appears that AdaControl is really stuck, you can
+recompile it in interruptible mode (see the comments in file
+@code{framework-interrupt.adb for details}). Then, if you hit Ctrl-C
+in debug mode (``-d'' option), AdaControl aborts with a message
+telling the currently active rule and module.
+
+Note that this interruptible mode may imply a penalty in execution
+time, that's why it is not enabled by default.
 
 @subsection AdaControl or ASIS failure
 Like any sophisticated piece of software, AdaControl may fail when
@@ -2119,14 +2125,6 @@ stop immediately, and no further processing will happen.
 If you don't want the garbage from a failing rule to pollute your
 report, you may chose to disable the rule for the unit that has a
 problem. @xref{Inhibit command}.
-
-If you encounter a problem while using AdaControl, you are very
-welcome to report it through our
-@url{https://sourceforge.net/p/adacontrol/tickets/,bug tracking
-system} (under Windows, you can click on ``Report problem'' in the
-AdaControl Start menu). Please include the exact control and the unit
-that caused the problem, as well as the captured output of the program
-(with ``-dx'' option).
 
 @node Command language reference, Rules reference, Program Usage, Top
 @chapter Command language reference
