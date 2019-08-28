@@ -72,28 +72,28 @@ package body T_unnecessary_use_clause is
    end Use_Type;
    package body Use_Type is separate;
 
-   -- Case of generic formal packages
-   generic
-      type T is private;
-      V : in Ada.Strings.Alignment;
-      with function Equal (Left, Right : T) return Boolean is <>;
-   package Gen_Formal is end;
-
-   package Pack6 is
-      use Ada.Strings;           -- Qualified
-      generic
-         with package Inst11 is new Gen_Formal (V =>  Ada.Strings.Left, others => <>);
-         with package Inst12 is new Gen_Formal (others => <>);
-      package Inst is end;
-   end Pack6;
-
-   package Pack7 is
-      use Ada.Strings;
-      generic
-         with package Inst21 is new Gen_Formal (V => Left, others => <>);
-         with package Inst22 is new Gen_Formal (others => <>);
-      package Inst is end;
-   end Pack7;
+   -- Case of generic formal packages (commented out due to ASIS bug)
+--     generic
+--        type T is private;
+--        V : in Ada.Strings.Alignment;
+--        with function Equal (Left, Right : T) return Boolean is <>;
+--     package Gen_Formal is end;
+--
+--     package Pack6 is
+--        use Ada.Strings;           -- Qualified
+--        generic
+--           with package Inst11 is new Gen_Formal (V =>  Ada.Strings.Left, others => <>);
+--           with package Inst12 is new Gen_Formal (others => <>);
+--        package Inst is end;
+--     end Pack6;
+--
+--     package Pack7 is
+--        use Ada.Strings;
+--        generic
+--           with package Inst21 is new Gen_Formal (V => Left, others => <>);
+--           with package Inst22 is new Gen_Formal (others => <>);
+--        package Inst is end;
+--     end Pack7;
 begin
    declare
       use Ada.Strings;           -- Unused: unused
