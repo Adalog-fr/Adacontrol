@@ -99,6 +99,16 @@ begin
       end loop;
    end;
 
+   declare                             -- Nested loops, outer one is for of
+      V3 : array (1 .. 10) of String (1 .. 10);
+   begin
+      for Str of V3 loop
+         for I in Str'Range loop
+            Str (I) := ' ';
+         end loop;
+      end loop;
+   end;
+
    for I in Mat'Range (1) loop         -- multidimensional array
       for J in Mat'Range (2) loop
          Mat (I, J) := False;
