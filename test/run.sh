@@ -243,7 +243,7 @@ if [ $SPEEDUP = 0 ] ; then
 
     # Create timing file
     echo "Rule;Time;Percent" >res/rules_timing.csv
-    grep -E "^[A-Za-z_]+: [0-9.]+" res/${test_case}.txt | sed "s/: /;/;s/ (\([0-9]*.[0-9]*\).*$/;\1/" >>res/rules_timing.csv
+    grep -E "^[A-Za-z_]+;[0-9.]+;[0-9.]+%" res/${test_case}.txt >>res/rules_timing.csv
     ###########################################################################
     # Put "PASSED" as the result if OK
     if [ $result -le 1 ]; then
