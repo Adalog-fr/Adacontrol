@@ -36,11 +36,12 @@ def open_file(name):
     GPS.MDI.get_by_child(ed.current_view()).raise_window()
 
 
-def protect (mess):
+def protect(mess):
     """ protects a message by changing "<" and ">" to "&lt" and "&gt"
         This is requirede when the message is passed to Pango
     """
-    return mess.replace ("<", "&lt;").replace (">", "&gt;")
+    return mess.replace("<", "&lt;").replace(">", "&gt;")
+
 
 #
 # Units
@@ -148,7 +149,7 @@ def post_clean():
     """
     # Raise "Locations" window if possible
     loc = GPS.MDI.get("Locations")
-    if loc != None:
+    if loc is not None:
         loc.raise_window()
     if GPS.Preference("delete-trees").get():
         del_tree(confirm=False)
@@ -160,6 +161,7 @@ def command_name():
     return GPS.Project.root().get_attribute_as_string("Compiler_Command",
                                                       "Ide",
                                                       "adacontrol") or "adactl"
+
 
 #
 # Management of fixes
@@ -190,25 +192,29 @@ def fixer(self):
         fix.apply()
     self.set_subprogram(no_action, '', '')
 
+
 def no_action(self):
     """ placeholder when the fix has been performed
     """
     pass
 
-def apply_fixes ():
+
+def apply_fixes():
     """ Automatically perform all possible fixes
     """
     global adactl_cats
 
     for cat in adactl_cats:
-        for mess in GPS.Message.list (category=cat):
+        for mess in GPS.Message.list(category=cat):
             mess.execute_action()
+
 
 def parse(output):
     """Sort and parse the result of running Adacontrol
     """
-    global adactl_cats, long_mess_pat, syntax_mess_pat, short_mess_pat, fix_mess_pat, \
-        rule_statistics_pat, message_statistics_pat, errors_style, warnings_style
+    global adactl_cats, long_mess_pat, syntax_mess_pat, short_mess_pat, \
+        fix_mess_pat, rule_statistics_pat, message_statistics_pat, \
+        errors_style, warnings_style
 
     list = output.splitlines()
     pos = 0
@@ -230,7 +236,7 @@ def parse(output):
                                file=GPS.File(match.group('file')),
                                line=int(match.group('line')),
                                column=int(match.group('col')),
-                               text=protect (match.group('message')))
+                               text=protect(match.group('message')))
             key = match.group('key')
             if key == "Found":
                 mess.set_style(warnings_style)
@@ -254,7 +260,7 @@ def parse(output):
             fix.fix_data = []
             if key == "Delete":
                 col = int(match.group('endcol'))
-                # col=0 means that the preceding end of line mark is to be deleted
+                # col=0 means that the preceding end of line is to be deleted
                 if col == 0:
                     loc = GPS.EditorLocation(buf,
                                              int(match.group('endline'))-1,
@@ -290,14 +296,14 @@ def parse(output):
             continue
 
         # Rules file check message
-        match = syntax_mess_pat.match (Mess);
+        match = syntax_mess_pat.match(Mess)
         if match:
             adactl_cats.add(category)
             mess = GPS.Message(category,
                                file=GPS.File(match.group('file')),
                                line=int(match.group('line')),
                                column=int(match.group('col')),
-                               text=protect (match.group('message')))
+                               text=protect(match.group('message')))
             mess.set_style(errors_style)
             prev_mess = mess
             prev_mess.fix_list = []
@@ -310,7 +316,7 @@ def parse(output):
             if GPS.Preference("separate-rules").get():
                 category = match.group('category')
             adactl_cats.add(category)
-            message = protect (match.group('message'))
+            message = protect(match.group('message'))
             try:
                 mess = GPS.Message(category, GPS.File("none"), 1, 1, message)
             except:
@@ -324,7 +330,11 @@ def parse(output):
         if match:
             adactl_cats.add("Statistics")
             try:
-                mess = GPS.Message("Statistics", GPS.File(match.group('rule')), 1, 1, match.group('counts'))
+                mess = GPS.Message("Statistics",
+                                   GPS.File(match.group('rule')),
+                                   1,
+                                   1,
+                                   match.group('counts'))
             except:
                 # Always an exception, since file does not exist
                 pass
@@ -335,7 +345,11 @@ def parse(output):
         if match:
             adactl_cats.add("Statistics")
             try:
-                mess = GPS.Message("Statistics", GPS.File(match.group('title')), 1, 1, match.group('counts'))
+                mess = GPS.Message("Statistics",
+                                   GPS.File(match.group('title')),
+                                   1,
+                                   1,
+                                   match.group('counts'))
             except:
                 # Always an exception, since file does not exist
                 pass
@@ -380,7 +394,7 @@ def load_result(file=""):
         GPS.MDI.dialog(
             "File " + previous_locfile + " is not a valid result file")
         print (sys.exc_info())
-        traceback.print_tb (sys.exc_info()[2])
+        traceback.print_tb(sys.exc_info()[2])
         return
     GPS.MDI.get("Locations").raise_window()
 
@@ -420,7 +434,7 @@ def options(rules, files):
         except:
             GPS.MDI.dialog("no active window")
             raise ValueError
-        if win == None :
+        if win is None:
             GPS.MDI.dialog("no active window")
             raise ValueError
         if win.language() != "ada":
@@ -567,7 +581,9 @@ def options(rules, files):
             # always override
             result = result + " -wo " + output_name
         elif len(glob.glob(output_name)) != 0:
-            if GPS.MDI.yes_no_dialog("File " + output_name + " exists, override?"):
+            if GPS.MDI.yes_no_dialog("File " +
+                                     output_name +
+                                     " exists, override?"):
                 result = result + " -wo " + output_name
             else:
                 raise ValueError
@@ -597,8 +613,8 @@ def process_line(process, matching, rest):
 
 def exit_check(process, status, output):
     if status > 1:
-        print "status:",status
-        print "output:",output
+        print "status:", status
+        print "output:", output
 
 
 def run(rules, files):
@@ -694,9 +710,9 @@ def del_tree(confirm):
         supp = "and .ali "
     else:
         supp = ""
-    if not confirm or GPS.MDI.yes_no_dialog("Remove all tree "
-                                            + supp
-                                            + "files from " + dir + "?"):
+    if not confirm or GPS.MDI.yes_no_dialog("Remove all tree " +
+                                            supp +
+                                            "files from " + dir + "?"):
         for I in glob.glob(os.path.join(dir, "*.adt")):
             os.remove(I)
         if ali_also:
@@ -728,7 +744,8 @@ def on_GPS_start(H):
     """
     global adactl_cats, previous_command, previous_locfile, DelTree_Menu,\
         long_mess_pat, syntax_mess_pat, short_mess_pat, rule_statistics_pat,\
-        fix_mess_pat, message_statistics_pat, gps_version, errors_style, warnings_style
+        fix_mess_pat, message_statistics_pat, gps_version, errors_style, \
+        warnings_style
 
     # Global variables initialization
     adactl_cats = sets.Set()
@@ -738,7 +755,6 @@ def on_GPS_start(H):
     styles_dict = {s.get_name(): s for s in GPS.Style.list()}
     errors_style = styles_dict['Builder results']
     warnings_style = styles_dict['Builder warnings']
-
 
     # Normalize version numbers to allow for correct ordering of (string) comparison
     # 6.1.1 => 06.1.1

@@ -349,7 +349,7 @@ speed. @xref{Customizing AdaControl}.
 * Building and installing AdaControl from source::
 * Installing an executable distribution::
 * Installing support for AdaGide::
-* Installing support for GNATDashboard integration::
+* Installing support for GNATdashboard integration::
 @end menu
 
 @node  Building and installing AdaControl from source, Installing an executable distribution, Installation, Installation
@@ -618,22 +618,22 @@ If you want to uninstall AdaControl, just use:
 gprinstall --uninstall adacontrol
 @end example
 
-@node Installing support for AdaGide, Installing support for GNATDashboard integration, Installing an executable distribution, Installation
+@node Installing support for AdaGide, Installing support for GNATdashboard integration, Installing an executable distribution, Installation
 @section Installing support for AdaGide
 To add AdaControl support to AdaGide, copy the file
 @code{AdaControl.tdf} from the @code{AdaGide} directory of the
 distribution into AdaGide's root directory. Note that AdaControl
 support requires AdaGide version 7.42 or above.
 
-@node Installing support for GNATDashboard integration,  , Installing support for AdaGide, Installation
-@section Installing support for GNATDashboard integration
-Integration into GNATDashboard is provided in a separate package that
+@node Installing support for GNATdashboard integration,  , Installing support for AdaGide, Installation
+@section Installing support for GNATdashboard integration
+Integration into GNATdashboard is provided in a separate package that
 you can download from the same source that you obtained AdaControl
 from. It is provided as a .zip file that contains two files:
 @code{adacontrol-plugin-1.1r.jar} and @code{adacontrol.py}.
 
 Of course, the prerequisite is that you have a working installation of
-GNATDashboard, including SonarQube and its sonnar-scanner
+GNATdashboard, including SonarQube and its sonnar-scanner
 utility. Copy the first (@code{.jar}) file into the
 @code{<sonarqube-dir>/extensions/plugins/} directory. Copy the second
 (@code{.py}) file into the @code{<gnat-dir>/share/gnathub/extras/}
@@ -694,7 +694,7 @@ a task type), you can force Ada-95 the same way by using
 * Other execution modes::
 * Running AdaControl from GPS::
 * Running AdaControl from AdaGide::
-* Integrating AdaControl into GNATDashboard::
+* Integrating AdaControl into GNATdashboard::
 * Helpful utilities::
 * Optimizing Adacontrol::
 * In case of trouble::
@@ -1742,7 +1742,7 @@ GPS may crash when the output of a command is too big (i.e. hundreds
 of messages with AdaControl).  If this happens, use the
 ``preferences'' menu to limit the number of messages.
 
-@node  Running AdaControl from AdaGide, Integrating AdaControl into GNATDashboard, Running AdaControl from GPS, Program Usage
+@node  Running AdaControl from AdaGide, Integrating AdaControl into GNATdashboard, Running AdaControl from GPS, Program Usage
 @section Running AdaControl from AdaGide
 If you want to use AdaControl from AdaGide, make sure you have copied
 the necessary file into the required place. @xref{Installing support
@@ -1771,16 +1771,16 @@ current directory.  This is convenient when AdaControl complains that
 the tree files are not up-to-date.
 @end itemize
 
-@node Integrating AdaControl into GNATDashboard, Helpful utilities, Running AdaControl from AdaGide, Program Usage
-@section Integrating AdaControl into GNATDashboard
-Once GNATDashboard support is installed, AdaControl is usable like any
-other tool that comes with GNATDashboard. The name of the plug-in is
+@node Integrating AdaControl into GNATdashboard, Helpful utilities, Running AdaControl from AdaGide, Program Usage
+@section Integrating AdaControl into GNATdashboard
+Once GNATdashboard support is installed, AdaControl is usable like any
+other tool that comes with GNATdashboard. The name of the plug-in is
 ``adacontrol''.  It can be given either on the command line of
 @code{gnathub} or in the ``Plugins'' attribute of the ``Dashboard''
 package of a project file.
 
 Extra options for AdaControl can be given using the
-@code{--targs:adacontrol} option of gnathub. However, the simplest way
+@code{--targs:adacontrol} option of GNAThub. However, the simplest way
 to give fundamental options is to give a units file and the command
 file in the project file: in the absence of explicit parameters on the
 command line, these will be taken by default.
@@ -1790,7 +1790,7 @@ that contains all AdaControl rules. Use it to activate the rules you
 need. You can also make it inherit from ``GNATdashboard way'' if you
 want to use AdaControl with other GNAT tools.
 
-@node Helpful utilities, Optimizing Adacontrol, Integrating AdaControl into GNATDashboard, Program Usage
+@node Helpful utilities, Optimizing Adacontrol, Integrating AdaControl into GNATdashboard, Program Usage
 @section Helpful utilities
 This section describe utilities that are handy to use in conjunction
 with AdaControl.
