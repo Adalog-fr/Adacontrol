@@ -14,8 +14,8 @@ else
     ### WINDOWS
     ADAROOT=C:/donnees/profess/ada
     EXEC=.exe
-    JAVA_HOME=c:/Program\ Files/Java/jdk1.8.0_112
-    PATH=/cygdrive/c/applic/apache-maven/bin:/cygdrive/c/Program\ Files/Java/jdk1.8.0_112/bin:$PATH
+    JAVA_HOME=c:/Program\ Files/Java/jdk-11.0.4
+    PATH=/cygdrive/c/applic/apache-maven/bin:/cygdrive/c/Program\ Files/Java/jdk-11.0.4/bin:$PATH
 fi
 adactl_dir=$ADAROOT/programmes/semtools/adacontrol
 adactl_hub=${adactl_dir}/wks/GNATHub

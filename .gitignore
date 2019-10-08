@@ -24,6 +24,7 @@ doc/*_ug.html
 doc/*_ug.pdf
 doc/*_ug.txt
 
+GNATHub/notes.txt
 GNATHub/adacontrol-plugin/target
 GNATHub/adacontrol-plugin/src/main/resources/*.xml
 

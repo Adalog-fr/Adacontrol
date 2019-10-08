@@ -20,7 +20,7 @@ project Adactl is
    package Ide is
       for Vcs_Kind use "git";
       for Vcs_Repository_Root use "wks";
-      for Default_Switches ("adacontrol") use ("-x", "-d", "-G", "search", "-S", "1", "-f", "src/verif.aru", "-@", "src/units.txt", "-o", "result.txt", "-F", "gnat_short");
+      for Default_Switches ("adacontrol") use ("-x", "-d", "-G", "search", "-S", "1", "-f", "src/verif.aru", "-@", "src/units.txt", "-F", "gnat_short");
    end Ide;
 
    package Builder is
@@ -48,6 +48,8 @@ project Adactl is
       for Project_Name use "AdaControl";
       for Project_Version use "1.21r5";
       for Project_Key use "adactl";
-      for Source_Encoding use "UTF-8";
+      for Source_Encoding use "Windows-1252";
    end Dashboard;
+
 end Adactl;
+

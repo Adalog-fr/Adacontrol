@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2018, Adalog
+# Copyright (C) 2016-2019, Adalog
 #
 # This is free software;  you can redistribute it  and/or modify it  under
 # terms of the  GNU General Public License as published  by the Free Soft-
@@ -36,7 +36,7 @@ class AdaControl(Plugin, Runner, Reporter):
     """
 
     # Regex to identify lines that contain messages
-    _RULE_PATTERN = r'(?P<mess_class>.+): (?P<label>.+): (?P<message>.+)$'
+    _RULE_PATTERN = r'(?P<mess_class>.+?): (?P<label>.+?): (?P<message>.+)$'
 
     # Regular expression to match AdaControl output and extract all relevant
     # information stored in it.
@@ -47,7 +47,6 @@ class AdaControl(Plugin, Runner, Reporter):
 
     def __init__(self):
         super(AdaControl, self).__init__()
-
 
         self.tool = None
         self.output = os.path.join(GNAThub.Project.object_dir(),
@@ -80,17 +79,15 @@ class AdaControl(Plugin, Runner, Reporter):
     def run(self):
         """Executes AdaControl
         """
-	print "AdaControl: execution start"
-	status = GNAThub.Run(self.name, self.__cmd_line()).status
+        print ("AdaControl: start as " + ' '.join(self.__cmd_line()))
+        status = GNAThub.Run(self.name, self.__cmd_line()).status
 
-	if status in AdaControl.VALID_EXIT_CODES :
-		print "AdaControl: Execution completed"
-		print status
-		return GNAThub.EXEC_SUCCESS
-	else :
-		print "AdaControl: Execution failed"
-		print status
-		return GNAThub.EXEC_FAILURE
+        if status in AdaControl.VALID_EXIT_CODES:
+            print ("AdaControl: Execution completed")
+            return GNAThub.EXEC_SUCCESS
+        else:
+            print ("AdaControl: Execution failed")
+            return GNAThub.EXEC_FAILURE
 
     def report(self):
         """Parses AdaControl output file report
@@ -101,12 +98,9 @@ class AdaControl(Plugin, Runner, Reporter):
             * ``GNAThub.EXEC_SUCCESS``: on successful execution and analysis
             * ``GNAThub.EXEC_FAILURE``: on any error
 
-        Identify two type of messages with different format:
-
-            * basic message
-            * message for package instantiation
         """
 
+        # Clear existing references
         self.info('AdaControl: clear existing results if any')
         GNAThub.Tool.clear_references(self.name)
 
@@ -123,7 +117,7 @@ class AdaControl(Plugin, Runner, Reporter):
             with open(self.output, 'r') as output:
                 lines = output.readlines()
                 total = len(lines)
-                print "total lines", total
+                print ("total lines", total)
 
                 for index, line in enumerate(lines, start=1):
                     self.log.debug('parse line: %s', line)
