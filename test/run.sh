@@ -340,7 +340,7 @@ if [ $SILENT -eq 1 ] ; then
 else
     print_time "Total run time: " `expr $run_stop - $run_start`
     if [ $nb_failed -ne 0 ] ; then
-	. ./failed.sh
+	./failed.sh
     fi
 
 fi
