@@ -929,6 +929,7 @@ package body Rules.Simplifiable_Expressions is
                      | A_Parameter_Specification
                      | A_Component_Declaration
                      | An_Object_Renaming_Declaration
+                     | An_Element_Iterator_Specification
                      =>
                      null;
 
