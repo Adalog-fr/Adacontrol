@@ -1035,46 +1035,48 @@ package body Rules.Expressions is
                end;
             end if;
 
-            if Rule_Used (E_Upward_Conversion) then
+            if Rule_Used (E_Upward_Conversion) or Rule_Used (E_Downward_Conversion) then
                declare
-                  Source_Descr : constant Derivation_Descriptor := Corresponding_Derivation_Description
-                                                                    (A4G_Bugs.Corresponding_Expression_Type
-                                                                     (Converted_Or_Qualified_Expression
-                                                                      (Expression)));
-                  Target_Descr : constant Derivation_Descriptor := Corresponding_Derivation_Description
-                                                                    (A4G_Bugs.Corresponding_Expression_Type
-                                                                     (Expression));
-               begin
-                  if         not Is_Nil (Source_Descr.Ultimate_Type)
-                    and then not Is_Nil (Target_Descr.Ultimate_Type)
-                    and then Is_Equal (Source_Descr.Ultimate_Type, Target_Descr.Ultimate_Type)
-                    and then Source_Descr.Derivation_Depth > Target_Descr.Derivation_Depth
-                  then
-                     Do_Category_Report (E_Upward_Conversion,
-                                           (Converted_Or_Qualified_Expression (Expression), Expression),
-                                           Get_Location (Expression));
-                  end if;
-               end;
-            end if;
+                  -- In the following declarations, we obtain the declaration of the type of the expression by
+                  -- taking the enclosing element of the type definition rather than
+                  -- by calling Corresponding_Expression_Type because the latter would return Nil_Element in the case
+                  -- of a class-wide type. Note that we use our own Corresponding_Expression_Type_Definition,
+                  -- this is not guaranteed to work with the ASIS one.
 
-            if Rule_Used (E_Downward_Conversion) then
-               declare
-                  Source_Descr : constant Derivation_Descriptor := Corresponding_Derivation_Description
-                                                                    (A4G_Bugs.Corresponding_Expression_Type
-                                                                     (Converted_Or_Qualified_Expression
-                                                                      (Expression)));
-                  Target_Descr : constant Derivation_Descriptor := Corresponding_Derivation_Description
-                                                                    (A4G_Bugs.Corresponding_Expression_Type
-                                                                     (Expression));
+                  Source_Expr     : constant Asis.Expression := Converted_Or_Qualified_Expression   (Expression);
+                  Source_Type_Def : constant Asis.Definition := Thick_Queries.Corresponding_Expression_Type_Definition
+                                                                 (Source_Expr);
+                  Target_Expr     : constant Asis.Expression := Converted_Or_Qualified_Subtype_Mark (Expression);
+                  Source_Descr    : Derivation_Descriptor;
+                  Target_Descr    : Derivation_Descriptor;
                begin
-                  if         not Is_Nil (Source_Descr.Ultimate_Type)
-                    and then not Is_Nil (Target_Descr.Ultimate_Type)
-                    and then Is_Equal (Source_Descr.Ultimate_Type, Target_Descr.Ultimate_Type)
-                    and then Source_Descr.Derivation_Depth < Target_Descr.Derivation_Depth
-                  then
-                     Do_Category_Report (E_Downward_Conversion,
-                                           (Converted_Or_Qualified_Expression (Expression), Expression),
-                                           Get_Location (Expression));
+                  -- we must protect against predefined "*" and "/" on fixed points, since the result has no
+                  -- well defined type.
+                  -- This should be the only case where Source_Type_Def is Nil.
+                  if not Is_Nil (Source_Type_Def) then
+                     Source_Descr := Corresponding_Derivation_Description (Enclosing_Element (Source_Type_Def));
+                     Target_Descr := Corresponding_Derivation_Description
+                                      (Enclosing_Element
+                                       (Thick_Queries.Corresponding_Expression_Type_Definition (Target_Expr)));
+                     if         not Is_Nil (Source_Descr.Ultimate_Type)
+                       and then not Is_Nil (Target_Descr.Ultimate_Type)
+                       and then Is_Equal (Source_Descr.Ultimate_Type, Target_Descr.Ultimate_Type)
+                     then
+                        if Rule_Used (E_Upward_Conversion)
+                          and then Source_Descr.Derivation_Depth > Target_Descr.Derivation_Depth
+                        then
+                           Do_Category_Report (E_Upward_Conversion,
+                                               (Converted_Or_Qualified_Expression (Expression), Expression),
+                                               Get_Location (Expression));
+                        end if;
+                        if Rule_Used (E_Downward_Conversion)
+                          and then Source_Descr.Derivation_Depth < Target_Descr.Derivation_Depth
+                        then
+                           Do_Category_Report (E_Downward_Conversion,
+                                               (Converted_Or_Qualified_Expression (Expression), Expression),
+                                               Get_Location (Expression));
+                        end if;
+                     end if;
                   end if;
                end;
             end if;
