@@ -23,7 +23,16 @@
 #
 # Initialization
 #
-for E in "../src/adactl_fix.exe" "../src/adactl_fix" "../adactl_fix.exe" "../adactl_fix" $(which adactl_fix); do
+case $(uname) in
+    *win*|*Win*|*WIN*)  # Windows, Cygwin...
+	EXT=".exe"
+	;;
+    *)                  # Assume *nix
+	EXT=""
+	;;
+esac
+
+for E in "../src/adactl_fix$EXT" "../adactl_fix$EXT" $(which adactl_fix); do
    if [ -e $E ] ; then
        EXECUTABLE=$E
        break
