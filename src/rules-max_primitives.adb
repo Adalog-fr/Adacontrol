@@ -55,6 +55,8 @@ with
 
 use Utilities;
 
+pragma Elaborate (Framework.Language);
+
 package body Rules.Max_Primitives is
    use Ada.Strings.Wide_Unbounded, Asis, Framework, Framework.Language, Thick_Queries;
 
