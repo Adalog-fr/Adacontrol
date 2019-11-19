@@ -29,10 +29,10 @@ with
   Asis;
 
 -- Adactl
-with
-  Framework;
 private with
-  Framework.Control_Manager;
+   Framework,
+   Framework.Control_Manager;
+
 package Rules.Style is
    Rule_Id : constant Wide_String := "STYLE";
 

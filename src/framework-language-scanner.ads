@@ -26,11 +26,11 @@
 
 --  Ada
 with
-  Ada.Strings.Wide_Unbounded;
+   Ada.Strings.Wide_Unbounded;
 
 -- ASIS
-with
-  Asis.Text;
+private with
+   Asis.Text;
 
 -- Adalog
 with

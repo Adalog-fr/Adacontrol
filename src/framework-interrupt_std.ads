@@ -22,7 +22,6 @@
 --  invalidate any  other reasons why the executable  file might be --
 --  covered by the GNU Public License.                              --
 ----------------------------------------------------------------------
-pragma Ada_05;
 
 package Framework.Interrupt_Std is
    Interrupted : exception;

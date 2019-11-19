@@ -99,7 +99,7 @@ package body Rules.Unnecessary_Use_Clause is
          Position       : Asis.List_Index;                    -- Index of Elem inside the use clause
          Name           : Wide_String (1 .. Name_Length);     -- Full name image of ultimate identifier
          Spec_Name      : Wide_String (1 .. Spec_Length);     -- Full_Name_Image of package where the type is defined
-         -- "" if not defined in a package spec, or use package
+                                                              --    "" if not defined in a package spec, or use package
          Op_Type_List   : Set := Empty_Set;                   -- List of all types used in the package
          Prim_Type_List : Set := Empty_Set;                   -- List of all types used in the package
          User           : User_Kind;                          -- How the package/type is used

@@ -610,8 +610,8 @@ package body Rules.Simplifiable_Expressions is
    -------------------
 
    procedure Process_Range (Definition : in Asis.Definition) is
-      use Asis, Asis.Declarations, Asis.Definitions,
-        Asis.Elements, Asis.Expressions, Thick_Queries, Utilities;
+      use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
+      use Thick_Queries, Utilities;
 
       procedure Do_Reports (Message : Wide_String) is
          use Framework.Locations, Framework.Reports;

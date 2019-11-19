@@ -12,7 +12,7 @@ PATCHFILE=testpatch.diff
 # Utilities according to your OS
 case $(uname) in
     *win*|*Win*|*WIN*)  # Windows, Cygwin...
-	MERGER='c:/Program Files (x86)/Meld/Meld.exe'
+	MERGER='c:/Program Files/KDiff3/kdiff3.exe'
 	EDITOR=emacs.bat
 	;;
     *)                  # Assume *nix
