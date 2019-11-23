@@ -1,3 +1,8 @@
+Changes to existing rules:
+--------------------------
+statements:
+   Add subrule multi_for_of_loop
+
 ==============
 == V1.21r6b ==
 ==============

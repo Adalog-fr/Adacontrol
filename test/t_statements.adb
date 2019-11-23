@@ -264,14 +264,23 @@ L3: for I in Integer range 1 .. 10 loop  -- For_Loop, For_In_Loop
    -- Check for .. of loops
    declare                               -- Block, Unnamed_Block, Declare_Block, Effective_Declare_Block
       S : String (1 .. 10);
+      type Dim3 is array (1 .. 3, 1 .. 4, 1 .. 5) of Integer;
+      Mult1 : Dim3;
+      Mult2 : array (1 .. 2, 1 .. 2) of Integer;
    begin
       for C of S loop                          -- For_Loop, For_Of_Loop, Unnamed_For_Loop, Untyped_For, Untyped_For_Of, Null_Loop_Body
          null;                                 -- Null
       end loop;
 
-      L6 : for C : Character of S (2..8) loop  -- For_Loop, For_Of_Loop, Null_Loop_Body
-         null;                                 -- Null
+      L6 : for C : Character of S (2 .. 8) loop  -- For_Loop, For_Of_Loop, Null_Loop_Body
+         null;                                   -- Null
       end loop L6;
+
+      L7: for E1 : Integer of Mult1 loop         -- For_Loop, For_Of_Loop
+         L8: for E2 : Integer of Mult2 loop      -- For_Loop, For_Of_Loop, Null_Loop_Body
+            null;                                -- Null
+         end loop L8;
+      end loop L7;
    end;
 
    -- Check for .. iterator loops

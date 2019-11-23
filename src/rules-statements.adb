@@ -27,6 +27,7 @@
 -- ASIS
 with
   Asis.Compilation_Units,
+  Asis.Definitions,
   Asis.Declarations,
   Asis.Elements,
   Asis.Expressions,
@@ -78,7 +79,7 @@ package body Rules.Statements is
 
                      Stmt_Labelled,                Stmt_Loop_Return,
 
-                     Stmt_Multiple_Exits,
+                     Stmt_Multi_For_Of_Loop,       Stmt_Multiple_Exits,
 
                      Stmt_Named_Exit,              Stmt_No_Else,                Stmt_Null,
                      Stmt_Null_Case_Path,          Stmt_Null_If_Path,           Stmt_Null_Loop_Body,
@@ -520,6 +521,27 @@ package body Rules.Statements is
                      if Is_Nil (Declarations.Subtype_Indication (Loop_Spec)) then
                         Do_Report (Stmt_Untyped_For);
                         Do_Report (Stmt_Untyped_For_Of);
+                     end if;
+                     if Rule_Used (Stmt_Multi_For_Of_Loop) then
+                        declare
+                           use Asis.Definitions;
+                           Obj_Def : constant Asis.Definition := Thick_Queries.Corresponding_Expression_Type_Definition
+                                                                  (Iteration_Scheme_Name (Loop_Spec));
+                        begin
+                           case Type_Kind (Obj_Def) is
+                              when A_Constrained_Array_Definition =>
+                                 if Discrete_Subtype_Definitions (Obj_Def)'Length /= 1 then
+                                    Do_Report (Stmt_Multi_For_Of_Loop);
+                                 end if;
+                              when An_Unconstrained_Array_Definition =>
+                                 if Index_Subtype_Definitions (Obj_Def)'Length /= 1 then
+                                    Do_Report (Stmt_Multi_For_Of_Loop);
+                                 end if;
+                              when others =>
+                                 -- An user defined iterator => ignore
+                                 null;
+                           end case;
+                        end;
                      end if;
                   when  A_Generalized_Iterator_Specification =>
                      Do_Report (Stmt_For_Iterator_Loop);
