@@ -29,8 +29,7 @@ with
   Asis.Definitions,
   Asis.Elements,
   Asis.Expressions,
-  Asis.Iterator,
-  Asis.Set_Get;
+  Asis.Iterator;
 
 -- Asis for Gnat
 with
@@ -501,7 +500,6 @@ package body Rules.Derivations is
       use Asis;
       use Asis.Declarations;
       use Asis.Elements;
-      use Asis.Set_Get;
       use Thick_Queries;
       use Framework.Reports;
 
@@ -619,7 +617,7 @@ package body Rules.Derivations is
       Depth := Compute_Depth (Element);
 
       if Ctl_Kind_Depth_Used (Check) and Depth > Contexts (Check).Maximum then
-         if Is_From_Instance (Element) then
+         if Is_Part_Of_Instance (Element) then
             Report (Rule_Id,
                     Contexts (Check),
                     Get_Location (Ultimate_Enclosing_Instantiation (Element)),
@@ -635,7 +633,7 @@ package body Rules.Derivations is
          end if;
 
       elsif Ctl_Kind_Depth_Used (Search) and Depth > Contexts (Search).Maximum then
-         if Is_From_Instance (Element) then
+         if Is_Part_Of_Instance (Element) then
             Report (Rule_Id,
                     Contexts (Search),
                     Get_Location (Ultimate_Enclosing_Instantiation (Element)),
@@ -652,7 +650,7 @@ package body Rules.Derivations is
       end if;
 
       if Ctl_Kind_Depth_Used (Count) and Depth > Contexts (Count).Maximum then
-         if Is_From_Instance (Element) then
+         if Is_Part_Of_Instance (Element) then
             Report (Rule_Id, Contexts (Count), Get_Location (Ultimate_Enclosing_Instantiation (Element)), "");
          else
             Report (Rule_Id, Contexts (Count), Get_Location (Element), "");
