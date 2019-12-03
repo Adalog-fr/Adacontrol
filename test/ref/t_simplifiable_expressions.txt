@@ -270,6 +270,9 @@ t_simplifiable_expressions-test_membership.adb:43:10: Replace:43:60
 t_simplifiable_expressions-test_membership.adb:54:15: Error: SIMPLIFIABLE_EXPRESSIONS: Multiple tests on S (1 .. 4) can be replaced by "in" operator
 t_simplifiable_expressions-test_membership.adb:54:15: Replace:54:64
 !S (1 .. 4) in "ABCD" | "abcd"
+t_simplifiable_expressions-test_if.adb:6:10: Found: SIMPLIFIABLE_EXPRESSIONS: Negative condition in "if-else" expression
+t_simplifiable_expressions-test_if.adb:7:10: Found: SIMPLIFIABLE_EXPRESSIONS: Negative condition in "if-else" expression
+t_simplifiable_expressions-test_if.adb:7:13: Found: SIMPLIFIABLE_EXPRESSIONS: "not" on comparison
 
 Counts summary:
-SIMPLIFIABLE_EXPRESSIONS: 118
+SIMPLIFIABLE_EXPRESSIONS: 121

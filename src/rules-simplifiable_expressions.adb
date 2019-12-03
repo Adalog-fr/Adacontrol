@@ -34,6 +34,7 @@ with
   Asis.Definitions,
   Asis.Elements,
   Asis.Expressions,
+  Asis.Statements,
   Asis.Text;
 
 -- Adalog
@@ -84,7 +85,7 @@ package body Rules.Simplifiable_Expressions is
 
 
    -- All "K_Logical_*" must stay together, and K_Logical must stay last
-   type Keywords is (K_Conversion,    K_Membership,  K_Parentheses,  K_Range,
+   type Keywords is (K_Conversion,    K_If_Not,      K_Membership,   K_Parentheses, K_Range,
                      K_Logical_False, K_Logical_Not, K_Logical_True, K_Logical);
    subtype Subrules is Keywords range Keywords'First .. Keywords'Pred (K_Logical);
 
@@ -112,6 +113,7 @@ package body Rules.Simplifiable_Expressions is
       User_Message  ("Rule: " & Rule_Id);
       User_Message  ("Control occurrence of various forms of expressions that could be made simpler:");
       User_Message  ("  - Conversions of universal values, or to the expression's subtype");
+      User_Message  ("  - Negative test in ""if expression""");
       User_Message  ("  - Use of several comparison that can be replaced by membership tests");
       User_Message  ("  - Unnecessary parentheses");
       User_Message  ("  - T'FIRST .. T'LAST that can be replaced by T'RANGE or T.");
@@ -153,6 +155,7 @@ package body Rules.Simplifiable_Expressions is
          end loop;
       else
          Add_Check (K_Conversion);
+         Add_Check (K_If_Not);
          Add_Check (K_Membership);
          Add_Check (K_Parentheses);
          Add_Check (K_Range);
@@ -1301,6 +1304,64 @@ package body Rules.Simplifiable_Expressions is
       end if;
 
    end Process_Conversion;
+
+   ---------------------------
+   -- Process_If_Expression --
+   ---------------------------
+
+   procedure Process_If_Expression (Expr : in Asis.Expression) is
+   begin
+      if not Rule_Used then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      declare
+         use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
+         use Framework.Locations, Framework.Reports, Thick_Queries;
+
+         Paths   : constant Asis.Path_List := Expression_Paths (Expr);
+         If_Cond : Asis.Expression;
+         Op      : Asis.Operator_Kinds;
+      begin
+         if Paths'Length /= 2 then
+            return;
+         end if;
+
+         If_Cond := Condition_Expression (Paths (Paths'First));
+         while Expression_Kind (If_Cond) = A_Parenthesized_Expression loop
+            If_Cond := Expression_Parenthesized (If_Cond);
+         end loop;
+         if Expression_Kind (If_Cond) = A_Function_Call then
+            Op := Operator_Kind (Simple_Name (Prefix (If_Cond)));
+            if Op in A_Not_Operator | A_Not_Equal_Operator then
+               if Ctl_Contexts (Check) (K_If_Not).Used then
+                  Report (Rule_Id,
+                          To_Wide_String (Ctl_Contexts (Check) (K_If_Not).Label),
+                          Check,
+                          Get_Location (Expr),
+                          "Negative condition in ""if-else"" expression");
+               elsif Ctl_Contexts (Search) (K_If_Not).Used  then
+                  Report (Rule_Id,
+                          To_Wide_String (Ctl_Contexts (Search) (K_If_Not).Label),
+                          Search,
+                          Get_Location (Expr),
+                          "Negative condition in ""if-else"" expression");
+               end if;
+
+               -- Always report Count
+               if Ctl_Contexts (Count) (K_If_Not).Used then
+                  Report (Rule_Id,
+                          To_Wide_String (Ctl_Contexts (Count) (K_If_Not).Label),
+                          Count,
+                          Get_Location (Expr),
+                          "");
+               end if;
+            end if;
+         end if;
+
+      end;
+   end Process_If_Expression;
 
 begin  -- Rules.Simplifiable_expressions
    Framework.Rules_Manager.Register (Rule_Id,

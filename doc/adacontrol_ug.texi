@@ -8611,8 +8611,9 @@ This rule controls expressions that can be simplified in various ways.
 @subsection Syntax
 @example
 <control_kind> simplifiable_expressions [(<subrule> @{, <subrule>@})];
-<subrule> ::= conversion   | logical    | logical_false | logical_not |
-              logical_true | membership | parentheses   | range
+<subrule> ::= conversion  | if_not       |logical     | logical_false |
+              logical_not | logical_true | membership | parentheses   |
+              range
 @end example
 
 @subsection Action
@@ -8623,6 +8624,13 @@ The parameters are subrule keywords:
 universal type (a litteral or named number), or where the target
 subtype is either the same as the expression's subtype, or the first
 named subtype of the expression.
+@item
+``if_not'': controls @code{@b{if}} expressions with an
+@code{@b{else}} path and no @code{@b{elsif}} path, and where the
+condition is given in negative form (i.e. it is a @code{@b{not}}, or a
+@code{"/="} comparison). Such expressions could be made positive (and
+thus less error-prone) by interverting the @code{@b{if}} and
+@code{@b{else}} paths.
 @item
 ``logical_true'': controls redundant boolean expressions of the form
 @code{<expr> = True} (or @code{/=}), and ``logical_false'' does the

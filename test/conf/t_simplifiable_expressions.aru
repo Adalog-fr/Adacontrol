@@ -5,3 +5,4 @@ False:         search simplifiable_expressions (Logical_False);
                search simplifiable_expressions (conversion);
                search simplifiable_expressions (Logical_not);
                check  simplifiable_expressions (Membership);
+               search simplifiable_expressions (if_not);

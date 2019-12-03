@@ -1,6 +1,9 @@
 Changes to existing rules:
 --------------------------
-statements:
+Simplifiable_Statements:
+   Add subrule if_not
+   
+Statements:
    Add subrule multi_for_of_loop
 
 ==============
@@ -13,7 +16,7 @@ Bug fixes
 
 Changes to existing rules:
 --------------------------
-unnecessary_use_clause:
+Unnecessary_Use_Clause:
    Add rule variable Max_Replacements to select the maximum of use type and
    use all type clauses that can replace a use clause.
 

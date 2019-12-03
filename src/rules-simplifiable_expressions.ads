@@ -36,5 +36,6 @@ package Rules.Simplifiable_Expressions is
    procedure Process_Call          (Call       : in Asis.Expression);
    procedure Process_Parenthesized (Expr       : in Asis.Expression);
    procedure Process_Conversion    (Expr       : in Asis.Expression);
+   procedure Process_If_Expression (Expr       : in Asis.Expression);
 
 end Rules.Simplifiable_Expressions;

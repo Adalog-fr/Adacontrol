@@ -803,6 +803,9 @@ package body Framework.Plugs is
                when An_Indexed_Component =>
                   Rules.Non_Static. Process_Index_Expression (Element);
 
+               when An_If_Expression =>
+                  Rules.Simplifiable_Expressions.Process_If_Expression (Element);
+
                when others =>
                   null;
             end case;
