@@ -872,8 +872,10 @@ package body Rules.Reduceable_Scope is
             return;
          end if;
 
-         if Declaration_Kind (Enclosing_Element (Name)) = A_Parameter_Specification then
-            -- This name is part of a formal parameter => use clause must be outside
+         if Declaration_Kind (Enclosing_Element (Name)) in
+           A_Parameter_Specification | A_Function_Declaration | A_Function_Body_Declaration
+         then
+            -- This name is part of a formal parameter, or the return type of a function => use clause must be outside
             -- Do not consider the innermost scope (i.e. the declaration of the SP it is a parameter of)
             Good_Depth := Current_Depth - 1;
          else
