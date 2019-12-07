@@ -28,13 +28,10 @@
 with
   Asis;
 
--- Adactl
-with
-  Framework;
 package Rules.Max_Line_Length is
 
    Rule_Id : constant Wide_String := "MAX_LINE_LENGTH";
 
-   procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location);
+   procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Locations.Location);
 
 end Rules.Max_Line_Length;

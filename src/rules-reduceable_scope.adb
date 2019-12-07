@@ -462,7 +462,7 @@ package body Rules.Reduceable_Scope is
 
    procedure Report_One_Name (Entity : Asis.Defining_Name; Info : in out Package_Info) is
       use Asis.Declarations;
-      use Framework.Reports;
+      use Framework.Locations, Framework.Reports;
    begin
       case Info.Usage is
          when Not_Used =>
@@ -858,7 +858,7 @@ package body Rules.Reduceable_Scope is
       end Check_Movable_Declaration;
 
       procedure Check_Movable_Use_Clause is
-         use Framework.Queries, Reports, Thick_Queries;
+         use Framework.Queries, Framework.Locations, Framework.Reports, Thick_Queries;
 
          Enclosing_Name : constant Unbounded_Wide_String := To_Unbounded_Wide_String (Enclosing_Package_Name
                                                                                       (Rule_Id, Name));
@@ -1024,7 +1024,7 @@ package body Rules.Reduceable_Scope is
    ------------------------
 
    procedure Process_Scope_Exit (Scope : in Asis.Element) is
-      use Framework.Reports;
+      use Framework.Locations, Framework.Reports;
       use Asis, Asis.Declarations, Asis.Elements;
 
       D_Info : Declaration_Info;

@@ -188,7 +188,7 @@ package body Rules.Type_Usage is
    procedure Do_Report (Iter         : in out Control_Manager.Context_Iterator;
                         Type_Aspects : in Language.Shared_Keys.Aspects_Set;
                         Message      : in Wide_String;
-                        Loc          : in Location)
+                        Loc          : in Locations.Location)
    is
       use Ada.Strings.Wide_Unbounded;
       use Framework.Control_Manager, Framework.Reports;
@@ -252,7 +252,7 @@ package body Rules.Type_Usage is
    ------------------------------
 
    procedure Process_Array_Definition (Definition : Asis.Definition) is
-      use Framework.Control_Manager, Thick_Queries;
+      use Framework.Control_Manager, Framework.Locations, Thick_Queries;
       use Asis.Declarations, Asis.Elements;
 
       function Get_Index_Location (Inx : Asis.List_Index) return Location is
@@ -347,7 +347,7 @@ package body Rules.Type_Usage is
    -----------------------
 
    procedure Process_Attribute (Attribute : Asis.Expression) is
-      use Framework.Control_Manager, Thick_Queries, Utilities;
+      use Framework.Control_Manager, Framework.Locations, Thick_Queries, Utilities;
       use Asis, Asis.Elements, Asis.Expressions;
    begin
       if not Rule_Used (Sr_Attribute) then

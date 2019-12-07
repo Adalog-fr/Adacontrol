@@ -183,7 +183,7 @@ package body Rules.Generic_Aliasing is
 
    procedure Process_Instantiation (Instantiation : in Asis.Declaration) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use Framework.Reports, Utilities;
+      use Framework.Locations, Framework.Reports, Utilities;
 
       function Name_Proximity (Left, Right : Asis.Expression) return Proximity is
          -- Left and Right should refer to a (formal) type or object

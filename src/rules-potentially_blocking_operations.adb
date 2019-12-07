@@ -320,7 +320,7 @@ package body Rules.Potentially_Blocking_Operations is
                             State   : in out Info)
    is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use Ada.Strings.Wide_Unbounded, Thick_Queries, Framework.Reports, Framework.Element_Queues;
+      use Ada.Strings.Wide_Unbounded, Thick_Queries, Framework.Element_Queues, Framework.Locations, Framework.Reports;
 
       Is_Blocking    : Boolean;
       Referenced_PTO : Queue;

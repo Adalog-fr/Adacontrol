@@ -427,7 +427,7 @@ package body Rules.No_Operator_Usage is
 
       procedure Do_Report (Param : Control_Parameters) is
          use Ada.Strings.Wide_Unbounded;
-         use Reports, Thick_Queries, Utilities;
+         use Framework.Locations, Framework.Reports, Thick_Queries, Utilities;
          Extra : Unbounded_Wide_String := Null_Unbounded_Wide_String;
       begin
          if Param.Category /= Cat_Any and then Param.Category /= Info.Category then

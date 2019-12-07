@@ -103,7 +103,7 @@ package body Rules.Abnormal_Function_Return is
 
       procedure Check (Stmt : Asis.Statement) is
          use Asis, Asis.Elements;
-         use Framework.Reports, Utilities;
+         use Framework.Locations, Framework.Reports, Utilities;
       begin
          case Statement_Kind (Stmt) is
             when A_Return_Statement

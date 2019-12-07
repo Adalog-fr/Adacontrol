@@ -172,7 +172,7 @@ package body Rules.Max_Nesting is
    procedure Do_Report (Sr : Subrules; Depth : Scope_Range; Scope : Asis.Element) is
       use Ada.Strings.Wide_Unbounded;
       use Asis, Asis.Declarations, Asis.Elements;
-      use Utilities, Subrules_Flag_Utilities, Framework.Reports;
+      use Utilities, Subrules_Flag_Utilities, Framework.Locations, Framework.Reports;
       Scope_Body : Asis.Declaration;
    begin
       -- Don't report on body if there is an explicit spec

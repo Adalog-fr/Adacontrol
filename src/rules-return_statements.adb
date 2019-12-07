@@ -196,7 +196,7 @@ package body Rules.Return_Statements is
 
    procedure Do_Report (Subrule  : Subrules;
                         Ctl_Kind : Control_Kinds;
-                        Loc      : Location;
+                        Loc      : Locations.Location;
                         Entity   : Callables;
                         Value    : Thick_Queries.Biggest_Int)
    is
@@ -244,14 +244,16 @@ package body Rules.Return_Statements is
    ------------------------------
 
    procedure Process_Return_Statement (Stmt : in Asis.Statement) is
-      use Thick_Queries, Utilities;
       use Asis, Asis.Elements;
+      use Thick_Queries, Utilities;
 
       Returned_From : Asis.Declaration;
       Handler       : Asis.Exception_Handler := Nil_Element;
       This_Callable : Callables;
 
       procedure Check_Depth is
+         use Framework.Locations;
+
          Depth : Thick_Queries.Biggest_Natural := 0;
          Elem  : Asis.Element;
       begin
@@ -284,7 +286,7 @@ package body Rules.Return_Statements is
       end Check_Depth;
 
       procedure Check_Count (Subrule : Subrules; Key : Asis.Element) is
-         use Scope_Manager;
+         use Framework.Locations, Scope_Manager;
          Data : Sequence_Counter := (Key, 0);
          Loc : constant Location := Get_Location (Stmt);
       begin
@@ -401,7 +403,7 @@ package body Rules.Return_Statements is
 
    procedure Finalize_Counter (Elem : in Asis.Element) is
       use Asis, Asis.Elements;
-      use  Thick_Queries, Utilities;
+      use Framework.Locations, Thick_Queries, Utilities;
 
 
       Callable_Elem : Asis.Element;

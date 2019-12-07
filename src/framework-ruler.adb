@@ -51,6 +51,7 @@ with
 
 -- Adactl
 with
+  Framework.Locations,
   Framework.Plugs,
   Framework.Queries,
   Framework.Reports,
@@ -64,6 +65,7 @@ with
 pragma Elaborate_All (Asis.Iterator);
 
 package body Framework.Ruler is
+   use Framework.Locations;
 
    -- This package is the main engine that drives the traversal of the unit.
    -- There are a number of delicate issues that are dealt with here, in order

@@ -286,7 +286,7 @@ package body Rules.Improper_Initialization is
       is
          use Asis.Elements, Asis.Expressions, Asis.Statements;
          use Ada.Strings.Wide_Unbounded;
-         use Object_Info_Map, Framework.Queries, Framework.Reports, Thick_Queries, Utilities;
+         use Object_Info_Map, Framework.Queries, Framework.Locations, Framework.Reports, Thick_Queries, Utilities;
 
          Good_Name : Asis.Expression;
       begin
@@ -448,14 +448,14 @@ package body Rules.Improper_Initialization is
    -- Do_Report --
    ---------------
 
-   procedure Do_Report (Report_Loc : Location; Out_Params_Only : Boolean := False) is
+   procedure Do_Report (Report_Loc : Locations.Location; Out_Params_Only : Boolean := False) is
       use Ada.Strings.Wide_Unbounded;
       use Object_Info_Map;
 
       procedure Report_One (Key : Unbounded_Wide_String; Info : in out Object_Information) is
          pragma Unreferenced (Key);
          use Asis.Declarations;
-         use Framework.Reports, Utilities;
+         use Framework.Locations, Framework.Reports, Utilities;
       begin
          case Info.Reference is
             when None =>
@@ -533,11 +533,11 @@ package body Rules.Improper_Initialization is
 
    procedure Process_Statements (Object_Map     : in out Object_Info_Map.Map;
                                  Statement_List : in     Asis.Statement_List;
-                                 Final_Location :    out Location;
+                                 Final_Location :    out Locations.Location;
                                  Exit_Cause     :    out Exit_Causes)
    is
       use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
-      use Framework.Reports, Thick_Queries, Utilities;
+      use Framework.Locations, Framework.Reports, Thick_Queries, Utilities;
       use Object_Info_Map;
 
       procedure Process_Target (Name : Asis.Expression) is
@@ -916,7 +916,7 @@ package body Rules.Improper_Initialization is
 
    procedure Process_Structure (Elem : in Asis.Element) is
       use Object_Info_Map;
-      use Framework.Queries;
+      use Framework.Locations, Framework.Queries;
 
       Final_Loc  : Location;
       Exit_Cause : Exit_Causes;

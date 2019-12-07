@@ -298,8 +298,8 @@ package body Rules.Comments is
    Separators : constant Ada.Strings.Wide_Maps.Wide_Character_Set
      := Ada.Strings.Wide_Maps.To_Set (Ada.Characters.Handling.To_Wide_String (' ' & Ada.Characters.Latin_1.HT));
 
-   procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location) is
-      use Framework.Reports, String_Matching, Thick_Queries, Utilities;
+   procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Locations.Location) is
+      use Framework.Locations, Framework.Reports, String_Matching, Thick_Queries, Utilities;
       use Ada.Strings.Wide_Maps, Ada.Strings.Wide_Unbounded;
       use Asis.Text;   -- Gela-ASIS compatibility
 
@@ -448,7 +448,7 @@ package body Rules.Comments is
    procedure Process_Program_Unit (Unit : Asis.Declaration) is
       use Ada.Strings, Ada.Strings.Wide_Fixed;
       use Asis, Asis.Declarations, Asis.Elements, Asis.Text;
-      use Reports, Thick_Queries, Utilities;
+      use Framework.Locations, Framework.Reports, Thick_Queries, Utilities;
 
       function Is_Comment_Optional (Un : Units) return Boolean is
       begin

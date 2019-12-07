@@ -213,7 +213,7 @@ package body Rules.Style is
 
    type Renaming_Data is
       record
-         Ren_Location : Location;
+         Ren_Location : Locations.Location;
          Renaming_Def : Asis.Defining_Name;
          Renamed_Def  : Asis.Defining_Name;
       end record;
@@ -764,7 +764,7 @@ package body Rules.Style is
    -- Ref_Element is an element that allows retrieving the original defining name. If it is Nil_Element,
    -- Source_Element is used instead. It differs from Source_Element only for end names.
       use Asis, Asis.Declarations, Asis.Elements;
-      use Framework.Reports, Thick_Queries;
+      use Framework.Locations, Framework.Reports, Thick_Queries;
 
       Source_Image   : constant Wide_String := Extended_Name_Image (Source_Element);
       Original_Image : Wide_String (Source_Image'Range) := (others => ' ');
@@ -855,7 +855,7 @@ package body Rules.Style is
 
    procedure Process_Construct (Construct : in Asis.Declaration) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Text;
-      use Framework.Reports;
+      use Framework.Locations, Framework.Reports;
       Length : Line_Number;
    begin
       if not Rule_Used (St_No_Closing_Name) then
@@ -922,7 +922,7 @@ package body Rules.Style is
 
       procedure Check_Renamed is
          use Asis.Declarations;
-         use Scope_Manager, Framework.Reports;
+         use Scope_Manager, Framework.Locations, Framework.Reports;
 
          Def : constant Asis.Definition := Corresponding_Name_Definition (Identifier);
          Ren : Renaming_Data;
@@ -1100,7 +1100,7 @@ package body Rules.Style is
 
    procedure Process_Compound_Statement (Statement : in Asis.Statement) is
       use Asis, Asis.Elements, Asis.Statements, Asis.Text;
-      use Framework.Reports, Thick_Queries;
+      use Framework.Locations, Framework.Reports, Thick_Queries;
       Kind      : Asis.Statement_Kinds;
    begin
       if not Rule_Used (St_Compound_Statement) then
@@ -1140,7 +1140,7 @@ package body Rules.Style is
       -------------------
 
       procedure Check_Formals (Subrule : St_Orders; Formals : Asis.Element_List) is
-         use Framework.Reports, Parameter_Ordering_Machine;
+         use Framework.Locations, Framework.Reports, Parameter_Ordering_Machine;
          use all type Framework.Reports.Fixes.Insert_Place;
 
          Enclosing : Asis.Declaration;
@@ -1297,7 +1297,7 @@ package body Rules.Style is
 
    procedure Process_If_Statement (Statement   : in Asis.Statement) is
       use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
-      use Framework.Reports, Thick_Queries;
+      use Framework.Locations, Framework.Reports, Thick_Queries;
    begin
       if not Rule_Used (St_Negative_Condition) then
          return;
@@ -1414,7 +1414,7 @@ package body Rules.Style is
 
 
       procedure Process_Number_Separator is
-         use Framework.Reports;
+         use Framework.Locations, Framework.Reports;
 
          Name : constant Wide_String := Value_Image (Expression);
 
@@ -1475,7 +1475,7 @@ package body Rules.Style is
       end Process_Number_Separator;
 
       procedure Process_Exponent is
-         use Framework.Reports;
+         use Framework.Locations, Framework.Reports;
 
          Name : constant Wide_String := Value_Image (Expression);
 
@@ -1506,7 +1506,7 @@ package body Rules.Style is
       end Process_Exponent;
 
       procedure Process_Number_Casing is
-         use Framework.Reports;
+         use Framework.Locations, Framework.Reports;
 
          Name : constant Wide_String := Value_Image (Expression);
 
@@ -1547,7 +1547,7 @@ package body Rules.Style is
       end Process_Number_Casing;
 
       procedure Process_Exposed_Literal is
-         use Framework.Reports, Literal_Flag_Utilities, Thick_Queries;
+         use Framework.Locations, Framework.Reports, Literal_Flag_Utilities, Thick_Queries;
          use Asis, Asis.Elements;
 
          function Normalize (S : Wide_String) return Wide_String is
@@ -1891,7 +1891,7 @@ package body Rules.Style is
 
    procedure Process_Renaming  (Ren : in Asis.Declaration) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use Framework.Reports;
+      use Framework.Locations, Framework.Reports;
 
       Target : Asis.Expression;
       Def    : Asis.Defining_Name;
@@ -1949,7 +1949,7 @@ package body Rules.Style is
 
    procedure Process_Element (Element : in Asis.Element) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Statements;
-      use Framework.Reports, Scope_Manager, Thick_Queries;
+      use Framework.Locations, Framework.Reports, Scope_Manager, Thick_Queries;
       use Multiple_Flag_Utilities;
 
       procedure Check_Special_Use_Clause (Use_Clause : Asis.Clause) is
@@ -2483,7 +2483,7 @@ package body Rules.Style is
    -- Process_Line --
    ------------------
 
-   procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location) is
+   procedure Process_Line (Line : in Asis.Program_Text; Loc : Locations.Location) is
    begin
       if not Rule_Used (St_Casing_Keyword) then
          return;

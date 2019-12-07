@@ -128,7 +128,7 @@ package body Rules.Pragmas is
 
       procedure Do_Report (Current_Context : Root_Context'Class; Message : Wide_String) is
          use Asis.Expressions;
-         use Framework.Reports, Thick_Queries;
+         use Framework.Locations, Framework.Reports, Thick_Queries;
       begin
          if Pragma_Context(Current_Context).Multiple_Only then
             declare

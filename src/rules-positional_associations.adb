@@ -332,7 +332,7 @@ package body Rules.Positional_Associations is
          end Positional_Count;
 
          procedure Check_Report (Subrule : Subrules; Kind : Control_Kinds; Reported : out Boolean) is
-            use Association_Flag_Utilities, Framework.Reports;
+            use Association_Flag_Utilities, Framework.Locations, Framework.Reports;
          begin
             Reported := False;
 

@@ -63,7 +63,7 @@ package body Rules.Units is
       record
          Checked : Boolean;
          Withed  : Boolean;
-         Loc     : Location;
+         Loc     : Locations.Location;
       end record;
    -- If Processed is True, Loc is the location of the unit
    -- otherwise, it is the location of the first encountered with that references the unit.
@@ -183,7 +183,7 @@ package body Rules.Units is
    type Usage_Kind is (Definition, Reference);
 
    procedure Update (Name : Asis.Expression; Usage : Usage_Kind) is
-      use Framework.Queries, Units_Map;
+      use Framework.Locations, Framework.Queries, Units_Map;
 
       Key  : constant Unbounded_Wide_String := To_Key (Name);
       Info : Unit_Info := Fetch (Units_Table,

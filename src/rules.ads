@@ -40,6 +40,7 @@ with
   Framework,
   Framework.Control_Manager,
   Framework.Language,
+  Framework.Locations,
   Framework.Rules_Manager,
   Framework.Reports;
 pragma Warnings (On);
@@ -47,6 +48,7 @@ pragma Warnings (On);
 
 package Rules is
    pragma Elaborate_Body (Rules);
+
 private
    -- Declarations to make writing rules easier
 

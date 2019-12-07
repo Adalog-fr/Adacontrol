@@ -206,7 +206,7 @@ package body Rules.Use_Clauses is
 
    procedure Process_Use_Clause (Clause : in Asis.Clause) is
       use Ada.Strings.Wide_Unbounded, Asis, Asis.Clauses, Asis.Elements;
-      use Framework.Reports, Scope_Manager, Thick_Queries, Utilities;
+      use Framework.Locations, Framework.Reports, Scope_Manager, Thick_Queries, Utilities;
       Loc : Subrules;
    begin
       if Rule_Used = (Subrules => (Control_Kinds => False)) then

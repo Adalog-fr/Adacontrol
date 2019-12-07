@@ -266,7 +266,10 @@ package body Rules.Insufficient_Parameters is
          pragma Warnings (Off);  -- Warning on compilers that do not support this extension
          when others =>
             -- Corresponds to GNAT extensions: A_Conditional_Expression
-            Reports.Uncheckable (Rule_Id, False_Negative, Get_Location (Expr), "Use of compiler specific extension");
+            Reports.Uncheckable (Rule_Id,
+                                 False_Negative,
+                                 Locations.Get_Location (Expr),
+                                 "Use of compiler specific extension");
             return (others => False);
          pragma Warnings (On);  -- Warning on compilers that do not support this extension
       end case;
@@ -280,7 +283,7 @@ package body Rules.Insufficient_Parameters is
    procedure Process_Call (Element : in Asis.Element) is
       use Ada.Strings.Wide_Unbounded;
       use Asis, Asis.Elements, Asis.Expressions;
-      use Framework.Reports, Thick_Queries, Utilities;
+      use Framework.Locations, Framework.Reports, Thick_Queries, Utilities;
    begin
       if Rule_Used = (Control_Kinds => False) then
          return;

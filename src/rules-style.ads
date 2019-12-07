@@ -49,7 +49,7 @@ package Rules.Style is
    procedure Process_Renaming           (Ren         : in Asis.Declaration);
    -- Process_Renaming is plugged as Post_Procedure, since the occurrence of an identifier
    -- is still allowed within the renaming itself.
-   procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location);
+   procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Locations.Location);
 
 private
    -- These declarations here to be visible from child

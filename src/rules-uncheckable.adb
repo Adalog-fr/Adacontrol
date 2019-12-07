@@ -121,6 +121,7 @@ package body Rules.Uncheckable is
    --------------------------
 
    procedure Process_Missing_Unit (Message : Wide_String) is
+      use Framework.Locations;
    begin
       if not Rule_Used (Missing_Unit) then
          return;

@@ -151,7 +151,7 @@ package body Rules.Case_Statement is
                            Elem_Cat     : Categories)
    is
       use Ada.Strings.Wide_Unbounded;
-      use Framework.Reports;
+      use Framework.Locations, Framework.Reports;
    begin
       if Rule_Used (Subrule_Name, Elem_Cat) (Check)
         and then Value < Bounds (Subrule_Name, Elem_Cat, Check).Min
@@ -220,7 +220,7 @@ package body Rules.Case_Statement is
 
    procedure Process_Case_Statement (Statement : in Asis.Statement) is
       use Asis.Elements, Asis.Statements;
-      use Framework.Reports;
+      use Framework.Locations, Framework.Reports;
 
       Non_Evaluable : exception;
       Case_Cat      : Categories;
@@ -404,7 +404,7 @@ package body Rules.Case_Statement is
 
    procedure Process_Path (Path : Asis.Path) is
       use Asis.Elements, Asis.Statements;
-      use Framework.Reports, Utilities;
+      use Framework.Locations, Framework.Reports, Utilities;
 
       Nb_Val   : Extended_Biggest_Natural;
       Case_Cat : constant Categories := Matching_Category (Case_Expression (Enclosing_Element (Path)),

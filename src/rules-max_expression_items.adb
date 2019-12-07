@@ -367,7 +367,7 @@ package body Rules.Max_Expression_Items is
    procedure Process_Expression (Expr : Asis.Expression)is
       use Ada.Strings.Wide_Unbounded;
       use Asis.Elements;
-      use Framework.Reports, Utilities;
+      use Framework.Locations, Framework.Reports, Utilities;
 
       Encl            : Asis.Element;
       Expr_Complexity : ASIS_Natural;

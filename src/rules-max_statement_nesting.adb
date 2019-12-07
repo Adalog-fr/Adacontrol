@@ -140,7 +140,7 @@ package body Rules.Max_Statement_Nesting is
 
       procedure Do_Report (Stmt : Subrules) is
          use Ada.Strings.Wide_Unbounded;
-         use Subrules_Flag_Utilities, Framework.Reports, Utilities;
+         use Subrules_Flag_Utilities, Framework.Locations, Framework.Reports, Utilities;
       begin
          if Rule_Used (Stmt)(Check) and then Counts (Stmt) > Ctl_Values (Stmt, Check) then
             Report (Rule_Id,

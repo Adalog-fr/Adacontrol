@@ -116,7 +116,7 @@ package body Rules.Max_Line_Length is
    -- Process_Line --
    ------------------
 
-   procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location) is
+   procedure Process_Line (Line : in Asis.Program_Text; Loc : Locations.Location) is
       use Framework.Reports, Utilities, Ada.Strings.Wide_Unbounded;
 
       use type Asis.ASIS_Integer;   --## rule line off Unnecessary_Use_Clause Reduceable_Scope ## Gela compatibility

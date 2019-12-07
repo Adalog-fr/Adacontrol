@@ -31,6 +31,10 @@ with
   Ada.Strings.Wide_Fixed,
   Ada.Wide_Text_IO;
 
+-- ASIS
+with
+   Asis.Text;
+
 -- Adalog
 with
   Binary_Map,

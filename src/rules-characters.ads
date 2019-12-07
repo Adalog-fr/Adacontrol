@@ -32,6 +32,6 @@ package Rules.Characters is
 
    Rule_Id : constant Wide_String := "CHARACTERS";
 
-   procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location);
+   procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Locations.Location);
 
 end Rules.Characters;

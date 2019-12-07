@@ -331,7 +331,7 @@ package body Rules.Unnecessary_Use_Clause is
       begin
          for I in Names'Range loop
             declare
-               use Scope_Manager, Framework.Reports;
+               use Scope_Manager, Framework.Locations, Framework.Reports;
                Info     : constant Used_Elem_Info := Build_Info (Names, I);
                Reported : Boolean := False;
             begin
@@ -656,7 +656,7 @@ package body Rules.Unnecessary_Use_Clause is
    ------------------------
 
    procedure Process_Scope_Exit (Scope : in Asis.Element) is
-      use Framework.Reports, Framework.Reports.Fixes, Scope_Manager, Thick_Queries;
+      use Framework.Locations, Framework.Reports, Framework.Reports.Fixes, Scope_Manager, Thick_Queries;
       use Asis, Asis.Elements, Asis.Declarations;
 
       Is_Package_Spec : Boolean := False;

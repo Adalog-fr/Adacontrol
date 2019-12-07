@@ -362,7 +362,7 @@ package body Rules.Max_Primitives is
 
          procedure Do_Report (Ctl_Kind : Control_Kinds; Filter : Primitives_Filter; Is_From_Instance : Boolean := False)
          is
-            use Framework.Reports;
+            use Framework.Locations, Framework.Reports;
             Good_Entity : Asis.Definition := Entity;
          begin
             if Visibility = PV_Total then

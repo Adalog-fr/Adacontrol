@@ -382,8 +382,8 @@ package body Rules.Simplifiable_Expressions is
    ------------------
 
    procedure Process_Call (Call : in Asis.Expression) is
-      use Asis, Asis.Elements, Asis.Expressions, Framework.Reports;
-      use Thick_Queries;
+      use Asis, Asis.Elements, Asis.Expressions;
+      use Framework.Locations, Framework.Reports, Thick_Queries;
 
       subtype A_Comparison_Operator is Operator_Kinds range An_Equal_Operator .. A_Greater_Than_Or_Equal_Operator;
 
@@ -614,7 +614,7 @@ package body Rules.Simplifiable_Expressions is
         Asis.Elements, Asis.Expressions, Thick_Queries, Utilities;
 
       procedure Do_Reports (Message : Wide_String) is
-         use Framework.Reports;
+         use Framework.Locations, Framework.Reports;
       begin
          if Ctl_Contexts (Check)(K_Range).Used then
             Report (Rule_Id,
@@ -957,7 +957,7 @@ package body Rules.Simplifiable_Expressions is
       use Thick_Queries, Utilities;
 
       procedure Do_Report is
-         use Framework.Reports;
+         use Framework.Locations, Framework.Reports;
          Message   : constant Wide_String := "Unnecessary parentheses in expression";
          Start_Loc : constant Location := Get_Location (Expr);
          End_Loc   : constant Location := Get_End_Location (Expr);
@@ -1162,7 +1162,7 @@ package body Rules.Simplifiable_Expressions is
       Target : Asis.Element;
 
       procedure Do_Report is
-         use Framework.Reports;
+         use Framework.Locations, Framework.Reports;
          Inner_Expr : Asis.Expression;
          Encl_Expr  : Asis.Expression;
       begin

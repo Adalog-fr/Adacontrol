@@ -357,7 +357,7 @@ package body Rules.Derivations is
    -- Check_From_Type --
    ---------------------
 
-   procedure Check_From_Type (Type_Name : Asis.Name; Loc : Location) is
+   procedure Check_From_Type (Type_Name : Asis.Name; Loc : Locations.Location) is
       use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
       use Thick_Queries;
 
@@ -436,7 +436,7 @@ package body Rules.Derivations is
    -- Check_From_Category --
    -------------------------
 
-   procedure Check_From_Category (Type_Name : Asis.Name; Loc : Location) is
+   procedure Check_From_Category (Type_Name : Asis.Name; Loc : Locations.Location) is
       use Language.Shared_Keys.Categories_Utilities, Reports, Thick_Queries;
 
       Context : constant Root_Context'Class
@@ -461,7 +461,7 @@ package body Rules.Derivations is
    -----------------------
 
    procedure Check_Max_Parents (Element : Asis.Element; Value : Thick_Queries.Biggest_Natural) is
-      use Framework.Reports, Thick_Queries;
+      use Framework.Locations, Framework.Reports, Thick_Queries;
 
       Context : Value_Context := Value_Context (Association (Searched_Parents, "ALL"));
    begin
@@ -497,11 +497,8 @@ package body Rules.Derivations is
 
    procedure Check_Max_Depth (Element : Asis.Definition)
    is
-      use Asis;
-      use Asis.Declarations;
-      use Asis.Elements;
-      use Thick_Queries;
-      use Framework.Reports;
+      use Asis, Asis.Declarations, Asis.Elements;
+      use Thick_Queries, Framework.Locations, Framework.Reports;
 
       type Boolean_Control_Kind_Array is array (Control_Kinds) of Boolean;
       type Depth_Value_Context_Array is array (Control_Kinds) of Depth_Value_Context;
@@ -664,7 +661,7 @@ package body Rules.Derivations is
 
    procedure Process_Derivation (Element :  Asis.Definition) is
       use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements;
-      use Thick_Queries;
+      use Framework.Locations, Thick_Queries;
    begin
       if Rule_Used = No_Rule then
          return;
@@ -749,7 +746,7 @@ package body Rules.Derivations is
 
    procedure Process_Synchronized (Sync : Asis.Declaration) is
       use Asis.Declarations;
-      use Thick_Queries;
+      use Framework.Locations, Thick_Queries;
    begin
       if not Rule_Used (SR_From) and not Rule_Used (SR_Max_Parents) then
          return;
@@ -781,7 +778,7 @@ package body Rules.Derivations is
 
    procedure Process_Callable (Callable : Asis.Declaration) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Extensions;
-      use Reports, Reports.Fixes, Utilities, Thick_Queries;
+      use Framework.Locations, Framework.Reports, Framework.Reports.Fixes, Utilities, Thick_Queries;
    begin
       if not Rule_Used (SR_Indicator) then
          return;

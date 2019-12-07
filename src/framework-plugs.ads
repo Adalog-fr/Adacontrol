@@ -24,7 +24,11 @@
 --  covered by the GNU Public License.                              --
 ----------------------------------------------------------------------
 
+with Framework.Locations;
+
 package Framework.Plugs is
+   use Framework.Locations;
+
    procedure Enter_Unit           (Unit    : in Asis.Compilation_Unit);
    procedure Exit_Context_Clauses (Unit    : in Asis.Compilation_Unit);
    procedure Exit_Unit            (Unit    : in Asis.Compilation_Unit);

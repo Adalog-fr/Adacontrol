@@ -129,8 +129,8 @@ package body Rules.Characters is
    -- Process_Line --
    ------------------
 
-   procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location) is
-      use Framework.Reports, Asis.Text;
+   procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Locations.Location) is
+      use Framework.Locations, Framework.Reports, Asis.Text;
 
       procedure Check_Control is
          use Ada.Strings.Wide_Fixed;

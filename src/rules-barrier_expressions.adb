@@ -157,7 +157,7 @@ package body Rules.Barrier_Expressions is
 
       procedure Check_Expression (Exp : in Asis.Expression) is
          use Asis, Asis.Definitions, Asis.Elements, Asis.Expressions;
-         use Keyword_Flag_Utilities, Thick_Queries, Utilities;
+         use Framework.Locations, Keyword_Flag_Utilities, Thick_Queries, Utilities;
 
          procedure Do_Report (Message    : in Wide_String;
                               Context    : in Root_Context'Class;

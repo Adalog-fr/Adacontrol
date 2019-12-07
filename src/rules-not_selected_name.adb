@@ -135,8 +135,8 @@ package body Rules.Not_Selected_Name is
    ------------------------
 
    procedure Process_Identifier (Element : in Asis.Expression) is
-      use Framework.Reports, Utilities, Thick_Queries;
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
+      use Framework.Locations, Framework.Reports, Utilities, Thick_Queries;
    begin
       if not Rule_Used then
          return;

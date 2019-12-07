@@ -133,7 +133,7 @@ package body Rules.Usage is
       record
          Declaration      : Asis.Expression;
          Origin           : Origin_Kind;
-         Decl_Location    : Location;
+         Decl_Location    : Locations.Location;
          Entity           : True_Entity_Kind;
          Usage            : Usage_Value;
       end record;
@@ -567,7 +567,7 @@ package body Rules.Usage is
       -- Precondition:
       -- Element is a Defining_Name, or the Ultimate_Name of an identifier
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use Framework.Queries, Thick_Queries, Usage_Map;
+      use Framework.Locations, Framework.Queries, Thick_Queries, Usage_Map;
 
       Unbounded_Key : Unbounded_Wide_String;
       Entry_Value   : Usage_Record;
@@ -800,7 +800,7 @@ package body Rules.Usage is
 
       procedure Report_One (Key : Unbounded_Wide_String; Value : in out Usage_Record) is
          use Asis.Declarations, Asis.Elements;
-         use Framework.Queries, Reports, Utilities;
+         use Framework.Queries, Framework.Locations, Framework.Reports, Utilities;
 
          Message      : Unbounded_Wide_String;
          True_Usage   : Usage_Value;
@@ -1314,7 +1314,7 @@ package body Rules.Usage is
 
    procedure Process_Identifier (Name : in Asis.Expression) is
       use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
-      use Framework.Reports, Select_Path_Stack, Thick_Queries, Utilities;
+      use Framework.Locations, Framework.Reports, Select_Path_Stack, Thick_Queries, Utilities;
 
       procedure Check_Access is
          -- Checks if Name is the prefix of 'Access, 'Uncheked_Access or 'Address

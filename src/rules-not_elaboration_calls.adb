@@ -114,7 +114,7 @@ package body Rules.Not_Elaboration_Calls is
    -- Check --
    -----------
 
-   procedure Check (Current_Context : Root_Context'Class; Loc : Location) is
+   procedure Check (Current_Context : Root_Context'Class; Loc : Locations.Location) is
       use Asis, Asis.Elements;
       use Framework.Reports, Scope_Manager;
    begin
@@ -151,7 +151,7 @@ package body Rules.Not_Elaboration_Calls is
    ------------------
 
    procedure Process_Call (Call : in Asis.Element) is
-      use Thick_Queries;
+      use Framework.Locations, Thick_Queries;
    begin
       if not Rule_Used then
          return;
@@ -167,6 +167,7 @@ package body Rules.Not_Elaboration_Calls is
    -----------------------
 
    procedure Process_Allocator (Alloc : in Asis.Expression) is
+      use Framework.Locations;
    begin
       if not Rule_Used then
          return;

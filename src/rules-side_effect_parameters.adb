@@ -182,7 +182,7 @@ package body Rules.Side_Effect_Parameters is
                             State   : in out State_Information)
    is
       use Asis, Asis.Elements, Asis.Expressions;
-      use Framework.Reports, Thick_Queries;
+      use Framework.Locations, Framework.Reports, Thick_Queries;
 
       Func_Name : Asis.Element;
 

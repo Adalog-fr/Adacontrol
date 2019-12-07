@@ -590,5 +590,4 @@ begin  -- Adactl_Options
    Register (Exit_Option'Access,    Variable_Name => "EXIT_ON_ERROR");
    Register (Ignore_Option'Access,  Variable_Name => "IGNORE");
    Register (Verbose_Option'Access, Variable_Name => "VERBOSE");
-
 end Adactl_Options;

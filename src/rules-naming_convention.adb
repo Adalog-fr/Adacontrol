@@ -556,7 +556,7 @@ package body Rules.Naming_Convention is
          Last_Position           : Iterator_Position;
 
          procedure Check_One_Key (Key : in Keys) is
-            use Visibility_Utilities, Framework.Reports;
+            use Visibility_Utilities, Framework.Locations, Framework.Reports;
             Key_Image         : constant Wide_String := Image (Key, Lower_Case);
             Iter              : Context_Iterator := Iterator.Create;
             Type_Def_Name     : Asis.Declaration;

@@ -78,7 +78,7 @@ package body Rules.Return_Type is
    Usage      : array (Subrules_Usage) of Basic_Rule_Context;
 
    -- A global to store location of instantiation
-   Instantiation_Location : Location := Null_Location;
+   Instantiation_Location : Locations.Location := Locations.Null_Location;
 
    Searched_Return_Types  : Context_Store;
 
@@ -230,6 +230,7 @@ package body Rules.Return_Type is
 
       The_State   : Null_State;
       The_Control : Asis.Traverse_Control := Continue;
+      use Framework.Locations;
    begin   -- Process_Instantiation
       if Rule_Used = Usage_Flags'(others => False) then
          return;
@@ -264,7 +265,7 @@ package body Rules.Return_Type is
                            Context       : in Control_Manager.Root_Context'Class;
                            Error_Message : in Wide_String)
       is
-         use Framework.Reports;
+         use Framework.Locations, Framework.Reports;
       begin
          if Rule_Used (Usage_Kind) then
             Report (Rule_Id,

@@ -134,7 +134,7 @@ package body Rules.Entities is
    -- Do_Report --
    ---------------
 
-   procedure Do_Report (Entity : Asis.Expression; Loc : Location) is
+   procedure Do_Report (Entity : Asis.Expression; Loc : Locations.Location) is
       use Framework.Reports, Framework.Language.Shared_Keys;
       use Utilities;
 
@@ -179,6 +179,7 @@ package body Rules.Entities is
    -----------------------
 
    procedure Process_Attribute (Attr : in Asis.Expression) is
+      use Framework.Locations;
    begin
       if not Rule_Used then
          return;
@@ -193,7 +194,7 @@ package body Rules.Entities is
    ------------------------
 
    procedure Process_Identifier (Identifier : in Asis.Expression) is
-      use Thick_Queries;
+      use Framework.Locations, Thick_Queries;
 
    begin   -- Process_Identifier
       if not Rule_Used then

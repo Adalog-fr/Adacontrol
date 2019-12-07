@@ -368,7 +368,7 @@ package body Rules.Movable_Accept_Statements  is
                   -- Check if the identifier is A_Parameter_Specification, An_Object_Declaration or
                   -- An_Object_Renaming_Declaration and process it
                   declare
-                     use Framework.Reports;
+                     use Framework.Locations, Framework.Reports;
                      Identifier             : Asis.Expression    := Element;
                      Identifier_Definition  : Asis.Defining_Name :=
                                                 Corresponding_Name_Definition (Identifier);
@@ -527,7 +527,7 @@ package body Rules.Movable_Accept_Statements  is
 
    procedure Process_Accept_Statement (Statement : in Asis.Statement) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Statements;
-      use Framework.Reports;
+      use Framework.Locations, Framework.Reports;
       use Object_Queue, Thick_Queries;
 
       Stable_State : Boolean := False;

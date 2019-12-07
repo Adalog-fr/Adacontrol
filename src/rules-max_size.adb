@@ -146,8 +146,8 @@ package body Rules.Max_Size is
 
    procedure Do_Report (Stmt : in Subrules; Measured_Elem : Asis.Element) is
       use Ada.Strings.Wide_Unbounded;
-      use Framework.Reports, Utilities;
       use Asis, Asis.Elements, Asis.Statements;
+      use Framework.Locations, Framework.Reports, Utilities;
 
       Length : Line_Number_Positive;
       Loc    : Location;

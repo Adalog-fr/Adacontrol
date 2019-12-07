@@ -251,9 +251,11 @@ package body Rules.Array_Declarations is
    -- Get_Bound_Location --
    ------------------------
 
-   function Get_Bound_Location (Definition : Asis.Definition; Dim : Asis.List_Index) return Location is
+   function Get_Bound_Location (Definition : Asis.Definition; Dim : Asis.List_Index)
+                                return Framework.Locations.Location
+   is
       use Asis, Asis.Definitions, Asis.Elements;
-      use Utilities;
+      use Framework.Locations, Utilities;
    begin
       if Definition_Kind (Definition) = A_Constraint then
          case Discrete_Range_Kind (Discrete_Ranges (Definition) (Dim)) is
@@ -502,7 +504,7 @@ package body Rules.Array_Declarations is
 
       procedure Process_Index is
          use Asis.Declarations, Asis.Elements;
-         use Framework.Queries, Framework.Reports;
+         use Framework.Locations, Framework.Queries, Framework.Reports;
          use Thick_Queries, Utilities;
 
          Index_Subtypes : Asis.Element_List := Index_Subtypes_Names (Definition);
@@ -573,7 +575,7 @@ package body Rules.Array_Declarations is
 
          procedure Compo_Report (Iter : in out Context_Iterator; In_Case : Casing) is
             use Ada.Strings.Wide_Unbounded;
-            use Framework.Reports;
+            use Framework.Locations, Framework.Reports;
             Extra           : Unbounded_Wide_String;
             Current_Context : Compo_Context;
             Applicable      : Boolean;
@@ -663,7 +665,7 @@ package body Rules.Array_Declarations is
       procedure Process_Dimensions is
          use Ada.Strings.Wide_Unbounded;
          use Asis, Asis.Definitions, Asis.Elements;
-         use Framework.Reports, Thick_Queries, Utilities;
+         use Framework.Locations, Framework.Reports, Thick_Queries, Utilities;
 
          Nb_Dim : Biggest_Int;
       begin

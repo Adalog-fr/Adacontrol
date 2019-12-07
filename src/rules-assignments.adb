@@ -176,7 +176,7 @@ package body Rules.Assignments is
    type Coverage_Kind is (Full, Component);
    type LHS_Descriptor (Coverage : Coverage_Kind := Full) is
       record
-         Loc : Location;
+         Loc : Framework.Locations.Location;
          case Coverage is
             when Full =>
                null;
@@ -388,7 +388,7 @@ package body Rules.Assignments is
    ---------------------
 
    procedure Process_Sliding (LHS : Asis.Element; RHS : Asis.Expression) is
-      use Framework.Reports, Thick_Queries, Utilities;
+      use Framework.Locations, Framework.Reports, Thick_Queries, Utilities;
    begin
       if Type_Category (LHS) /= An_Array_Type then
          return;
@@ -447,7 +447,7 @@ package body Rules.Assignments is
       Controlled_Expr : Boolean          := Is_Controlled (Expr);
 
       procedure Report_Possible (Element : Asis.Element; Controlled : Boolean) is
-         use Reports;
+         use Framework.Locations, Framework.Reports;
 
          Cont : constant Root_Context'Class := Control_Manager.Association (Entities (Controlled), Value ("ALL"));
       begin   -- Report_Possible
@@ -482,7 +482,7 @@ package body Rules.Assignments is
          end Is_In_Controlled;
 
          procedure Do_Report (Cont : Root_Context'Class) is
-            use Framework.Reports;
+            use Framework.Locations, Framework.Reports;
          begin
             if Is_Part_Of_Instance (Good_Def) then
                Report (Rule_Id,
@@ -927,7 +927,7 @@ package body Rules.Assignments is
 
       procedure Check_Type (Type_Decl : Asis.Declaration; LHS_Kind : LHS_Kinds) is
          use Asis.Declarations, Asis.Definitions;
-         use Framework.Reports;
+         use Framework.Locations, Framework.Reports;
 
          Store : Context_Store renames Target_Types (LHS_Kind);
          Cur_Decl : Asis.Declaration := Type_Decl;
@@ -1280,7 +1280,7 @@ package body Rules.Assignments is
                                     Key      : out Unbounded_Wide_String)
       is
          use Asis.Declarations;
-         use Framework.Queries, Framework.Reports, Utilities;
+         use Framework.Locations, Framework.Queries, Framework.Reports, Utilities;
          Target       : Asis.Expression := LHS;
          Target_Descr : LHS_Descriptor;
          Parent       : Asis.Expression;

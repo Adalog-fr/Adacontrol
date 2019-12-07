@@ -28,14 +28,11 @@
 with
   Asis;
 
--- Adactl
-with
-  Framework;
 package Rules.Comments is
 
    Rule_Id : constant Wide_String := "COMMENTS";
 
-   procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location);
+   procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Locations.Location);
    procedure Process_Program_Unit (Unit : Asis.Declaration);
 
 end Rules.Comments;

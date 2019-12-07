@@ -592,7 +592,7 @@ package body Rules.Exception_Propagation is
 
    function Exception_Propagation_Risk (Decl : Asis.Declaration; Max_Level : Risk_Level) return Risk_Level is
       use Asis, Asis.Elements, Asis.Declarations, Asis.Expressions, Asis.Statements;
-      use Framework.Reports, Thick_Queries, Utilities;
+      use Framework.Locations, Framework.Reports, Thick_Queries, Utilities;
       SP_Body     : Asis.Declaration;
       H_State     : Handler_State;
       Level       : Risk_Level;
@@ -697,7 +697,7 @@ package body Rules.Exception_Propagation is
 
    procedure Process_Call (Call : Asis.Element) is
       use Asis, Asis.Statements, Asis.Elements, Asis.Expressions;
-      use Framework.Reports, Thick_Queries;
+      use Framework.Locations, Framework.Reports, Thick_Queries;
 
       -- Procedure to check if a 'Access or 'Address is encountered
       procedure Pre_Procedure_Parameter (Element : in     Asis.Element;
@@ -848,7 +848,8 @@ package body Rules.Exception_Propagation is
    ---------------------------
 
    procedure Process_Instantiation  (Instantiation : Asis.Declaration) is
-      use Framework.Reports, Thick_Queries, Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
+      use Framework.Locations, Framework.Reports, Thick_Queries;
       Risk : Risk_Level;
    begin
       if not Rule_Used (Kw_Parameter) then
@@ -940,7 +941,7 @@ package body Rules.Exception_Propagation is
       Spec_Declaration : Asis.Declaration;
 
       procedure Check (Convention : Asis.Expression) is
-         use Framework.Reports, Utilities;
+         use Framework.Locations, Framework.Reports, Utilities;
          Risk           : Risk_Level;
          Convention_Img : constant Unbounded_Wide_String
            := To_Unbounded_Wide_String (To_Upper (Name_Image (Convention)));
@@ -993,7 +994,7 @@ package body Rules.Exception_Propagation is
    -----------------------
 
    procedure Process_Task_Body (Task_Body : in Asis.Declaration) is
-      use Framework.Reports, Asis.Declarations;
+      use Framework.Locations, Framework.Reports, Asis.Declarations;
       Risk : Risk_Level;
    begin
       if not Rule_Used (Kw_Task) then
@@ -1019,7 +1020,7 @@ package body Rules.Exception_Propagation is
 
    procedure Process_Local_Exception (Exc : Asis.Definition) is
       use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
-      use Framework.Reports, Thick_Queries, Utilities;
+      use Framework.Locations, Framework.Reports, Thick_Queries, Utilities;
 
       Scope : constant Asis.Declaration := Enclosing_Element (Enclosing_Element (Exc));
    begin
@@ -1076,7 +1077,7 @@ package body Rules.Exception_Propagation is
 
    procedure Process_Declaration (Declaration   : in Asis.Declaration) is
       use Asis, Asis.Declarations, Asis.Elements;
-      use Framework.Reports;
+      use Framework.Locations, Framework.Reports;
 
       Risk        : Risk_Level := No_Risk;
       The_Control : Traverse_Control := Continue;

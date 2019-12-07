@@ -131,7 +131,7 @@ package body Rules.Non_Static is
    ------------------------
 
    procedure Check_Static_Index (Constraint_List : Asis.Element_List) is
-      use Framework.Reports, Thick_Queries;
+      use Framework.Locations, Framework.Reports, Thick_Queries;
    begin
       for Const : Asis.Element of Constraint_List loop
          if Discrete_Constraining_Lengths (Const)(1) = Not_Static then
@@ -182,7 +182,7 @@ package body Rules.Non_Static is
 
    procedure Process_Discriminant_Constraint (Elem : Asis.Constraint) is
       use Asis.Definitions, Asis.Expressions;
-      use Framework.Reports, Thick_Queries;
+      use Framework.Locations, Framework.Reports, Thick_Queries;
    begin
       if not Rule_Used (K_Discriminant_Constraint) then
          return;
@@ -208,7 +208,7 @@ package body Rules.Non_Static is
       use Thick_Queries, Utilities;
 
       procedure Do_Report (Assoc : Asis.Association) is
-         use Framework.Reports;
+         use Framework.Locations, Framework.Reports;
       begin
          Report (Rule_Id,
                  Usage (K_Instantiation),
@@ -283,7 +283,7 @@ package body Rules.Non_Static is
 
    procedure Process_Object_Declaration (Decl : Asis.Declaration) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use Framework.Reports, Thick_Queries, Utilities;
+      use Framework.Locations, Framework.Reports, Thick_Queries, Utilities;
 
       subtype Structured_Types is Asis.Type_Kinds
          range An_Unconstrained_Array_Definition .. A_Tagged_Record_Type_Definition;
@@ -360,7 +360,7 @@ package body Rules.Non_Static is
 
    procedure Process_Index_Expression (Expr : Asis.Expression) is
       use Asis, Asis.Elements, Asis.Expressions;
-      use Framework.Reports, Thick_Queries;
+      use Framework.Locations, Framework.Reports, Thick_Queries;
    begin
       if not Rule_Used (K_Index_Check) then
          return;

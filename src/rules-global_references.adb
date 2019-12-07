@@ -323,7 +323,7 @@ package body Rules.Global_References is
    is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Asis.Statements;
       use Ada.Strings.Wide_Unbounded, Thick_Queries, Utilities, Usage_Map;
-      use Framework.Queries, Framework.Reports;
+      use Framework.Queries, Framework.Locations, Framework.Reports;
 
       New_State : Usage_Value;
 
@@ -692,7 +692,7 @@ package body Rules.Global_References is
 
          procedure Report_One_Rule (Rule_Key : in Control_Index; Rule_Value : in out Referencing_Info) is
             use Asis, Asis.Declarations, Asis.Elements;
-            use Framework.Reports, Rules_Info_Map, Thick_Queries, Utilities;
+            use Framework.Locations, Framework.Reports, Rules_Info_Map, Thick_Queries, Utilities;
 
             Rule_Params   : constant Rule_Info        := Fetch (Rules_Map, Rule_Key);  -- Must be there
             Ref_Info      : constant Referencing_Info := Rule_Value;                   -- Ref_Info.Bodies /= null

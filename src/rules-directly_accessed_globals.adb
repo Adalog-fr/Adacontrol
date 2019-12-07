@@ -65,7 +65,7 @@ package body Rules.Directly_Accessed_Globals is
    type Variable_Info is
       record
          Owner_Pack : Asis.Element;
-         Var_Loc    : Location;
+         Var_Loc    : Locations.Location;
          Read_Proc  : Asis.Defining_Name;
          Write_Proc : Asis.Defining_Name;
       end record;
@@ -144,7 +144,7 @@ package body Rules.Directly_Accessed_Globals is
 
    procedure Process_Variable_Declaration (Decl : in Asis.Declaration) is
       use Asis, Asis.Declarations, Asis.Elements;
-      use Framework.Queries, Variables_Map;
+      use Framework.Locations, Framework.Queries, Variables_Map;
    begin
       if not Rule_Used then
          return;
@@ -172,7 +172,8 @@ package body Rules.Directly_Accessed_Globals is
 
    procedure Process_Identifier (Name : in Asis.Expression) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use Ada.Strings.Wide_Unbounded, Framework.Queries, Framework.Reports, Thick_Queries,Utilities, Variables_Map;
+      use Ada.Strings.Wide_Unbounded;
+      use Framework.Queries, Framework.Locations, Framework.Reports, Thick_Queries, Utilities, Variables_Map;
       Good_Name : Asis.Expression;
       Name_Decl : Asis.Declaration;
    begin

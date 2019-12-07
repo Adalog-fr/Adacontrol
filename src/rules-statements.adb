@@ -195,7 +195,7 @@ package body Rules.Statements is
 
    procedure Process_Statement (Stmt : in Asis.Statement) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Asis.Statements;
-      use Thick_Queries, Utilities;
+      use Framework.Locations, Thick_Queries, Utilities;
 
       procedure Do_Report (Subrule : in Subrules; Loc : Location := Get_Location (Stmt)) is
          use Framework.Reports;
@@ -763,7 +763,7 @@ package body Rules.Statements is
 
    procedure Process_Others (Definition : in Asis.Definition) is
       use Asis, Asis.Elements, Asis.Statements;
-      use Framework.Reports, Thick_Queries;
+      use Framework.Locations, Framework.Reports, Thick_Queries;
       Encl : Asis.Element;
 
    begin
@@ -827,7 +827,7 @@ package body Rules.Statements is
                                State   : in out Null_State)
       is
          use Asis.Elements;
-         use Framework.Reports;
+         use Framework.Locations, Framework.Reports;
       begin
          case Statement_Kind (Element) is
             when A_Return_Statement | An_Extended_Return_Statement =>
@@ -903,7 +903,7 @@ package body Rules.Statements is
                                State   : in out State_Info)
       is
          use Asis.Elements;
-         use Framework.Reports;
+         use Framework.Locations, Framework.Reports;
       begin
          case Statement_Kind (Element) is
             when An_Exit_Statement =>
@@ -960,7 +960,7 @@ package body Rules.Statements is
 
    procedure Pre_Process_Loop  (Stmt : in Asis.Statement) is
       use Asis, Asis.Elements, Asis.Statements;
-      use Framework.Reports, Utilities;
+      use Framework.Locations, Framework.Reports, Utilities;
    begin
       if not Rule_Used (Stmt_Unnamed_Multiple_Loop)
         and not Rule_Used (Stmt_Multiple_Exits)

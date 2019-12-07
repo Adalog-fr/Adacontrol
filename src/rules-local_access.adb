@@ -128,7 +128,7 @@ package body Rules.Local_Access is
       Decl        : Asis.Declaration;
 
       procedure Do_Report (Sr : Subrules; Certain : Boolean := True) is
-         use Framework.Reports, Subrules_Flag_Utilities;
+         use Framework.Locations, Framework.Reports, Subrules_Flag_Utilities;
       begin
          if  Rule_Used (Sr) then
             Report (Rule_Id,

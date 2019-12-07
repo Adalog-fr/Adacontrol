@@ -252,7 +252,7 @@ package body Rules.Dependencies is
                            Info  : Counting_Subrule_Contexts)
       is
          use Asis.Elements;
-         use Framework.Language.Shared_Keys, Framework.Reports;
+         use Framework.Language.Shared_Keys, Framework.Locations, Framework.Reports;
       begin
          if not Is_In (Count, Info.Bounds) then
             if Info.Bounds.Min = 0 then
@@ -313,7 +313,7 @@ package body Rules.Dependencies is
 
    procedure Process_With_Clause (Clause : in Asis.Clause) is
       use Asis, Asis.Clauses, Asis.Compilation_Units, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use Framework.Reports, Framework.String_Set, Thick_Queries, Utilities;
+      use Framework.Locations, Framework.Reports, Framework.String_Set, Thick_Queries, Utilities;
    begin
       if not Rule_Used then
          return;

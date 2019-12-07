@@ -235,7 +235,7 @@ package body Rules.Record_Declarations is
          procedure Compo_Report (Iter : in out Context_Iterator; In_Case : Casing) is
             use Ada.Strings.Wide_Unbounded;
             use Asis.Clauses;
-            use Framework.Reports;
+            use Framework.Locations, Framework.Reports;
             Extra1          : Unbounded_Wide_String;
             Extra2          : Unbounded_Wide_String;
             Current_Context : Compo_Context;

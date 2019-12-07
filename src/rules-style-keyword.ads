@@ -25,5 +25,7 @@
 ----------------------------------------------------------------------
 
 private package Rules.Style.Keyword is
-   procedure Process_Line (Line : in Asis.Program_Text; Loc : in Framework.Location; Expected : in Casing_Set);
+   procedure Process_Line (Line     : in Asis.Program_Text;
+                           Loc      : in Framework.Locations.Location;
+                           Expected : in Casing_Set);
 end Rules.Style.Keyword;

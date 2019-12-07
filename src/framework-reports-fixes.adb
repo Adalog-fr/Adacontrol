@@ -63,7 +63,7 @@ package body Framework.Reports.Fixes is
       Raw_Report (Image (From)
                   & ':'
                   & " Refactor:"
-                  & ASIS_Integer_Img (To.First_Line) & ':' & ASIS_Integer_Img (To.First_Column));
+                  & ASIS_Integer_Img (Get_First_Line (To)) & ':' & ASIS_Integer_Img (Get_First_Column (To)));
    end Gen_Refactor;
 
    -----------------
@@ -80,7 +80,7 @@ package body Framework.Reports.Fixes is
       Raw_Report (Image (From)
                   & ':'
                   & " Replace:"
-                  & ASIS_Integer_Img (To.First_Line) & ':' & ASIS_Integer_Img (To.First_Column));
+                  & ASIS_Integer_Img (Get_First_Line (To)) & ':' & ASIS_Integer_Img (Get_First_Column (To)));
 
       if By = "" then
          Raw_Report (Marker);
@@ -153,7 +153,7 @@ package body Framework.Reports.Fixes is
       Raw_Report (Image (From)
                   & ':'
                   & " Delete:"
-                  & ASIS_Integer_Img (To.First_Line) & ':' & ASIS_Integer_Img (To.First_Column));
+                  & ASIS_Integer_Img (Get_First_Line (To)) & ':' & ASIS_Integer_Img (Get_First_Column (To)));
    end Gen_Delete;
 
    -------------------------------------------------------------------------------------------

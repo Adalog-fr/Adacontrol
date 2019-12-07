@@ -250,7 +250,7 @@ package body Rules.Expressions is
    ---------------
 
    -- This one for simple rules with only one context
-   procedure Do_Report (Expr : Subrules; Loc : Location; Extra_Info : Wide_String := "") is
+   procedure Do_Report (Expr : Subrules; Loc : Locations.Location; Extra_Info : Wide_String := "") is
       use Framework.Reports, Utilities;
    begin
       if not Rule_Used (Expr) then
@@ -278,7 +278,7 @@ package body Rules.Expressions is
    -- contexts to the subrule
    procedure Do_Category_Report (Subrule   : Subrules;
                                  Expr_List : Asis.Expression_List;
-                                 Loc       : Location;
+                                 Loc       : Locations.Location;
                                  Extra     : Wide_String := "")
    is
       use Framework.Reports, Categories_Utilities, Utilities;
@@ -328,7 +328,7 @@ package body Rules.Expressions is
 
    procedure Do_Operator_Report (Call : Asis.Expression; Normal_Op, Array_Op, Binary_Op, Logical_Op : Subrules) is
       use Asis.Declarations, Asis.Expressions;
-      use Thick_Queries, Utilities;
+      use Framework.Locations, Thick_Queries, Utilities;
 
       Loc : constant Location := Get_Location (Prefix (Call));
    begin
@@ -364,7 +364,7 @@ package body Rules.Expressions is
 
    procedure Do_Mixed_Report (Call : Asis.Expression; Parameter : Asis.Expression) is
       use Asis, Asis.Elements, Asis.Expressions;
-      use Framework.Reports;
+      use Framework.Locations, Framework.Reports;
       use all type Reports.Fixes.Insert_Place;
    begin
       case Expression_Kind (Parameter) is
@@ -412,7 +412,7 @@ package body Rules.Expressions is
    -- Handles subrules: Prefixed_Operator, Mixed_Operators, Real_Equality, Fixed_Multiplying_Op,
    --                   Unconverted_Fixed_Multiplying_Op, And, Or, Xor
       use Asis, Asis.Declarations, Asis.Elements, Asis.Expressions, Asis.Statements;
-      use Framework.Reports, Thick_Queries;
+      use Framework.Locations, Framework.Reports, Thick_Queries;
       Called : Asis.Expression  := Called_Simple_Name (Call);
 
       function Extra_Info (Name : Asis.Name) return Wide_String is
@@ -689,7 +689,7 @@ package body Rules.Expressions is
 
    procedure Process_Attribute_Dimension (Attr : Asis.Expression) is
       use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
-      use Thick_Queries, Utilities;
+      use Framework.Locations, Thick_Queries, Utilities;
 
       Name          : Asis.Expression  := Prefix (Attr);
       Def           : Asis.Definition  := Ultimate_Expression_Type (Name);
@@ -750,7 +750,7 @@ package body Rules.Expressions is
 
    procedure Process_Expression (Expression : in Asis.Expression) is
       use Asis, Asis.Elements, Asis.Expressions;
-      use Thick_Queries;
+      use Framework.Locations, Thick_Queries;
 
       subtype An_Array_Aggregate is Expression_Kinds range A_Positional_Array_Aggregate .. A_Named_Array_Aggregate;
    begin
@@ -1114,7 +1114,7 @@ package body Rules.Expressions is
 
    procedure Process_Call (Call : in Asis.Element) is
       use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
-      use Thick_Queries;
+      use Framework.Locations, Thick_Queries;
       type Callable_Kind is (Regular, Operator, Attribute);
       Called      : Asis.Element;
       Called_Kind : Callable_Kind;
@@ -1234,6 +1234,7 @@ package body Rules.Expressions is
 
    procedure Process_Range (Def : in Asis.Definition) is
       use Asis, Asis.Definitions, Asis.Elements;
+      use Framework.Locations;
 
       function Root_Kind (Expr : Asis.Expression) return Root_Type_Kinds is
          use Asis.Declarations;

@@ -52,6 +52,7 @@ with
   Adactl_Options,
   Framework.Language.Commands,
   Framework.Language.Scanner,
+  Framework.Locations,
   Framework.Rules_Manager,
   Framework.Variables.Shared_Types;
 package body Framework.Language is

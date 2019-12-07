@@ -99,7 +99,7 @@ package body Rules.Unsafe_Unchecked_Conversion is
 
    procedure Process_Instantiation (Instantiation : in Asis.Declaration) is
       use Asis, Asis.Declarations, Asis.Expressions;
-      use Framework.Reports, Thick_Queries, Utilities;
+      use Framework.Locations, Framework.Reports, Thick_Queries, Utilities;
 
       Source, Target : Asis.Expression;
       S_Size, T_Size : Biggest_Int;

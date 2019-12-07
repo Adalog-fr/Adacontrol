@@ -152,7 +152,7 @@ package body Rules.Unsafe_Elaboration is
    -- Name is the name of the called or instantiated program unit
    -- Check appropriate pragmas.
       use Asis, Asis.Compilation_Units, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use Framework.Reports, Thick_Queries;
+      use Framework.Locations, Framework.Reports, Thick_Queries;
 
       Has_Pragma : constant Pragma_Set := Corresponding_Pragma_Set (Names (Unit_Declaration (Unit)) (1));
 
@@ -287,7 +287,7 @@ package body Rules.Unsafe_Elaboration is
       procedure Check_Subprogram (Call : Asis.Element) is
       -- This procedure because procedure calls and function calls are treated the same
       -- (/not/ entry calls!)
-         use Framework.Reports, Utilities;
+         use Framework.Locations, Framework.Reports, Utilities;
 
          Must_Traverse : Boolean;
          Ignored       : Asis.Traverse_Control := Continue;

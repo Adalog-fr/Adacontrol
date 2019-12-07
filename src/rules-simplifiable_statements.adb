@@ -419,7 +419,7 @@ package body Rules.Simplifiable_Statements is
 
    procedure Process_Exception_Handler (Handler : in Asis.Exception_Handler) is
       use Asis, Asis.Elements, Asis.Statements;
-      use Framework.Reports, Thick_Queries;
+      use Framework.Locations, Framework.Reports, Thick_Queries;
 
       function Is_Trivial_Handler (H : in Asis.Exception_Handler) return Boolean is
          -- A trivial handler contains only a "raise;" statement
@@ -476,7 +476,7 @@ package body Rules.Simplifiable_Statements is
 
    procedure Process_If_Statement (Stmt  : in Asis.Statement) is
       use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
-      use Framework.Reports, Thick_Queries;
+      use Framework.Locations, Framework.Reports, Thick_Queries;
 
       Then_Last_Stmt : Asis.Statement;
       Else_Last_Stmt : Asis.Statement;
@@ -793,7 +793,7 @@ package body Rules.Simplifiable_Statements is
 
    procedure Process_Case_Statement (Stmt  : in Asis.Statement) is
       use Asis, Asis.Elements, Asis.Statements;
-      use Framework.Reports;
+      use Framework.Locations, Framework.Reports;
       use Utilities, Thick_Queries;
    begin
       -- Stmt_Dead
@@ -863,7 +863,7 @@ package body Rules.Simplifiable_Statements is
 
    procedure Process_While_Statement (The_Loop : in Asis.Statement) is
       use Asis.Statements;
-      use Reports, Thick_Queries;
+      use Framework.Locations, Framework.Reports, Thick_Queries;
       Cond : constant Asis.Expression := While_Condition (The_Loop);
 
       procedure Check_While_For_For is
@@ -1171,7 +1171,7 @@ package body Rules.Simplifiable_Statements is
 
    procedure Process_Statement (Stmt : in Asis.Statement) is
       use Asis, Asis.Declarations, Asis.Elements, Asis.Statements;
-      use Framework.Reports, Thick_Queries;
+      use Framework.Locations, Framework.Reports, Thick_Queries;
 
       procedure Check_For_Of (Loop_Spec : Asis.Declaration) is
          use Asis.Iterator;

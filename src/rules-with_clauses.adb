@@ -89,7 +89,7 @@ package body Rules.With_Clauses is
       record
          With_Clause   : Asis.Clause;
          Position      : Asis.List_Index;               -- Index of name in the with clause
-         Loc           : Location;                      -- Location of name
+         Loc           : Locations.Location;            -- Location of name
          Unit_Name     : Wide_String (1 .. U_Length);   -- Ultimate name of unit
          Original_Name : Wide_String (1 .. O_Length);   -- Full name of unit from the with clause
          Is_Private    : Boolean;
@@ -208,7 +208,7 @@ package body Rules.With_Clauses is
 
    procedure Process_With_Clause (Element : in Asis.Clause) is
       use Asis.Clauses, Asis.Elements;
-      use Scope_Manager, Framework.Reports, Thick_Queries, Utilities;
+      use Scope_Manager, Framework.Locations, Framework.Reports, Thick_Queries, Utilities;
 
       function Required_For_Other_Context_Clauses (Name : Asis.Name) return Boolean is
       -- Is Name used in a use clause from the same context clause?
@@ -412,7 +412,7 @@ package body Rules.With_Clauses is
 
    procedure Process_Identifier (Element : in Asis.Expression) is
       use Asis.Compilation_Units, Asis.Declarations, Asis.Elements, Asis.Expressions;
-      use Framework.Reports, Scope_Manager, Thick_Queries, Utilities;
+      use Framework.Locations, Framework.Reports, Scope_Manager, Thick_Queries, Utilities;
       use all type Reports.Fixes.Insert_Place;
 
       Elem_Def      : Asis.Defining_Name;

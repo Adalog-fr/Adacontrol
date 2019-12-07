@@ -27,6 +27,11 @@
 --  Ada
 with
   Ada.Strings.Wide_Unbounded;
+
+-- ASIS
+with
+  Asis.Text;
+
 -- Adalog
 with
   Thick_Queries;

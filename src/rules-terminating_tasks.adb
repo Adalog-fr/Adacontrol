@@ -118,7 +118,7 @@ package body Rules.Terminating_Tasks is
 
    procedure Process_Task_Body (Body_Decl : in Asis.Declaration) is
       use Asis, Asis.Declarations, Asis.Elements;
-      use Framework.Reports;
+      use Framework.Locations, Framework.Reports;
 
       Last_Statement : Asis.Statement;
 

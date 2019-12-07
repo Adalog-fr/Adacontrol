@@ -360,7 +360,7 @@ package body Rules.Unit_Pattern is
    procedure Check_Single_Tagged_Type (Declaration : in Asis.Declaration) is
       -- Precondition: Declaration is for a tagged type
       use Asis, Asis.Elements;
-      use Framework.Reports, Scope_Manager;
+      use Framework.Locations, Framework.Reports, Scope_Manager;
    begin
       if not Rule_Used (Single_Tagged_Type) then
          return;
@@ -393,7 +393,7 @@ package body Rules.Unit_Pattern is
    procedure Check_Tagged_Type_Hierarchy (Declaration : in Asis.Declaration) is
    -- Precondition: Declaration is for a (full) type extension
       use Asis, Asis.Compilation_Units, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
-      use Framework.Reports, Thick_Queries;
+      use Framework.Locations, Framework.Reports, Thick_Queries;
    begin
       if not Rule_Used (Tagged_Type_Hierarchy) then
          return;
@@ -450,7 +450,8 @@ package body Rules.Unit_Pattern is
 
    procedure Process_Compilation_Unit (Unit : in Asis.Compilation_Unit) is
       use Asis, Asis.Elements;
-      use Framework.Reports, Utilities, Context_Clause_Ordering_Machine, Context_Clause_Element_Utilities;
+      use Framework.Locations, Framework.Reports, Utilities,
+          Context_Clause_Ordering_Machine, Context_Clause_Element_Utilities;
    begin
       if not Rule_Used (Context_Clauses_Order) then
          return;
@@ -507,7 +508,7 @@ package body Rules.Unit_Pattern is
       use Utilities;
 
       procedure Check (Part : Unit_Parts; Part_Declarations : Asis.Declaration_List) is
-         use Framework.Reports, Declarations_Ordering_Machine, Declarations_Group_Utilities;
+         use Framework.Locations, Framework.Reports, Declarations_Ordering_Machine, Declarations_Group_Utilities;
          use Thick_Queries;
          Context : Root_Context'Class := Control_Manager.Association (Contexts,
                                                                       Subrules'Wide_Image (Declarations_Order)

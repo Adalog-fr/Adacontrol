@@ -28,14 +28,11 @@
 with
   Asis;
 
--- Adactl
-with
-  Framework;
 package Rules.Max_Blank_Lines is
 
    Rule_Id : constant Wide_String := "MAX_BLANK_LINES";
 
    procedure Enter_Unit   (Unit : in Asis.Compilation_Unit);
-   procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location);
+   procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Locations.Location);
 
 end Rules.Max_Blank_Lines;

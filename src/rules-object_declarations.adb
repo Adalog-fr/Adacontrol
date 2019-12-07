@@ -290,7 +290,7 @@ package body Rules.Object_Declarations is
 
       procedure Process_Type (Rule : Type_Rules) is
          use Asis.Definitions;
-         use Framework.Reports, NRT_Utilities, Utilities;
+         use Framework.Locations, Framework.Reports, NRT_Utilities, Utilities;
          Temp : Asis.Element;
       begin   -- Process_Type
          case Declaration_Kind (Decl) is
@@ -426,7 +426,7 @@ package body Rules.Object_Declarations is
       end Process_Type;
 
       procedure Process_Min_Integer_Span is
-         use Framework.Reports;
+         use Framework.Locations, Framework.Reports;
 
          Val      : Extended_Biggest_Natural;
          Type_Decl : Asis.Declaration;
@@ -570,7 +570,7 @@ package body Rules.Object_Declarations is
 
    procedure Process_Pragma (Prgma : in Asis.Pragma_Element) is
       use Asis, Asis.Elements, Asis.Expressions;
-      use Thick_Queries, Framework.Reports;
+      use Thick_Queries, Framework.Locations, Framework.Reports;
 
       Name : Asis.Expression;
    begin
@@ -811,7 +811,7 @@ package body Rules.Object_Declarations is
       use Framework.Symbol_Table, NRT_Utilities;
 
       procedure Process_One_Volatile_Address (Entity : Asis.Defining_Name; Repr_Data : in out Repr_Rec) is
-         use Framework.Reports;
+         use Framework.Locations, Framework.Reports;
       begin
          if Rule_Used (S_Volatile_No_Address) and Repr_Data.Volatile and not Repr_Data.Address then
             Report (Rule_Id,

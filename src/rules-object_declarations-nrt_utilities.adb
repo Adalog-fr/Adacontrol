@@ -71,7 +71,7 @@ package body Rules.Object_Declarations.NRT_Utilities is
                         Type_Name : Wide_String)
    is
       use Asis, Asis.Elements;
-      use Reports, Utilities;
+      use Framework.Locations, Framework.Reports, Utilities;
    begin
       case Declaration_Kind (Enclosing_Element (Object)) is
          when A_Constant_Declaration =>

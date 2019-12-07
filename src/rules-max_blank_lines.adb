@@ -57,7 +57,7 @@ package body Rules.Max_Blank_Lines is
 
    Blank_Lines_Count : Asis.ASIS_Natural;
    Fail_Type : Control_Kinds;
-   Fail_Loc  : Location;
+   Fail_Loc  : Locations.Location;
 
    ----------
    -- Help --
@@ -122,15 +122,15 @@ package body Rules.Max_Blank_Lines is
       pragma Unreferenced (Unit);
    begin
       Blank_Lines_Count := 0;
-      Fail_Loc          := Null_Location;
+      Fail_Loc          := Locations.Null_Location;
    end Enter_Unit;
 
    ------------------
    -- Process_Line --
    ------------------
 
-   procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location) is
-      use Framework.Reports, Ada.Strings.Wide_Unbounded;
+   procedure Process_Line (Line : in Asis.Program_Text; Loc : Locations.Location) is
+      use Framework.Locations, Framework.Reports, Ada.Strings.Wide_Unbounded;
       use Utilities;
 
       use type Asis.ASIS_Integer;   -- Gela-ASIS compatibility

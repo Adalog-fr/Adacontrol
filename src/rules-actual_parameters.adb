@@ -344,7 +344,7 @@ package body Rules.Actual_Parameters is
       procedure Check_Default (Formal : Asis.Expression; Name_Context, All_Context : Root_Context'Class)
       is
          use Asis.Expressions;
-         use Framework.Reports, Parameter_Tree;
+         use Framework.Locations, Framework.Reports, Parameter_Tree;
 
          Formal_Key : constant Unbounded_Wide_String
            := To_Unbounded_Wide_String (To_Upper (Defining_Name_Image (Formal)));
@@ -415,7 +415,7 @@ package body Rules.Actual_Parameters is
          Formal_Key : constant Unbounded_Wide_String := To_Unbounded_Wide_String (To_Upper
                                                                                   (Defining_Name_Image (Formal)));
          procedure Do_Entity_Report (Searched_Entities : Entity_Queue.Queue) is
-            use Entity_Queue, Reports;
+            use Entity_Queue, Framework.Locations, Framework.Reports;
             use Asis.Expressions, Asis.Iterator;
             Curs          : Cursor := First (Searched_Entities);
             Context       : Entity_Context;

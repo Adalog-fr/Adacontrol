@@ -260,7 +260,7 @@ package body Rules.Declarations is
    -- Do_Report --
    ---------------
 
-   procedure Do_Report (Decl : Subrules; Loc : Location; Name : Asis.Name := Asis.Nil_Element) is
+   procedure Do_Report (Decl : Subrules; Loc : Locations.Location; Name : Asis.Name := Asis.Nil_Element) is
       use Framework.Reports, Framework.Language.Shared_Keys;
       use Subrules_Flag_Utilities, Utilities;
 
@@ -309,6 +309,7 @@ package body Rules.Declarations is
 
    procedure Do_Report (Decl : Subrules; Elem : Asis.Element) is
       use Asis, Asis.Declarations, Asis.Elements;
+      use Framework.Locations;
    begin
       -- For an object declaration, report individually for each name
       -- in the object declaration (otherwise, count f. e. would be wrong)
@@ -348,7 +349,7 @@ package body Rules.Declarations is
 
    procedure Check_Handlers (Handlers : Asis.Exception_Handler_List) is
       use Asis, Asis.Elements, Asis.Statements;
-      use Thick_Queries, Utilities;
+      use Framework.Locations, Thick_Queries, Utilities;
 
       CE_Found : Boolean;
       NE_Found : Boolean;
@@ -391,7 +392,7 @@ package body Rules.Declarations is
 
    procedure Process_Declaration (Element : in Asis.Element) is
       use Asis, Asis.Elements, Asis.Expressions, Asis.Declarations, Asis.Definitions;
-      use Thick_Queries, Utilities;
+      use Framework.Locations, Thick_Queries, Utilities;
 
       Target_Entity : Asis.Name;
 

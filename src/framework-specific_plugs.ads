@@ -26,7 +26,11 @@
 
 -- All specific rules
 
+with Framework.Locations;
+
 package Framework.Specific_Plugs is
+   use Framework.Locations;
+
    -- If you insert plugs into this package, change this string
    -- to identify your specific version
    Specific_Version : constant Wide_String := "";

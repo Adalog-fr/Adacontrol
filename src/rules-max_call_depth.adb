@@ -228,7 +228,7 @@ package body Rules.Max_Call_Depth is
 
    procedure Report_Uncheckable (Call : Asis.Element; Message : Wide_String; Assumed : Asis.ASIS_Natural) is
       use Asis.Elements;
-      use Framework.Reports, Thick_Queries, Utilities;
+      use Framework.Locations, Framework.Reports, Thick_Queries, Utilities;
    begin
       if Is_Part_Of_Instance (Call) then
          -- Unfortunately, Corresponding_Generic_Element does not work on call.
@@ -663,7 +663,7 @@ package body Rules.Max_Call_Depth is
       Descr : Depth_Descriptor;
 
       procedure Do_Report (Ctl_Kind : Control_Kinds) is
-         use Framework.Reports, Utilities;
+         use Framework.Locations, Framework.Reports, Utilities;
       begin
          case Descr.Kind is
             when Regular | Inline =>

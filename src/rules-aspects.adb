@@ -127,7 +127,7 @@ package body Rules.Aspects is
    ---------------
 
    procedure Do_Report (Entity : Asis.Expression) is
-      use Framework.Reports;
+      use Framework.Locations, Framework.Reports;
 
       function Mark_Name (E : Asis.Expression) return Wide_String is
          use Asis, Asis.Elements, Asis.Expressions;
@@ -167,7 +167,7 @@ package body Rules.Aspects is
 
    procedure Process_Aspect (The_Aspect : in Asis.Definition) is
       use Asis.Elements, Asis.Definitions;
-      use Framework.Reports;
+      use Framework.Locations, Framework.Reports;
    begin   -- Process_Aspect
       if not Rule_Used then
          return;

@@ -212,7 +212,7 @@ package body Rules.Representation_Clauses is
    procedure Process_Clause (Rep_Clause : in Asis.Representation_Clause) is
       use Ada.Strings.Wide_Unbounded;
       use Asis, Asis.Clauses, Asis.Elements, Asis.Expressions;
-      use Framework.Reports, Thick_Queries;
+      use Framework.Locations, Framework.Reports, Thick_Queries;
 
       Attribute : Unbounded_Wide_String;
       Pfx       : Asis.Expression;

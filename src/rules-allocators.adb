@@ -188,7 +188,7 @@ package body Rules.Allocators is
       Allocated_Subtype : Asis.Expression;
 
       procedure Check (Current_Context : Root_Context'Class) is
-         use Framework.Reports;
+         use Framework.Locations, Framework.Reports;
 
          Allocator_Subtype  : Asis.Element;
 
@@ -213,6 +213,7 @@ package body Rules.Allocators is
 
          procedure Check_Inconsistent is
             use Asis.Declarations, Asis.Definitions;
+
             Designated_Subtype : Asis.Element;
             Designated_Name    : Asis.Expression;
             Def                : Asis.Definition;

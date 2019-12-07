@@ -285,7 +285,10 @@ package body Rules.Style.Keyword is
    -- We need to be careful however, because 'in' is a keyword in:
    --    if 'a' in character then ...
    Wide_HT : constant Wide_Character := Wide_Character'Val(Character'Pos (Ada.Characters.Latin_1.HT));
-   procedure Process_Line (Line : in Asis.Program_Text; Loc : in Framework.Location; Expected : in Casing_Set) is
+   procedure Process_Line (Line     : in Asis.Program_Text;
+                           Loc      : in Framework.Locations.Location;
+                           Expected : in Casing_Set)
+   is
       use Ada.Strings, Ada.Strings.Wide_Maps.Wide_Constants;
       use Utilities;
 
@@ -300,7 +303,7 @@ package body Rules.Style.Keyword is
       Case_First, Case_Others : Casing;
 
       procedure Do_Report (Kw_Start, Kw_Stop : Positive) is
-         use Framework, Framework.Reports;
+         use Framework.Locations, Framework.Reports;
          KW_Loc : constant Location := Create_Location (Get_File_Name (Loc),
                                                         Get_First_Line (Loc),
                                                         Asis.Text.Character_Position (Kw_Start));

@@ -688,7 +688,7 @@ package body Rules.Silent_Exceptions is
    procedure Process_Exception_Handler (Handler : in Asis.Exception_Handler) is
       use Ada.Strings.Wide_Unbounded;
       use Asis, Asis.Statements;
-      use Framework.Reports, Exception_Status_Queues, Utilities;
+      use Framework.Locations, Framework.Reports, Exception_Status_Queues, Utilities;
 
       Paths_Usage : Search_Result;
       Current     : Cursor;

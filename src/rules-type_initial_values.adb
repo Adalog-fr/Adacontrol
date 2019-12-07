@@ -195,7 +195,7 @@ package body Rules.Type_Initial_Values is
 
    procedure Check_One_Type (Entity : Asis.Defining_Name; State : in out Constant_Found) is
       use Asis.Declarations;
-      use Framework.Reports, Framework.Symbol_Table;
+      use Framework.Locations, Framework.Reports, Framework.Symbol_Table;
    begin
       case State is
          when No_Constant =>

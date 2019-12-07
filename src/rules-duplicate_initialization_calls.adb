@@ -136,7 +136,7 @@ package body Rules.Duplicate_Initialization_Calls is
    ----------------------------
 
    procedure Process_Procedure_Call (Call : in Asis.Statement) is
-      use Framework.Element_Queues, Framework.Reports, Thick_Queries, Utilities;
+      use Framework.Element_Queues, Framework.Locations, Framework.Reports, Thick_Queries, Utilities;
       use Asis, Asis.Elements, Asis.Expressions;
 
       procedure Check_Profile (Formals             : in  Asis.Parameter_Specification_List;

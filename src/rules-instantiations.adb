@@ -57,7 +57,7 @@ package body Rules.Instantiations is
 
    type Instance_Info (Nb_Param : List_Index) is
       record
-         Loc    : Location;
+         Loc    : Locations.Location;
          Values : Generic_Parameters (1 .. Nb_Param);
       end record;
    package Instance_Info_List is new Linear_Queue (Instance_Info);
@@ -325,7 +325,7 @@ package body Rules.Instantiations is
                           return Instance_Info
       is
          use Asis.Elements, Asis.Expressions;
-         use Thick_Queries;
+         use Framework.Locations, Thick_Queries;
          Result : Instance_Info := (List_Index'Min (Origin'Length, Using'Length), Get_Location (Instantiation), Origin);
       begin
          for I in Result.Values'Range loop
@@ -343,7 +343,7 @@ package body Rules.Instantiations is
       end Make_Info;
 
       procedure Process_Context is
-         use Framework.Reports;
+         use Framework.Locations, Framework.Reports;
          use Utilities;
          Good_Context : Instantiation_Context := Instantiation_Context (Value (Iter));
       begin

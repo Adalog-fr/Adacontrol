@@ -177,7 +177,7 @@ package body Rules.Parameter_Aliasing is
 
    procedure Process_Call (Call : in Asis.Statement) is
       use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
-      use Thick_Queries, Framework.Reports, Ada.Strings.Wide_Unbounded;
+      use Thick_Queries, Framework.Locations, Framework.Reports, Ada.Strings.Wide_Unbounded;
 
       function Are_Dangerous_Modes (Left, Right : Parameters_Descr; With_In_Mode : Boolean) return Boolean is
          Cat : Type_Categories;

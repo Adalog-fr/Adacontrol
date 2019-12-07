@@ -23,10 +23,16 @@
 --  invalidate any  other reasons why the executable  file might be --
 --  covered by the GNU Public License.                              --
 ----------------------------------------------------------------------
+
 with  -- Adalog
    Thick_Queries,
-   Utilities;
+     Utilities;
+
+with -- AdaControl
+   Framework.Locations;
+
 package Framework.Language is
+   use Framework.Locations;
 
    --  Process the language used by rules files
    --  Syntax:

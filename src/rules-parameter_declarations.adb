@@ -195,7 +195,7 @@ package body Rules.Parameter_Declarations is
                            Value    : Biggest_Int)
       is
          use Ada.Strings.Wide_Unbounded;
-         use Callable_Kinds_Flag_Utilities, Framework.Reports;
+         use Callable_Kinds_Flag_Utilities, Framework.Locations, Framework.Reports;
 
          Loc : constant Location := Get_Location (Names (Declaration)(1));
       begin

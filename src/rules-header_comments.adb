@@ -390,9 +390,10 @@ package body Rules.Header_Comments is
    -- Process_Line --
    ------------------
 
-   procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Location) is
-      use Framework.Reports;
+   procedure Process_Line (Line : in Asis.Program_Text; Loc : Locations.Location) is
+      use Framework.Locations, Framework.Reports;
       use Ada.Strings.Wide_Unbounded;
+
       Line_Num : Asis.Text.Line_Number;
 
       procedure Check_Comments_Number (Ctl_Kind : Control_Kinds) is

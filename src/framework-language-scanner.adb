@@ -31,6 +31,7 @@ with   -- Standard Ada units
 
 with -- Application specific units
   Utilities;
+
 package body Framework.Language.Scanner is
    use Ada.Wide_Text_IO;
 
@@ -195,7 +196,7 @@ package body Framework.Language.Scanner is
          if Extended and Cur_Char = ';' then
             -- Empty string
             The_Token := (Kind        => Name,
-                          Position    => (Current_File, First_Line, First_Column),
+                          Position    => Create_Location (To_Wide_String (Current_File), First_Line, First_Column),
                           Name_Length => 0,
                           Name_Text   => (others => ' '),
                           Key         => Not_A_Key);
@@ -203,7 +204,7 @@ package body Framework.Language.Scanner is
          end if;
 
          The_Token := (Kind        => Name,
-                       Position    => (Current_File, First_Line, First_Column),
+                       Position    => Create_Location (To_Wide_String (Current_File), First_Line, First_Column),
                        Name_Length => 1,
                        Name_Text   => (1 => Cur_Char, others => ' '),
                        Key         => Not_A_Key);
@@ -234,7 +235,7 @@ package body Framework.Language.Scanner is
          Quote_Char : constant Wide_Character := Cur_Char;
       begin
          The_Token := (Kind          => String_Value,
-                       Position      => (Current_File, First_Line, First_Column),
+                       Position      => Create_Location (To_Wide_String (Current_File), First_Line, First_Column),
                        String_Text   => Null_Unbounded_Wide_String);
          Next_Char;
          loop
@@ -280,7 +281,7 @@ package body Framework.Language.Scanner is
                   when '_' =>
                      if Prev_Is_US then
                         Syntax_Error ("Consecutive underscores not allowed in numbers",
-                                      (Current_File, Current_Line, Current_Column));
+                                      Create_Location (To_Wide_String (Current_File), Current_Line, Current_Column));
                      end if;
                      Prev_Is_US := True;
                   when others =>
@@ -290,7 +291,7 @@ package body Framework.Language.Scanner is
 
                if Digit >= Base then
                   Syntax_Error ("Invalid character in number",
-                                (Current_File, Current_Line, Current_Column));
+                                Create_Location (To_Wide_String (Current_File), Current_Line, Current_Column));
                end if;
                if not Prev_Is_US then
                   Num := Num * Base + Digit;
@@ -298,7 +299,7 @@ package body Framework.Language.Scanner is
             end loop;
             if Prev_Is_US then
                Syntax_Error ("Trailing underscores not allowed in numbers",
-                             (Current_File, Current_Line, Current_Column));
+                             Create_Location (To_Wide_String (Current_File), Current_Line, Current_Column));
             end if;
             return Num;
          end Get_Numeral;
@@ -308,7 +309,7 @@ package body Framework.Language.Scanner is
             Next_Char;
             if Cur_Char not in '0' .. '9' then
                Syntax_Error ("Invalid character in number",
-                             (Current_File, Current_Line, Current_Column));
+                             Create_Location (To_Wide_String (Current_File), Current_Line, Current_Column));
             end if;
          end if;
 
@@ -319,12 +320,12 @@ package body Framework.Language.Scanner is
             Num_Base := Result;
             if Num_Base not in 2..16 then
                Syntax_Error ("Invalid value for base",
-                             (Current_File, Current_Line, Current_Column));
+                             Create_Location (To_Wide_String (Current_File), Current_Line, Current_Column));
             end if;
             Result   := Get_Numeral (Num_Base, Stop_On_E => False);
             if Cur_Char /= '#' then
                Syntax_Error ("Missing closing '#' in based number",
-                             (Current_File, Current_Line, Current_Column));
+                             Create_Location (To_Wide_String (Current_File), Current_Line, Current_Column));
             end if;
             Next_Char;
          end if;
@@ -333,7 +334,7 @@ package body Framework.Language.Scanner is
             Next_Char;
             if Cur_Char not in '0' .. '9' then
                Syntax_Error ("Exponent must be followed by (unsigned) number",
-                             (Current_File, Current_Line, Current_Column));
+                             Create_Location (To_Wide_String (Current_File), Current_Line, Current_Column));
             end if;
             Result := Result * Num_Base ** Integer (Get_Numeral(Base => 10, Stop_On_E => True));
          end if;
@@ -379,7 +380,7 @@ package body Framework.Language.Scanner is
          case Cur_Char is
             when '{' | '}' | '(' | ')' | '<' | '>' | '|' | ''' | ':' | ';' | ',' | '.' | '=' =>
                The_Token := Char_Token_Values (Index (Char_Tokens, Cur_Char & ""));
-               The_Token.Position := (Current_File, First_Line, First_Column);
+               The_Token.Position := Create_Location (To_Wide_String (Current_File), First_Line, First_Column);
                Next_Char;
 
             when '0' .. '9' | '-' =>
@@ -394,14 +395,16 @@ package body Framework.Language.Scanner is
                   exception
                      when Constraint_Error =>
                         The_Token := (Kind     => Bad_Integer,
-                                      Position => (Current_File, First_Line, First_Column));
+                                      Position =>
+                                         Create_Location (To_Wide_String (Current_File), First_Line, First_Column));
                         return;
                   end;
 
                   if Cur_Char = '.' then
                      Next_Char;
                      if Cur_Char not in '0' .. '9' then
-                        Syntax_Error ("Illegal real value", (Current_File, Current_Line, Current_Column));
+                        Syntax_Error ("Illegal real value",
+                                      Create_Location (To_Wide_String (Current_File), Current_Line, Current_Column));
                      end if;
 
                      begin
@@ -409,7 +412,8 @@ package body Framework.Language.Scanner is
                      exception
                         when Constraint_Error =>
                            The_Token := (Kind     => Bad_Float,
-                                         Position => (Current_File, First_Line, First_Column));
+                                         Position =>
+                                            Create_Location (To_Wide_String (Current_File), First_Line, First_Column));
                            return;
                      end;
 
@@ -434,19 +438,24 @@ package body Framework.Language.Scanner is
 
                         if Cur_Char not in '0' .. '9' then
                            Syntax_Error ("Illegal exponent of real value",
-                                         (Current_File, Current_Line, Current_Column));
+                                         Create_Location (
+                                           To_Wide_String (Current_File),
+                                           Current_Line,
+                                           Current_Column));
                         end if;
 
                         Exponent_Part := Integer (Get_Integer);
                      end if;
 
                      The_Token := (Kind     => Float_Value,
-                                   Position => (Current_File, First_Line, First_Column),
+                                   Position =>
+                                     Create_Location (To_Wide_String (Current_File), First_Line, First_Column),
                                    Fvalue   => (Float (Integer_Part) + Fractional_Part)
                                                * 10.0 ** (Exponent_Sign * Exponent_Part));
                   else
                      The_Token := (Kind     => Integer_Value,
-                                   Position => (Current_File, First_Line, First_Column),
+                                   Position =>
+                                     Create_Location (To_Wide_String (Current_File), First_Line, First_Column),
                                    Value    => Integer_Part);
                   end if;
                end;
@@ -476,17 +485,17 @@ package body Framework.Language.Scanner is
                begin
                   Next_Char;
                   Syntax_Error ("Unexpected character: " & Bad_Char,
-                                (Current_File, Current_Line, Current_Column));
+                                Create_Location (To_Wide_String (Current_File), Current_Line, Current_Column));
                end;
          end case;
       end if;
    exception
       when End_Error =>
          The_Token := (Kind => Eof,
-                       Position => (Current_File, Current_Line, Current_Column));
+                       Position => Create_Location (To_Wide_String (Current_File), Current_Line, Current_Column));
       when others =>
          The_Token := (Kind     => Bad_Token,
-                       Position => (Current_File, First_Line, First_Column));
+                       Position => Create_Location (To_Wide_String (Current_File), First_Line, First_Column));
          raise;
    end Actual_Next_Token;
 
@@ -581,7 +590,7 @@ package body Framework.Language.Scanner is
    exception
       when End_Error =>
          The_Token := (Kind     => Eof,
-                       Position => (Current_File, Current_Line, Current_Column));
+                       Position => Create_Location (To_Wide_String (Current_File), Current_Line, Current_Column));
   end Start_Scan;
 
    -----------

@@ -137,7 +137,7 @@ package body Rules.Entity_Inside_Exception is
    is
 
       procedure Check (Identifiers : in Asis.Expression_List) is
-         use Framework.Reports;
+         use Framework.Locations, Framework.Reports;
          use Thick_Queries, Utilities;
          Found  : Boolean := False;
          C_Kind : Callable_Kinds;

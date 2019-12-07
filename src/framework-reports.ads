@@ -27,9 +27,11 @@
 -- AdaControl
 with
    Framework.Control_Manager,
-   Framework.Variables;
+   Framework.Variables,
+   Framework.Locations;
 
 package Framework.Reports is
+   use Framework.Locations;
 
    procedure Report (Rule_Id   : in Wide_String;
                      Ctl_Label : in Wide_String;

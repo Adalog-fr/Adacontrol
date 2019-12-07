@@ -81,7 +81,7 @@ package body Rules.Unsafe_Paired_Calls is
             when None =>
                null;
             when Entity_Spec =>
-               Position : Location;
+               Position : Locations.Location;
                Entity   : Entity_Specification;
             when In_Def | In_Out_Def =>
                Formal : Asis.Defining_Name;
@@ -122,7 +122,7 @@ package body Rules.Unsafe_Paired_Calls is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
-      use Framework.Language, Utilities, Ada.Strings.Wide_Fixed;
+      use Framework.Language, Framework.Locations, Utilities, Ada.Strings.Wide_Fixed;
       First_SP  : Entity_Specification;
       Second_SP : Entity_Specification;
       Lock_Type : Entity_Specification;
@@ -442,7 +442,7 @@ package body Rules.Unsafe_Paired_Calls is
 
    procedure Process_Call (Call : in Asis.Element) is
       use Asis, Asis.Elements, Asis.Statements;
-      use Framework.Reports, Thick_Queries, Unsafe_Paired_Calls.Services;
+      use Framework.Locations, Framework.Reports, Thick_Queries, Unsafe_Paired_Calls.Services;
 
       function Is_Same_Opening_Locking (Called_Context : SP_Context;
                                         Other_Call     : Asis.Statement) return Boolean
@@ -791,7 +791,7 @@ package body Rules.Unsafe_Paired_Calls is
    --  - exit: all scopes within the exited loop
    --  - goto: all scopes within the scope of the target label
       use Asis, Asis.Elements;
-      use Framework.Reports, Rules.Unsafe_Paired_Calls.Services, Scope_Manager, Thick_Queries;
+      use Framework.Locations, Framework.Reports, Rules.Unsafe_Paired_Calls.Services, Scope_Manager, Thick_Queries;
    begin
       if Rules_Used = 0 then
          return;

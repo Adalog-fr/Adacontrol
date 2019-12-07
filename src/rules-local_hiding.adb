@@ -384,7 +384,7 @@ package body Rules.Local_Hiding is
 
       First_Name := First_Defining_Name (Name);
       declare
-         use Framework.Reports;
+         use Framework.Locations, Framework.Reports;
          function Enclosing_Scope (N : Asis.Element) return Asis.Element is
             Result : Asis.Element := Enclosing_Element (N);
          begin
