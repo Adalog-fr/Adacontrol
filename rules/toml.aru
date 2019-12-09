@@ -1,0 +1,5 @@
+set format_header "[messages]%nStart_Date = %D%nStart_Time = %T%n";
+set format "[messages.%S]%nFile = ""%\f""%nLine = %l%nColumn = %c%nLevel = ""%\k""%n%[Label = ""%\t""%n%]Rule = ""%\r""%nMessage = ""%\m""%n";
+
+set count_format_header "[counts]%nNb_Errors = %E%nNb_Warnings = %W";
+set count_format """%\d"" = %m";

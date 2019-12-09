@@ -48,6 +48,10 @@ with
 
 package body Framework.Locations is
 
+   use Framework.Variables.Shared_Types;
+
+   Long_File_Name : aliased Switch_Type.Object := (Value => Off);
+
    ---------
    -- "+" --
    ---------
@@ -382,25 +386,12 @@ package body Framework.Locations is
                    Quoted     : in Boolean        := False)
                    return Wide_String
    is
+      use Ada.Characters.Handling;
+      use Ada.Directories;
       use Utilities;
 
-      function Strip (Name : in Wide_String) return Wide_String is
-      begin
-         if not Short_Name then
-            return Name;
-         end if;
-
-         for I in reverse Name'Range loop
-            if Name (I) = '/' or Name (I) = '\' then
-               return Name (I + 1 .. Name'Last);
-            end if;
-         end loop;
-
-         -- No path found
-         return Name;
-      end Strip;
-
    begin  -- Image
+
       if L = Null_Location then
          Failure ("Image of null location");
       elsif L.File_Name = Null_Unbounded_Wide_String then
@@ -412,14 +403,18 @@ package body Framework.Locations is
       else
          if Quoted then
             return
-              Quote (Strip (To_Wide_String (L.File_Name)))
+              Quote (if Long_File_Name.Value = On
+                     then To_Wide_String (L.File_Name)
+                     else To_Wide_String (Simple_Name (To_String (To_Wide_String (L.File_Name)))))
               & Separator
               & Quote (ASIS_Integer_Img (L.First_Line))
               & Separator
               & Quote (ASIS_Integer_Img (L.First_Column));
          else
             return
-              Strip (To_Wide_String (L.File_Name))
+              (if Long_File_Name.Value = On
+               then To_Wide_String (L.File_Name)
+               else To_Wide_String (Simple_Name (To_String (To_Wide_String (L.File_Name)))))
               & Separator
               & ASIS_Integer_Img (L.First_Line)
               & Separator
@@ -475,4 +470,15 @@ package body Framework.Locations is
       return Result;
    end Value;
 
+   -----------------------
+   -- Is_Long_File_Name --
+   -----------------------
+
+   function Is_Long_File_Name return Boolean is
+   begin
+      return Long_File_Name.Value = On;
+   end Is_Long_File_Name;
+
+begin  -- Framework.Locations
+   Framework.Variables.Register (Long_File_Name'Access, Variable_Name => "LONG_FILE_NAME");
 end Framework.Locations;

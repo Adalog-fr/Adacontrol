@@ -1,0 +1,2 @@
+set format_header "# YAML 1.2%n# Start_Date = %D%n# Start_Time = %T%n---";
+set format "- Path: %f%n  Location:%n    Line: %l%n    Column: %c%n  Type: %k%n  %[Label: %t%n  %]Rule: %r%n  Message: %m";

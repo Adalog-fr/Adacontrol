@@ -1017,7 +1017,8 @@ Options:
    -e        treat warnings (Search) as errors (Check)
    -E        print only errors (Check)
    -f file   use a file for the specification of rules
-   -F format choose output format (GNAT, GNAT_SHORT, CSV, CSV_SHORT, CSVX, CSVX_SHORT, NONE)
+   -F format choose output format (GNAT, CSV, CSVX, NONE)
+             Append _SHORT or _LONG to format name to force short/long file name
    -G level  level to generate fixes for (NONE, SEARCH, CHECK)
    -i        ignore local deactivations
    -j        invert local deactivations

@@ -133,6 +133,9 @@ package Framework.Locations is
    -- Returns location value of a string
    -- raises Constraint_Error for an incorrect input string
 
+   function Is_Long_File_Name return Boolean;
+   -- Returns True if Long_File_Name variable is set to On, False otherwise
+
 private
 
    type Location is record

@@ -20,7 +20,9 @@ Syntax errors found
 ../rules/ravenscar.aru: No syntax error
 ../rules/reserved_2005.aru: No syntax error
 ../rules/SQALE.aru: No syntax error
+../rules/toml.aru: No syntax error
 ../rules/verif.aru: No syntax error
+../rules/yaml.aru: No syntax error
 conf/t_abnormal_function_return.aru: No syntax error
 conf/t_actual_parameters.aru: No syntax error
 conf/t_allocators.aru: No syntax error

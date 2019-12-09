@@ -52,7 +52,7 @@ with
   Adactl_Options,
   Framework.Language.Commands,
   Framework.Language.Scanner,
-  Framework.Locations,
+  Framework.Reports,
   Framework.Rules_Manager,
   Framework.Variables.Shared_Types;
 package body Framework.Language is
@@ -436,6 +436,29 @@ package body Framework.Language is
                                  Set_Trace_Command (Trace);
                               end;
 
+                           elsif Option = "FORMAT" then
+                              Next_Token;
+
+                              case Current_Token.Kind is
+                                 when Name =>
+                                    declare
+                                       use Framework.Reports;
+                                    begin
+                                       Set_Output_Format (Image (Current_Token));
+                                    exception
+                                       when Constraint_Error =>
+                                          Syntax_Error ("Unknown format identifier """ & Image (Current_Token) & '"',
+                                                        Current_Token.Position);
+                                    end;
+                                 when String_Value =>
+                                    Set_Variable ("FORMAT", Val => Image (Current_Token), Bounding => Exact);
+                                 when others =>
+                                    Syntax_Error ("Illegal value for Format, identifier or string expected",
+                                                  Current_Token.Position);
+                              end case;
+
+                              Next_Token;
+                              Close_Command;
                            else   -- Not file options, regular variables
                               Next_Token;
 

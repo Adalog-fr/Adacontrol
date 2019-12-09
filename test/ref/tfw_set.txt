@@ -20,9 +20,8 @@ Issued messages: Errors = 1, Warnings = 1
 "tfw_set.adb","3","4","Search","","DECLARATIONS","use of declaration ""variable"""
 
 Rules usage statistics:
-Rule,Label,Check,Search,Count
-DECLARATIONS,,1,1,0
-DECLARATIONS,Not_Controlled,0,0,0
+DECLARATIONS: Check: 1, Search: 1, Count: 0
+DECLARATIONS.Not_Controlled: not triggered
 
 Units processed: 1
 Lines processed: 18

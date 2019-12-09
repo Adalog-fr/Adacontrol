@@ -123,11 +123,12 @@ if [ $SPEEDUP = 0 ] ; then
     # This one has full path names in the result file, the result depends on the directory 
     # where it's run from...
     # translate \ to / to make independant from OS, keep only the "test/" part of the path
+    # Also, the first line contains a date and time, remove all digits
     test_case=tfw_formats
     nb_fw=$((nb_fw+1))
     ${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
 	| tr -d \\r \
-        | sed "s%\\\\%/%g; s/^.*test/test/" >res/${test_case}.txt
+        | sed "1s/[0-9]//g; s%\\\\%/%g; s/^.*test/test/" >res/${test_case}.txt
 
     # Check GPR project file. Use the raw executable, since we want to check that
     # options are taken from the project file
@@ -243,7 +244,7 @@ if [ $SPEEDUP = 0 ] ; then
 
     # Create timing file
     echo "Rule;Time;Percent" >res/rules_timing.csv
-    grep -E "^[A-Za-z_]+;[0-9.]+;[0-9.]+%" res/${test_case}.txt >>res/rules_timing.csv
+    grep -E "^[A-Za-z_]+: [0-9.]+ \([0-9.]+%\)" res/${test_case}.txt >>res/rules_timing.csv
     ###########################################################################
     # Put "PASSED" as the result if OK
     if [ $result -le 1 ]; then

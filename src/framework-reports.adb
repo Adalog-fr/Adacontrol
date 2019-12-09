@@ -27,8 +27,15 @@
 -- Ada
 with
   Ada.Exceptions,
+  Ada.Calendar,
+  Ada.Calendar.Formatting,
+  Ada.Calendar.Time_Zones,
   Ada.Characters.Handling,
+  Ada.Characters.Latin_1,
+  Ada.Directories,
+  Ada.Strings.Wide_Unbounded,
   Ada.Strings.Wide_Fixed,
+  Ada.Wide_Characters.Handling,
   Ada.Wide_Text_IO;
 
 -- ASIS
@@ -52,10 +59,41 @@ with
 package body Framework.Reports is
    use Framework.Variables, Framework.Variables.Shared_Types;
 
+   Std_Message_Format_Headers : constant array (Output_Format) of Unbounded_Wide_String :=
+     (Source => To_Unbounded_Wide_String (""),
+      Gnat   => To_Unbounded_Wide_String (""),
+      CSV    => To_Unbounded_Wide_String ("""file"",""line"",""column"",""key"",""label"",""rule"",""message"),
+      CSVX   => To_Unbounded_Wide_String ("""file"";""line"";""column"";""key"";""label"";""rule"";""message"),
+      None   => To_Unbounded_Wide_String (""));
+
+   Std_Message_Formats : constant array (Output_Format) of Unbounded_Wide_String :=
+     (Source => To_Unbounded_Wide_String ("%s%n%! %k: %d: %m"),
+      Gnat   => To_Unbounded_Wide_String ("%[%f:%l:%c: %]%k: %d: %m"),
+      CSV    => To_Unbounded_Wide_String ("""%""f"",""%""l"",""%""c"",""%""k"",""%""t"",""%""r"",""%""m"""),
+      CSVX   => To_Unbounded_Wide_String ("""%""f"";""%""l"";""%""c"";""%""k"";""%""t"";""%""r"";""%""m"""),
+      None   => To_Unbounded_Wide_String (""));
+
+   Std_Count_Format_Headers : constant array (Output_Format) of Unbounded_Wide_String :=
+     (Source => To_Unbounded_Wide_String ("Counts summary:"),
+      Gnat   => To_Unbounded_Wide_String ("Counts summary:"),
+      CSV    => To_Unbounded_Wide_String ("Rule,Counts"),
+      CSVX   => To_Unbounded_Wide_String ("Rule;Counts"),
+      None   => To_Unbounded_Wide_String (""));
+
+   Std_Count_Formats        : constant array (Output_Format) of Unbounded_Wide_String :=
+     (Source => To_Unbounded_Wide_String ("%d: %m"),
+      Gnat   => To_Unbounded_Wide_String ("%d: %m"),
+      CSV    => To_Unbounded_Wide_String ("""%""d"", ""%m"""),
+      CSVX   => To_Unbounded_Wide_String ("""%""d""; ""%m"""),
+      None   => To_Unbounded_Wide_String (""));
+
+   Wide_LF : constant Wide_Character := Ada.Characters.Handling.To_Wide_Character (Ada.Characters.Latin_1.LF);
+
    package Output_Format_Type is
       type Object is new Variables.Object with
          record
-            Value : Output_Format;
+            Needs_Source : Boolean := False;
+            Value        : Unbounded_Wide_String;
          end record;
       overriding procedure Set         (Variable : in out Output_Format_Type.Object; To : Wide_String);
       overriding function  Value_Image (Variable : in     Output_Format_Type.Object) return Wide_String;
@@ -79,12 +117,16 @@ package body Framework.Reports is
    Adactl_Tag1             : aliased String_Type.Object := (Value => To_Unbounded_Wide_String ("##"));
    Adactl_Tag2             : aliased String_Type.Object := (Value => To_Unbounded_Wide_String ("##"));
 
-   Format_Option           : aliased Output_Format_Type.Object := (Value => Gnat);
+   Message_Format          : aliased Output_Format_Type.Object := (Needs_Source => False,
+                                                                   Value        => Std_Message_Formats (Gnat));
+   Message_Format_Header   : aliased String_Type.Object := (Value => Std_Message_Format_Headers (Gnat));
+   Count_Format            : aliased String_Type.Object := (Value => Std_Count_Formats          (Gnat));
+   Count_Format_Header     : aliased String_Type.Object := (Value => Std_Count_Format_Headers   (Gnat));
 
+   Sequence_Value          : aliased Natural_Type.Object := (Value => 0);
    --
    -- Local variables
    --
-   CSV_Separator : constant array (Output_Format range CSV .. None) of Wide_Character := (',', ';', ';');
 
    Not_Found : constant := 0;
 
@@ -120,6 +162,170 @@ package body Framework.Reports is
    -- State of Enabling/Disabling messages
    Report_Enabled : Boolean;
    Last_Control   : Control_Kinds;
+
+
+   --
+   -- Local utilities
+   --
+
+   -------------------
+   -- Multiline_Put --
+   -------------------
+
+   procedure Multiline_Put (S : Wide_String) is
+      use Ada.Wide_Text_IO;
+   begin
+      for Cur_Char : Wide_Character of S loop
+         if Cur_Char = Wide_LF then
+            New_Line;
+         else
+            Put (Cur_Char);
+         end if;
+      end loop;
+   end Multiline_Put;
+
+   -----------
+   -- Image --
+   -----------
+   type Time_Part is (Day, Hour);
+
+   function Image (T : Ada.Calendar.Time; Part : Time_Part) return Wide_String is
+      use Ada.Calendar, Ada.Calendar.Time_Zones, Ada.Characters.Handling;
+   -- format of the image of a date is (9.6.1 (82/2)):
+   -- YYYY-MM-DD HH:MM:SS
+   -- 0        1 1      1
+   -- 1        0 2      9
+   begin
+      case Part is
+         when Day =>
+            return To_Wide_String (Formatting.Image (T, Time_Zone => UTC_Time_Offset (T))) (01 .. 10);
+         when Hour =>
+            return To_Wide_String (Formatting.Image (T, Time_Zone => UTC_Time_Offset (T))) (12 .. 19);
+      end case;
+   end Image;
+
+   --------------------
+   -- Expand_Pattern --
+   --------------------
+
+   generic
+      with function Translate (Key : Wide_Character) return Wide_String;
+   function Expand_Pattern (Pattern : in Wide_String) return Wide_String;
+
+   function Expand_Pattern (Pattern : in Wide_String) return Wide_String is
+      Index : Natural := Pattern'First;
+
+      function Parse_It return Wide_String is
+         use Utilities;
+         type Format_States is (Normal, Percent, Percent_Quote, Percent_Back_Slash);
+         State           : Format_States;
+         Cur_Char        : Wide_Character;
+         Result          : Unbounded_Wide_String;
+         Non_Empty_Subst : Boolean := False;
+      begin
+         State := Normal;
+         loop
+            Cur_Char := Pattern (Index);
+            case State is
+               when Normal =>
+                  if Cur_Char = '%' then
+                     State := Percent;
+                  else
+                     Append (Result, Cur_Char);
+                  end if;
+               when Percent | Percent_Quote | Percent_Back_Slash =>
+                  case Cur_Char is
+                     when '%' => -- %
+                        Append (Result, '%');
+                        State := Normal;
+                     when '"' =>
+                        case State is
+                           when Normal => -- impossible
+                              Failure ("Expand pattern: normal state with %\");
+                           when Percent =>
+                              State := Percent_Quote;
+                           when Percent_Quote => -- case of %""
+                              Append (Result, "%""""");
+                              State := Normal;
+                           when Percent_Back_Slash => -- case of %\"
+                              Append (Result, "%\""");
+                              State := Normal;
+                        end case;
+                     when '\' =>
+                        case State is
+                           when Normal => -- impossible
+                              Failure ("Expand pattern: normal state with %\");
+                           when Percent =>
+                              State := Percent_Back_Slash;
+                           when Percent_Quote => -- case of %"\
+                              Append (Result, "%""\");
+                           when Percent_Back_Slash => -- case of %\\
+                                Append (Result, "%\\");
+                              State := Normal;
+                        end case;
+                     when '[' =>
+                        Index := Index + 1;
+                        declare
+                           Temp : constant Wide_String := Parse_It;
+                        begin
+                           if Temp /= "" then
+                              Non_Empty_Subst := True;
+                              Append (Result, Temp);
+                           end if;
+                           State := Normal;
+                        end;
+                     when ']' =>
+                        if Non_Empty_Subst then
+                           return To_Wide_String (Result);
+                        else
+                           return "";
+                        end if;
+                     when others =>
+                        declare
+                           Temp : constant Wide_String := Translate (Cur_Char);
+                        begin
+                           Non_Empty_Subst := Non_Empty_Subst or else (Temp /= "" and then Temp /= (1 => Wide_LF));
+                           if Temp /= "" then
+                              case State is
+                                 when Normal => -- impossible
+                                    Failure ("Expand pattern: normal state after percent");
+                                 when Percent =>
+                                    Append (Result, Temp);
+                                 when Percent_Quote =>
+                                    Append (Result, Quote (Temp, Escape_With => '"', Add_Outer => False));
+                                 when Percent_Back_Slash =>
+                                    Append (Result, Quote (Temp, Escape_With => '\', Add_Outer => False));
+                              end case;
+                           end if;
+                           State := Normal;
+                        end;
+                  end case;
+            end case;
+
+            exit when Index = Pattern'Last;
+            Index := Index + 1;
+         end loop;
+         case State is
+            when Normal =>
+               null;
+            when Percent => -- Last character of format is a %
+               Append (Result, '%');
+            when Percent_Quote => -- Last 2 characters of format are %"
+               Append (Result, "%""");
+            when Percent_Back_Slash => -- Last 2 characters of format are %\
+               Append (Result, "%\");
+         end case;
+
+         return To_Wide_String (Result);
+      end Parse_It;
+   begin  -- Expand_Pattern
+      return Parse_It;
+   end Expand_Pattern;
+
+
+   --
+   -- Exported operations
+   --
 
    -----------
    -- Reset --
@@ -262,35 +468,54 @@ package body Framework.Reports is
       -- Active does not change
    end Update;
 
+   -----------------------
+   -- Set_Output_Format --
+   -----------------------
+
+   procedure Set_Output_Format (Value : Wide_String) is
+      use Ada.Wide_Characters.Handling, Ada.Strings.Wide_Fixed;
+
+      Sep_Pos : Natural := Index (Value, "_");
+      Format  : Output_Format;
+   begin
+      -- Is a defined output format
+      if Sep_Pos = 0 then
+         Sep_Pos    := Value'Last + 1;
+      elsif To_Upper (Value (Sep_Pos .. Value'Last)) = "_SHORT" then
+         Set_Variable ("LONG_FILE_NAME", "Off");
+      elsif To_Upper (Value (Sep_Pos .. Value'Last)) = "_LONG" then
+         Set_Variable ("LONG_FILE_NAME", "On");
+      else
+         raise Constraint_Error;
+      end if;
+      Format := Output_Format'Wide_Value (Value (Value'First .. Sep_Pos - 1));
+
+      Set_Variable ("FORMAT",        Val => To_Wide_String (Std_Message_Formats        (Format)));
+      Set_Variable ("FORMAT_HEADER", Val => To_Wide_String (Std_Message_Format_Headers (Format)));
+   end Set_Output_Format;
+
    ------------------------
    -- Output_Format_Type --
    ------------------------
 
    package body Output_Format_Type is
       procedure Set (Variable : in out Output_Format_Type.Object; To : Wide_String) is
-         use Utilities;
          use Ada.Strings.Wide_Fixed;
-         Sep_Pos : Natural := Index (To, "_");
+         use Ada.Wide_Characters.Handling;
       begin
-         if Sep_Pos = 0 then
-            Sep_Pos    := To'Last + 1;
-            Short_Name := False;
-         elsif To_Upper (To (Sep_Pos .. To'Last)) = "_SHORT" then
-            Short_Name := True;
-         else
-            raise Constraint_Error;
-         end if;
-
-         Variable.Value := Output_Format'Wide_Value (To (To'First .. Sep_Pos - 1)); -- May raise C_E
+         Variable := (Value => To_Unbounded_Wide_String (To), Needs_Source => Index (To_Upper (To), "%s") > 0);
       end Set;
 
-      function  Value_Image (Variable : in Output_Format_Type.Object) return Wide_String is
+      function Value_Image (Variable : in Output_Format_Type.Object) return Wide_String is
+         use Utilities;
       begin
-         if Short_Name then
-            return Output_Format'Wide_Image (Variable.Value) & "_SHORT";
-         else
-            return Output_Format'Wide_Image (Variable.Value);
-         end if;
+         for F in Std_Message_Formats'Range loop
+            if Message_Format.Value = Std_Message_Formats (F) then
+               return Output_Format'Wide_Image (F);
+            end if;
+         end loop;
+
+         return Quote (To_Wide_String (Variable.Value));
       end Value_Image;
 
       function  All_Values  (Variable : in Output_Format_Type.Object) return Wide_String is
@@ -300,38 +525,16 @@ package body Framework.Reports is
       begin
          for V in Output_Format range Output_Format'First .. Output_Format'Pred (None) loop
             Append (Buffer, To_Title (Output_Format'Wide_Image (V)) & ", ");
-            Append (Buffer, To_Title (Output_Format'Wide_Image (V)) & "_SHORT, ");
+            Append (Buffer, To_Title (Output_Format'Wide_Image (V)) & "_Short, ");
+            Append (Buffer, To_Title (Output_Format'Wide_Image (V)) & "_Long, ");
          end loop;
-         return
-           '('
-           & To_Wide_String (Buffer)
-           & To_Title (Output_Format'Wide_Image (None))
-           & ')';
+         return '('
+                & To_Wide_String (Buffer)
+                & To_Title (Output_Format'Wide_Image (None))
+                & ", or ""<custom format>"""
+                & ')';
       end All_Values;
    end Output_Format_Type;
-
-   --------------------
-   -- Current_Format --
-   --------------------
-
-   function Current_Format return Output_Format is
-   begin
-      return Format_Option.Value;
-   end Current_Format;
-
-   -----------
-   -- "and" --
-   -----------
-
-   function "and" (Left, Right : Wide_String) return Wide_String is
-   begin
-      case Format_Option.Value is
-         when Gnat | Source=>
-            return Left & ": " & Right;
-         when CSV | CSVX | None =>
-            return Left & CSV_Separator (Format_Option.Value) & Right;
-      end case;
-   end "and";
 
    ----------------
    -- Raw_Report --
@@ -366,86 +569,87 @@ package body Framework.Reports is
    is
       use Utilities, Adactl_Options;
 
-      Label     : constant Wide_String := Choose (Ctl_Label, Otherwise => Rule_Id);
-      Line      : Wide_String (1..1024);
-      Line_Last : Natural := 0;
+      Defaulted_Label : constant Wide_String := Choose (Ctl_Label, Otherwise => Rule_Id);
+      Line            : Wide_String (1..1024);
+      Line_Last       : Natural := 0;
 
-      procedure Issue_Message (Title : Wide_String) is
-         use Ada.Strings.Wide_Fixed, Ada.Wide_Text_IO;
-      begin   -- Issue_Message
-         if Just_Created then
-            Just_Created := False;
-            case Format_Option.Value is
-               when CSV | CSVX =>
-                  Put ("File");
-                  Put (CSV_Separator (Format_Option.Value));
-                  Put ("Line");
-                  Put (CSV_Separator (Format_Option.Value));
-                  Put ("Col");
-                  Put (CSV_Separator (Format_Option.Value));
-                  Put ("Type");
-                  Put (CSV_Separator (Format_Option.Value));
-                  Put ("Label");
-                  Put (CSV_Separator (Format_Option.Value));
-                  Put ("Rule");
-                  Put (CSV_Separator (Format_Option.Value));
-                  Put ("Message");
-                  New_Line;
+      procedure Issue_Message (Kind_Message : Wide_String) is
+         use Ada.Wide_Text_IO;
+
+         function Message_Translate (Key : Wide_Character) return Wide_String is
+            use Ada.Calendar, Ada.Characters.Handling, Ada.Strings.Wide_Fixed, Ada.Directories;
+         begin
+            case Key is
+               when 'c' => -- Column
+                  if Loc = Null_Location then
+                     return "";
+                  else
+                     return ASIS_Integer_Img (Get_First_Column (Loc));
+                  end if;
+               when 'd' => -- Tag (defaulted)
+                  return Defaulted_Label;
+               when 'D' =>
+                  return Image (Clock, Day);
+               when 'E' =>
+                  return Integer_Img (Error_Count);
+               when 'f' => -- File
+                  if Loc = Null_Location then
+                     return "";
+                  elsif Is_Long_File_Name then
+                     return Get_File_Name (Loc);
+                  else
+                     return To_Wide_String (Simple_Name (To_String (Get_File_Name (Loc))));
+                  end if;
+               when 'k' => -- Kind
+                  return Kind_Message;
+               when 'l' => -- Line
+                  if Loc = Null_Location then
+                     return "";
+                  else
+                     return ASIS_Integer_Img (Get_First_Line (Loc));
+                  end if;
+               when 'm' => -- Message
+                  return Msg;
+               when 'n' => -- New line
+                  return (1 => Wide_LF);
+               when 'r' => -- Rule
+                  return Rule_Id;
+               when 's' => -- Source
+                  return (if Loc = Null_Location then "" else Image (Loc) & ": " )
+                          & Line (1 .. Line_Last);
+               when 'S' =>
+                  Sequence_Value.Value := Sequence_Value.Value + 1;
+                  return Integer_Img (Sequence_Value.Value);
+               when 't' => -- Tag
+                  return Ctl_Label;
+               when 'T' =>
+                  return Image (Clock, Hour);
+               when 'W' =>
+                  return Integer_Img (Warning_Count);
+               when '!' => -- Indicator
+                    return (if Loc = Null_Location then "" else Image (Loc) & ": " )
+                            & (Get_First_Column (Loc) - 1) * ' ' & '!';
                when others =>
-                  null;
+                  return (1 => Key);
             end case;
+         end Message_Translate;
+
+         function Expand_Message is new Expand_Pattern (Message_Translate);
+      begin   -- Issue_Message
+         if Message_Format.Value = "" then
+            return;
          end if;
 
-         case Format_Option.Value is
-            when Gnat =>
-               if Loc /= Null_Location then
-                  Put (Image (Loc));
-                  Put (": ");
-               end if;
-               Put (Title);
-               Put (": ");
-               Put (Label);
-               Put (": ");
-               Put (Msg);
-               New_Line;
-            when CSV | CSVX =>
-               if Loc = Null_Location then
-                  Put ("""""" and """""" and """""");
-               else
-                  Put (Image (Loc, Separator => CSV_Separator (Format_Option.Value), Quoted => True));
-               end if;
-               Put (CSV_Separator (Format_Option.Value));
-               Put (Quote (Title));
-               Put (CSV_Separator (Format_Option.Value));
-               Put (Quote (Ctl_Label));
-               Put (CSV_Separator (Format_Option.Value));
-               Put (Quote (Rule_Id));
-               Put (CSV_Separator (Format_Option.Value));
-               Put (Quote (Msg));
-               New_Line;
-            when Source =>
-               if Loc = Null_Location then
-                  Put (Line (1 .. Line_Last));
-               else
-                  Put (Image (Loc));
-                  Put (": ");
-                  Put (Line (1 .. Line_Last));
-                  New_Line;
-                  Put (Image (Loc));
-                  Put (": ");
-                  Put ((Integer (Get_First_Column (Loc)) - 1) * ' ');   --## Rule line off Simplifiable_expressions
-                                                                        --   Gela-ASIS compatibility
-                  Put ("! ");
-               end if;
-               Put (Title);
-               Put (": ");
-               Put (Label);
-               Put (": ");
-               Put (Msg);
-               New_Line;
-            when None =>
-               null;
-         end case;
+         -- Output header if any
+         if Just_Created and then Message_Format_Header.Value /= "" then    -- Output a header
+            Multiline_Put (Expand_Message (To_Wide_String (Message_Format_Header.Value)));
+            New_Line;
+         end if;
+
+         -- Output message
+         Multiline_Put (Expand_Message (To_Wide_String (Message_Format.Value)));
+         New_Line;
+         Just_Created := False;
       end Issue_Message;
 
       use Ada.Exceptions;
@@ -487,8 +691,7 @@ package body Framework.Reports is
       -- Retrieve source line, but only if necessary since it can be quite
       -- a long operation
       Report_Enabled := Rules_Manager.Initial_Disabling_State (Rule_Id, Get_File_Name (Loc));
-      if Format_Option.Value = Source
-        or (Format_Option.Value /= None and Ignore_Option.Value /= On)
+      if Message_Format.Needs_Source or (Message_Format.Value /= "" and Ignore_Option.Value /= On)
       then
          declare
             use Ada.Characters.Handling, Ada.Wide_Text_IO;
@@ -557,8 +760,8 @@ package body Framework.Reports is
                end if;
             when Count =>
                Add (Rule_Counter,
-                    To_Unbounded_Wide_String (Label),
-                    Fetch (Rule_Counter, To_Unbounded_Wide_String (Label)) + 1);
+                    To_Unbounded_Wide_String (Defaulted_Label),
+                    Fetch (Rule_Counter, To_Unbounded_Wide_String (Defaulted_Label)) + 1);
          end case;
 
          if Stats_Level.Value >= Nulls_Only then
@@ -699,9 +902,9 @@ package body Framework.Reports is
                               Label    : Wide_String)
    is
    begin
-      Uncheckable_Used   (Risk) := True;
-      Uncheckable_Controls  (Risk) := Ctl_Kind;
-      Uncheckable_Labels (Risk) := To_Unbounded_Wide_String (Label);
+      Uncheckable_Used     (Risk) := True;
+      Uncheckable_Controls (Risk) := Ctl_Kind;
+      Uncheckable_Labels   (Risk) := To_Unbounded_Wide_String (Label);
    end Set_Uncheckable;
 
    ----------------------------------------
@@ -753,30 +956,63 @@ package body Framework.Reports is
    -------------------
 
    procedure Report_Counts is
-      use Counters, Ada.Wide_Text_IO;
+      use Counters;
 
-      procedure Report_One_Count (Key : in Unbounded_Wide_String; Counter_Value : in out Natural) is
-         use Utilities;
-      begin
-         Raw_Report (To_Wide_String (Key) and Integer_Img (Counter_Value));
+      First_Time : Boolean := True;
+
+      procedure Report_One_Count (Tag : in Unbounded_Wide_String; Counter_Value : in out Natural) is
+         use Ada.Wide_Text_IO;
+
+         function Count_Translate (Key : Wide_Character) return Wide_String is
+            use Ada.Calendar;
+            use Utilities;
+         begin
+            case Key is
+               when 'd' => -- Defaulted_Tag
+                  return To_Wide_String (Tag);
+               when 'D' =>
+                  return Image (Clock, Day);
+               when 'E' =>
+                  return Integer_Img (Error_Count);
+               when 'm' => -- Message
+                  return Integer_Img (Counter_Value);
+               when 'n' => -- New line
+                  return (1 => Wide_LF);
+               when 'S' =>
+                  Sequence_Value.Value := Sequence_Value.Value + 1;
+                  return Integer_Img (Sequence_Value.Value);
+               when 'T' =>
+                  return Image (Clock, Hour);
+               when 'W' =>
+                  return Integer_Img (Warning_Count);
+               when others =>
+                  return (1 => Key);
+            end case;
+         end Count_Translate;
+
+         function Expand_Count is new Expand_Pattern (Count_Translate);
+
+      begin  -- Report_One_Count
+         if First_Time then
+            if Count_Format_Header.Value /= "" then    -- Output a header
+               New_Line;
+               Multiline_Put (Expand_Count (To_Wide_String (Count_Format_Header.Value)));
+               New_Line;
+            end if;
+            First_Time := False;
+         end if;
+
+         Multiline_Put (Expand_Count (To_Wide_String (Count_Format.Value)));
+         New_Line;
       end Report_One_Count;
 
       procedure Report_All_Counts is new Iterate (Report_One_Count);
 
    begin -- Report_Counts
-      if Is_Empty (Rule_Counter) or Format_Option.Value = None then
+      if Is_Empty (Rule_Counter) or Count_Format.Value = "" then
          return;
       end if;
 
-      case Format_Option.Value is
-         when None =>
-            return;
-         when CSV | CSVX =>
-            Raw_Report ("Rule" and "Counts");
-         when Source | Gnat =>
-            New_Line;
-            Raw_Report ("Counts summary:");
-      end case;
       Report_All_Counts (Rule_Counter);
    end Report_Counts;
 
@@ -859,53 +1095,30 @@ package body Framework.Reports is
 
       procedure Report_One_Stat (Key : in Unbounded_Wide_String; Counter_Value : in out Natural) is
          use Utilities;
-         Triggered_Count : Natural     := Counter_Value;
-         Wide_Key        : Wide_String := To_Wide_String (Key);
-         Dot_Found       : Boolean     := False;
+         Wide_Key        : constant Wide_String := To_Wide_String (Key);
+         Triggered_Count :          Natural     := Counter_Value;
       begin
          for Ctr : Counters.Map of Stats_Counters (Control_Kinds'Succ (Control_Kinds'First) .. Control_Kinds'Last) loop
             Triggered_Count := Triggered_Count + Fetch (Ctr, Key, Default_Value => 0);
          end loop;
 
          if Triggered_Count = 0 or else Stats_Level.Value = Full then
-            case Format_Option.Value is
-               when Gnat | Source =>
-                  Put (Wide_Key);
-                  Put (": ");
-                  if Triggered_Count = 0 then
-                     Put ("not triggered");
-                  else
-                     Put (To_Title (Control_Kinds'Wide_Image (Control_Kinds'First)));
-                     Put (": ");
-                     Put (Integer_Img (Counter_Value));
+            Put (Wide_Key);
+            Put (": ");
+            if Triggered_Count = 0 then
+               Put ("not triggered");
+            else
+               Put (To_Title (Control_Kinds'Wide_Image (Control_Kinds'First)));
+               Put (": ");
+               Put (Integer_Img (Counter_Value));
 
-                     for R in Control_Kinds range Control_Kinds'Succ (Control_Kinds'First) .. Control_Kinds'Last loop
-                        Put (", ");
-                        Put (To_Title (Control_Kinds'Wide_Image (R)));
-                        Put(": ");
-                        Put (Integer_Img (Fetch (Stats_Counters (R), Key, Default_Value => 0)));
-                     end loop;
-                  end if;
-               when CSV | CSVX | None =>
-                  -- Add CSV separator in place of first '.' in wide key
-                  -- (Separates rule name from label)
-                  for C : Wide_Character of Wide_Key loop
-                     if C = '.' then
-                        C         := CSV_Separator (Format_Option.Value);
-                        Dot_Found := True;
-                        exit;
-                     end if;
-                  end loop;
-                  Put (Wide_Key);
-                  if not Dot_Found then
-                     Put (CSV_Separator (Format_Option.Value));
-                  end if;
-
-                  for Ctr : Counters.Map of Stats_Counters loop
-                     Put (CSV_Separator (Format_Option.Value));
-                     Put (Integer_Img (Fetch (Ctr, Key, Default_Value => 0)));
-                  end loop;
-            end case;
+               for R in Control_Kinds range Control_Kinds'Succ (Control_Kinds'First) .. Control_Kinds'Last loop
+                  Put (", ");
+                  Put (To_Title (Control_Kinds'Wide_Image (R)));
+                  Put(": ");
+                  Put (Integer_Img (Fetch (Stats_Counters (R), Key, Default_Value => 0)));
+               end loop;
+            end if;
             New_Line;
          end if;
       end Report_One_Stat;
@@ -919,18 +1132,13 @@ package body Framework.Reports is
       end if;
 
       if Stats_Level.Value >= Nulls_Only then
-         if Format_Option.Value /= None then
+         if Message_Format.Value /= "" then
             -- if format_option = none, there were no messages, and the stats are output in CSVX
             -- we don't need the separator, it is better to have the header line first
             New_Line;
             Put_Line ("Rules usage statistics:");
          end if;
-         case Format_Option.Value is
-            when Gnat | Source =>
-               null;
-            when CSV | CSVX  | None=>
-               Put_Line ("Rule" and "Label" and "Check" and "Search" and "Count");
-         end case;
+
          Report_All_Stats (Stats_Counters (Control_Kinds'First));
       end if;
 
@@ -951,28 +1159,25 @@ package body Framework.Reports is
    procedure Report_Timings (Rule, Duration, Percent_Duration : Wide_String) is
       use Utilities;
    begin
-      case Current_Format is
-         when CSV | CSVX | None =>
-            User_Message (Rule & CSV_Separator (Format_Option.Value),     Stay_On_Line => True);
-            User_Message (Duration & CSV_Separator (Format_Option.Value), Stay_On_Line => True);
-            User_Message (Percent_Duration & "%");
-         when others =>
-            User_Message (Rule & ": ",     Stay_On_Line => True);
-            User_Message (Duration, Stay_On_Line => True);
-            User_Message (" (" & Percent_Duration & "%)");
-      end case;
+      User_Message (Rule & ": ", Stay_On_Line => True);
+      User_Message (Duration,    Stay_On_Line => True);
+      User_Message (" (" & Percent_Duration & "%)");
    end Report_Timings;
 
 begin  -- Framework.Reports
-   Register (Active_Warning_Option'Access,   Variable_Name => "WARNING");
-   Register (Warning_As_Error_Option'Access, Variable_Name => "WARNING_AS_ERROR");
+   Register (Check_Message'Access,           Variable_Name => "CHECK_KEY");
+   Register (Count_Format'Access,            Variable_Name => "COUNT_FORMAT");
+   Register (Count_Format_Header'Access,     Variable_Name => "COUNT_FORMAT_HEADER");
+   Register (Fix_Level'Access,               Variable_Name => "FIXES_GEN");
+   Register (Message_Format'Access,          Variable_Name => "FORMAT");
+   Register (Message_Format_Header'Access,   Variable_Name => "FORMAT_HEADER");
    Register (Max_Errors'Access,              Variable_Name => "MAX_ERRORS");
    Register (Max_Messages'Access,            Variable_Name => "MAX_MESSAGES");
-   Register (Stats_Level'Access,             Variable_Name => "STATISTICS");
-   Register (Fix_Level'Access,               Variable_Name => "FIXES_GEN");
-   Register (Check_Message'Access,           Variable_Name => "CHECK_KEY");
    Register (Search_Message'Access,          Variable_Name => "SEARCH_KEY");
+   Register (Sequence_Value'Access,          Variable_Name => "SEQUENCE_VALUE");
+   Register (Stats_Level'Access,             Variable_Name => "STATISTICS");
    Register (Adactl_Tag1'Access,             Variable_Name => "TAG1");
    Register (Adactl_Tag2'Access,             Variable_Name => "TAG2");
-   Register (Format_Option'Access,           Variable_Name => "FORMAT");
+   Register (Active_Warning_Option'Access,   Variable_Name => "WARNING");
+   Register (Warning_As_Error_Option'Access, Variable_Name => "WARNING_AS_ERROR");
 end Framework.Reports;

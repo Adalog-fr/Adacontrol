@@ -1,3 +1,8 @@
+General:
+--------
+Bug fixes
+Possibility to define any custom output format
+
 Changes to existing rules:
 --------------------------
 Simplifiable_Statements:
@@ -12,7 +17,10 @@ Statements:
 
 General:
 --------
-Bug fixes
+
+Option to output result in custom format ind addition of existing formats.
+
+Counts reports are now print in the same output as Stats reports.
 
 Changes to existing rules:
 --------------------------

@@ -1,15 +1,40 @@
+Started at :: on --
+- Error # 1
+test/tfw_formats.adb
+  Location:
+    Line: 2
+    Column: 4
+  Type: "Error"
+  Label: "Label_For_Check"
+  Rule: "DECLARATIONS"
+  Message: "use of declaration ""integer_type"""
+- Error # 2
+test/tfw_formats.adb
+  Location:
+    Line: 3
+    Column: 4
+  Type: "Found"
+  Label: "Label, for ""Search;"""
+  Rule: "DECLARATIONS"
+  Message: "use of declaration ""variable"""
 test/tfw_formats.adb:2:4: Error: Label_For_Check: use of declaration "integer_type"
 test/tfw_formats.adb:3:4: Found: Label, for "Search;": use of declaration "variable"
 tfw_formats.adb:2:4: Error: Label_For_Check: use of declaration "integer_type"
 tfw_formats.adb:3:4: Found: Label, for "Search;": use of declaration "variable"
+test/tfw_formats.adb:2:4: Error: Label_For_Check: use of declaration "integer_type"
+test/tfw_formats.adb:3:4: Found: Label, for "Search;": use of declaration "variable"
 test/tfw_formats.adb","2","4","Error","Label_For_Check","DECLARATIONS","use of declaration ""integer_type"""
 test/tfw_formats.adb","3","4","Found","Label, for ""Search;""","DECLARATIONS","use of declaration ""variable"""
 "tfw_formats.adb","2","4","Error","Label_For_Check","DECLARATIONS","use of declaration ""integer_type"""
 "tfw_formats.adb","3","4","Found","Label, for ""Search;""","DECLARATIONS","use of declaration ""variable"""
+test/tfw_formats.adb","2","4","Error","Label_For_Check","DECLARATIONS","use of declaration ""integer_type"""
+test/tfw_formats.adb","3","4","Found","Label, for ""Search;""","DECLARATIONS","use of declaration ""variable"""
 test/tfw_formats.adb";"2";"4";"Error";"Label_For_Check";"DECLARATIONS";"use of declaration ""integer_type"""
 test/tfw_formats.adb";"3";"4";"Found";"Label, for ""Search;""";"DECLARATIONS";"use of declaration ""variable"""
 "tfw_formats.adb";"2";"4";"Error";"Label_For_Check";"DECLARATIONS";"use of declaration ""integer_type"""
 "tfw_formats.adb";"3";"4";"Found";"Label, for ""Search;""";"DECLARATIONS";"use of declaration ""variable"""
+test/tfw_formats.adb";"2";"4";"Error";"Label_For_Check";"DECLARATIONS";"use of declaration ""integer_type"""
+test/tfw_formats.adb";"3";"4";"Found";"Label, for ""Search;""";"DECLARATIONS";"use of declaration ""variable"""
 test/tfw_formats.adb:2:4:    type Int is range 1 .. 10;
 test/tfw_formats.adb:2:4:    ! Error: Label_For_Check: use of declaration "integer_type"
 test/tfw_formats.adb:3:4:    I : Int;
@@ -18,3 +43,7 @@ tfw_formats.adb:2:4:    type Int is range 1 .. 10;
 tfw_formats.adb:2:4:    ! Error: Label_For_Check: use of declaration "integer_type"
 tfw_formats.adb:3:4:    I : Int;
 tfw_formats.adb:3:4:    ! Found: Label, for "Search;": use of declaration "variable"
+test/tfw_formats.adb:2:4:    type Int is range 1 .. 10;
+test/tfw_formats.adb:2:4:    ! Error: Label_For_Check: use of declaration "integer_type"
+test/tfw_formats.adb:3:4:    I : Int;
+test/tfw_formats.adb:3:4:    ! Found: Label, for "Search;": use of declaration "variable"

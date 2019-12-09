@@ -1,24 +1,38 @@
 -- Objective: check the various output formats
+set format_Header "Started at %T on %D";
 
 Label_For_Check     : check declarations (integer_type);
 "Label, for ""Search;""": search declarations (variable);
 
+set long_file_name on;
+set format "- Error # %S%n  Path: %f%n  Location:%n    Line: %l%n    Column: %c%n  Type: ""%""k""%n  Label: ""%""t""%n  Rule: ""%""r""%n  Message: ""%""m""";
+go;
+
 set format gnat;
 go;
 set format gnat_short;
+go;
+set format gnat_long;
 go;
 
 set format csv;
 go;
 set format csv_short;
 go;
+set format csv_long;
+go;
 
 set format csvx;
 go;
 set format csvx_short;
+go;
+set format csvx_long;
 go;
 
 set format source;
 go;
 set format source_short;
 go;
+set format source_long;
+go;
+

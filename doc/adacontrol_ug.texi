@@ -42,6 +42,7 @@ how to add new kinds of rules to AdaControl.
 * Specifying an Ada entity name::
 * Definition of type categories::
 * Syntax of regular expressions::
+* Syntax of format strings::
 * Non upward-compatible changes::
 @end menu
 
@@ -191,9 +192,9 @@ pack.ads:2:4: Found: PRAGMAS: use of pragma Pure
 
 AdaControl integrates nicely in environments such as GPS
 (@pxref{Running AdaControl from GPS}), AdaGide (@pxref{Running
-AdaControl from AdaGide}), or emacs (@pxref{Control kinds and report
-messages}). In those environments, you can run AdaControl from menus
-or by just clicking on a button!
+AdaControl from AdaGide}), or emacs (@pxref{Report messages}). In
+those environments, you can run AdaControl from menus or by just
+clicking on a button!
 
 @node Support, History, Features, Introduction
 @section Support
@@ -708,6 +709,7 @@ a task type), you can force Ada-95 the same way by using
 * Output file::
 * Output format::
 * Output limits::
+* Informational output::
 * Project files::
 * Local disabling control::
 * Verbose and debug mode::
@@ -889,20 +891,42 @@ itself are output to the standard error file.
 
 @node  Output format, Output limits, Output file, Command line parameters and options
 @subsection Output format
-The ``-F'' option selects the output format. It must be followed by
-``Gnat'', ``Gnat_Short'', ``CSV'', ``CSV_Short'', ``Source'',
-``Source_Short'', or ``None'' (case insensitive).  By default, the
-output is in ``Gnat'' format, unless an output file is specified with
-a name whose extension is ``.csv'' (in any casing), in which case it
-defaults to ``CSV''.
+The ``-F'' option selects the output format. The option is followed by
+predefined identifiers that correspond to the most commonly used
+formats. It is also possible to define custom output formats with the
+``set format'' command, see @ref{Set command}.
 
-The ``-S'' option selects which statistics are output after each
-run. It must be followed by a value in the range 0..3. See
-@ref{Control kinds and report messages} for details on the various
-statistics levels.
+The predefined identifiers are (case insensitive):
+@table @option
+@item Gnat, Gnat_Long, Gnat_Short
+The format is the same as Gnat error messages. Especially useful when
+using an editor that recognizes Gnat messages.
 
-The ``-T'' option prints a summary of timing at the end of each run. This
-indicates how long (in real-time seconds) was spent in processing each rule.
+@item CSV, CSV_Long, CSV_Short
+@itemx CSVX, CSVX_Long, CSVX_Short
+CSV (Comma Separated Values) format, accepted by most spreadsheet
+programs. The CSVX variant uses a semi-colon instead of a comma to
+separate values (required by some locales -like French- that use the
+comma as a decimal separator).
+
+@item Source, Source_Short, Source_Long
+Prints the whole source line of the control, followed by a mark
+pointing out the location of the error.  This is the most useful
+format to read directly by humans.
+
+@item None
+No output at all. This is useful if you just want a count of errors or
+statistics, and may speed-up the analysis.
+@end table
+
+If an identifier ending in ``_Long'' or ``_Short'' is used, a ``set
+Long_File_Name on'' (respectively ``set Long_File_Name off'') is
+performed in addition (i.e., the format of file names is set). 
+For more details, see @ref{Set command}.
+
+By default, the output is in ``Gnat'' format, unless an output file
+is specified with a name whose extension is ``.csv'' (in any casing),
+in which case it defaults to ``CSV''.
 
 The ``-G'' option controls the generation, in the output file, of
 commands for fixing violations. It must be followed by ``none'' (the
@@ -912,12 +936,7 @@ or ``search'' where fixes information is generated for all messages
 (i.e. ``search'' messages and above). Fixes information is never
 generated for ``count''.
 
-Ex:
-@example
-adactl -F CSV -S 2 -f my_rules.aru -o my_output.csv proc.adb
-@end example
-
-@node Output limits, Project files, Output format, Command line parameters and options
+@node Output limits, Informational output, Output format, Command line parameters and options
 @subsection Output limits
 The ``-m'' and ``-M'' options are used to limit the output of
 AdaControl. These options are followed by an integer value that
@@ -928,7 +947,17 @@ limitation (comming for example from a command file)  is cancelled.
 If the indicated number of messages is exceeded during a run,
 AdaControl stops immediately.
 
-@node Project files, Local disabling control, Output limits, Command line parameters and options
+@node Informational output, Project files, Output limits, Command line parameters and options
+@subsection Informational output
+The ``-S'' option selects which statistics are output after each
+run. It must be followed by a value in the range 0..3. See
+@ref{Statistics} for details on the various
+statistics levels.
+
+The ``-T'' option prints a summary of timing at the end of each run. This
+indicates how long (in real-time seconds) was spent in processing each rule.
+
+@node Project files, Local disabling control, Informational output, Command line parameters and options
 @subsection Project files
 Starting with version 1.18, AdaControl supports GNAT project files
 (``.gpr''). The ``-p'' option is used to provide the name of a project
@@ -1025,7 +1054,7 @@ however.
 Conversely, the ``-E'' option tells AdaControl to @i{not} report
 warnings at all, i.e. only errors are reported. However, if you ask
 for statistics, the number of warning messages is still
-counted. @xref{Control kinds and report messages}.
+counted. @xref{Report messages}.
 
 @node Exit on error, ASIS options, Treatment of warnings, Command line parameters and options
 @subsection Exit on error
@@ -1092,9 +1121,9 @@ before any other command. Although any command can be specified, this
 is intended to allow changing default settings with ``set''
 commands. @xref{Set command}.
 
-For example, you can set ADACTLINI to ``set format Gnat_Short'' if you
-prefer having you messages in short format rather than the (default)
-long format.
+For example, you can set ADACTLINI to ``set long_file_name on'' if you
+prefer having your messages with long file names rather than the (default)
+short format.
 
 @node  Fixing violations, Interactive mode, Environment variable and default settings, Program Usage
 @section Fixing violations
@@ -1502,8 +1531,8 @@ you have chosen to delete .ali files in the preferences (see below).
 @item
 ``Load results file'' loads in the location window the result file
 obtained from a previous run of AdaControl. The file must have been
-produced with the ``Gnat'' or ``Gnat_Short'' format. @xref{Control kinds
-and report messages}.
+produced with the ``Gnat'' or ``Gnat_Short'' format. @xref{Report
+messages}.
 @end itemize
 
 There are also two buttons representing Lady Ada in a magnifier glass
@@ -1611,7 +1640,7 @@ of warnings}.
 of warnings}.
 @item
 ``Statistics''. This sets the ``-S'' option from a pull-down
-menu. @xref{Control kinds and report messages}.
+menu. @xref{Report messages}.
 @item
 ``Send results to GPS''. When checked (default), the output of
 AdaControl is sent to the ``locations'' window of GPS.
@@ -1633,7 +1662,7 @@ GPS'', the result file is always overriden without asking.
 @item
 ``File format''. This is a pull-down menu that allows you to select
 the desired format when output is directed to a file (``-F'' option).
-@xref{Control kinds and report messages}.
+@xref{Report messages}.
 @item
 ``Generate fixes for''. This is a pull-down menu that allows you to
 select whether you want fixes generated only for errors (``Check'') or
@@ -2185,17 +2214,40 @@ syntax of a control command is as follows:
 <ctrl_kind>  ::= "check"|"search"|"count"
 @end example
 
+Each control consists of a <ctrl_kind> followed by a rule name, and
+(optionally) parameters. Some parameters may be preceded by modifiers
+(such as ``not'' or ``case_sensitive''). The meaning of the rule
+parameters and modifiers depends on the rule.
+
+There are three control kinds: ``check'', ``search'', and ``count''.
+
+``Check'' is intended to search for rules that must be obeyed in your
+programs. Normally, if a ``Check'' control fails, you should fix the
+program. ``Search'' is intended to report some situations, but you
+should consider what to do on a case-by-case basis. Roughly, use
+``check'' when you consider that the failure of the control is an
+error, and ``search'' when you consider it as a warning. AdaControl
+will exit with a status of 1 if any ``Check'' control is triggered,
+and a status of 0 if only ``Search'' controls were triggered (or no
+control was triggered at all). Each time a ``Check'' or ``Search''
+control is triggered, a message is issued to the standard output
+(unless redirected). The format of the message can be selected by
+means of the ``-F'' command line option, or the ``set format''
+command. @xref{Report messages}.
+
+``Count'' works like ``Search'', but instead of printing a message for
+each control which is triggered, it simply counts occurrences and prints
+a summary at the end of the run. There is a separate count for each
+control label (or if no label is given, the rule name is taken instead);
+if you give the same label to different controls, this allows you to
+accumulate the counts.
+
 If present, the label gives a name to the control(s); it will be
 printed whenever each control is activated, and can be used to disable
 the control(s).  @xref{Disabling controls}. If no label is present,
 the rule name is printed instead. The label must have the syntax of an
 Ada identifier, or else the label must be included within double
 quotes (@code{"}), in which case it can contain any character.
-
-Each control consists of a <ctrl_kind> followed by a rule name, and
-(optionally) parameters. Some parameters may be preceded by modifiers
-(such as ``not'' or ``case_sensitive''). The meaning of the rule
-parameters and modifiers depends on the rule.
 
 Here are some examples of commands:
 @example
@@ -2216,114 +2268,14 @@ part of the same programming rule. For example:
 @end example
 
 @menu
-* Control kinds and report messages::
 * Parameters::
-* Multiple controls::
+* Report messages::
+* Statistics::
 * Disabling controls::
+* Multiple controls::
 @end menu
 
-@node Control kinds and report messages, Parameters, Controls, Controls
-@subsection Control kinds and report messages
-There are three control kinds: ``check'', ``search'', and ``count''.
-
-``Check'' is intended to search for rules that must be obeyed in your
-programs. Normally, if a ``Check'' control fails, you should fix the
-program. ``Search'' is intended to report some situations, but you
-should consider what to do on a case-by-case basis. Roughly, use
-``check'' when you consider that the failure of the control is an
-error, and ``search'' when you consider it as a warning. AdaControl
-will exit with a status of 1 if any ``Check'' control is triggered,
-and a status of 0 if only ``Search'' controls were triggered (or no
-control was triggered at all).
-
-``Count'' works like ``Search'', but instead of printing a message for
-each control which is triggered, it simply counts occurrences and prints
-a summary at the end of the run. There is a separate count for each
-control label (or if no label is given, the rule name is taken instead);
-if you give the same label to different controls, this allows you to
-accumulate the counts.
-
-A report message (except for the final report of ``count'') comprises
-the following elements:
-@itemize
-@item
-the file name (where the control matches)
-@item
-the line number (where the control matches)
-@item
-the column number (where the control matches)
-@item
-the label (if there is one) and/or the rule name (the rule that matches).
-@item
-a message (why the control matches). A control whose kind is ``check''
-will produce an error report message (i.e. containing the keyword
-``Error'') and a control whose kind is ``search'' will produce a
-found report message (i.e. containing the keyword ``Found'').
-@end itemize
-
-The formatting of the report message depends on the format option,
-which can be selected with the ``-F'' command-line option or the ``set
-format'' command.
-
-If the format is ``Gnat'' (the default) or ``Gnat_Short'', items are
-separated by ':'; this is the same format as the one used by GNAT
-error messages. Editors (like Emacs or GPS) that recognize this format
-allow you to go directly to the place of the message by clicking on
-it.  In order to avoid too long messages, only the label appears,
-unless there is none, in which case it is replaced with the rule
-name.
-
-If the format is ``CSV'' or ``CSV_Short'', items are separated by ','
-and surrounded by double quotes. This is the ``Comma Separated
-Values'' format, which can be read by any known spreadsheet program,
-except Excel(tm) by default, which uses the semicolon and not the
-comma to separate fields. Therefore, the formats ``CSVX'' and
-``CSVX_Short'' do the same thing, but using semi-colons (';') instead
-of commas. Both the label (replaced by an empty column if there is
-none) and the rule name appear. Note that when an output file is
-created in one of the ``CSV'' formats, a title line is issued as the
-first line, following normal CSV convention.
-
-If the format is ``Source'' or ``Source_Short'', the offending source
-line is output, and the message is output behind it, with a ``!''
-pointing to the exact location of the problem.
-
-If the format is ``None'', no error message is output at all. This is
-useful when only the return code of running AdaControl is desired
-(just to check if a program is OK or not). Note that this does @i{not}
-prevent the output of statistics, since these are under control of the
-``-S'' option or the ``set statistics'' command. In this case,
-statistics are output in CSVX format, since asking for statistics with
-a ``none'' format is mainly useful for analysing the statistics with a
-spreadsheet program.
-
-With recent versions of GNAT, the file name includes the full path of
-the source file. If the ``_Short'' form of the format option is used,
-the file name is stripped from any path. This can make it easier to
-compare the results of controlling units from various directories.
-Note that with older versions of GNAT, the file name never includes
-the full path, and the ``_Short'' form of the format option has no
-effect.
-
-After each run (@pxref{Go command}), statistics may be output,
-depending on the statistics level which is set with the ``-S'' option
-or the ``set statistics'' command. The meaning of the various levels
-is as follows:
-@itemize
-@item
-0: No statistics are output (default)
-@item
-1: A count of units, (raw) lines, error and warning messages is output
-@item
-2: The rule name and label (if any) of any control @i{not} triggered are
-output
-@item
-3: The rule name and label (if any) of every control is output,
-together with a count of each triggering kind (``check'', ``search'',
-``count''), or ``not triggered'' if the control was not triggered.
-@end itemize
-
-@node Parameters, Multiple controls, Control kinds and report messages, Controls
+@node Parameters, Report messages, Controls, Controls
 @subsection Parameters
 Most rules accept parameters. Parameters can be:
 @itemize
@@ -2368,35 +2320,95 @@ Standard.Integer'Image               -- The 'Image function on Integer
 all 'Image                           -- All 'Image functions
 @end example
 
-@node Multiple controls, Disabling controls, Parameters, Controls
-@subsection Multiple controls
-Most rules can be used in more than one control (with different
-parameters). There is no difference between a single or a multiple
-configuration rule use: outputs, efficiency, etc. are the same.
+@node  Report messages, , Parameters, Controls
+@subsection Report messages
+A report message (except for the final report of ``count'') comprises
+the following elements:
+@itemize
+@item
+the file name (where the control matches)
+@item
+the line number (where the control matches)
+@item
+the column number (where the control matches)
+@item
+the label (if there is one) and/or the rule name (the rule that matches).
+@item
+a message (why the control matches). A control whose kind is ``check''
+will produce an error report message (i.e. containing the keyword
+``Error'') and a control whose kind is ``search'' will produce a
+found report message (i.e. containing the keyword ``Found'').
+@end itemize
 
-The following command files produce an identical configuration:
-@example
-Search Pragmas (Pure, Elaborate_All);
-@end example
-and
-@example
-Search Pragmas (Pure);
-Search Pragmas (Elaborate_All);
-@end example
+The formatting of the report message depends on the format option,
+which can be selected with the ``-F'' command-line option or the ``set
+format'' command.
 
-However, the second form can be used to give different labels. Consider:
-@example
-Search Pragmas (Pure);
-No_Elaborate: Search Pragmas (Elaborate_All);
-@end example
+If the format is ``Gnat'' (the default), ``Gnat_Short'', or
+``Gnat_Long'', items are separated by ':'; this is the same format as
+the one used by GNAT error messages. Editors (like Emacs or GPS) that
+recognize this format allow you to go directly to the place of the
+message by clicking on it.  In order to avoid too long messages, only
+the label appears, unless there is none, in which case it is replaced
+with the rule name.
 
-The messages for pragma @code{Pure} will contain ``PRAGMAS'', while
-those for @code{Elaborate_All} will contain ``No_Elaborate''. If a
-disabling comment mentions @code{pragmas}, it will disable both controls,
-but a disabling comment that mentions @code{No_Elaborate} will disable
-only the second one.
+If the format is ``CSV'', ``CSV_Short'', or ``CSV_Long'', items are
+separated by ',' and surrounded by double quotes. This is the ``Comma
+Separated Values'' format, which can be read by any known spreadsheet
+program. However, some locales (that use the coma as a decimal
+separator) require a semi-colon (';') instead of a coma to separate
+values; therefore, the formats ``CSVX'', ``CSVX_Short'', and CSVX_Long
+do the same thing, but with semi-colons as separators. Both the label
+(replaced by an empty column if there is none) and the rule name
+appear. Note that when an output file is created in one of the ``CSV''
+formats, a title line is issued as the first line, following normal
+CSV convention.
 
-@node  Disabling controls,  , Multiple controls, Controls
+If the format is ``Source'', ``Source_Short'' or ``Source_Long'', the
+offending source line is output, and the message is output behind it,
+with a ``!''  pointing to the exact location of the problem.
+
+If the format is ``None'', no error message is output at all. This is
+useful when only the return code of running AdaControl is desired
+(just to check if a program is OK or not). Note that this does @i{not}
+prevent the output of statistics, since these are under control of the
+``-S'' option or the ``set statistics'' command. In this case,
+statistics are output in CSVX format, since asking for statistics with
+a ``none'' format is mainly useful for analysing the statistics with a
+spreadsheet program.
+
+It is also possible to get the messages in any custom defined format by setting
+appropriate variables. @xref{Syntax of format strings}
+
+By default, the file name in the message is just the simple name of
+the file.  The ``_Long'' form of the format forces the file name to
+include the full path of the source file.  This can make it easier to
+compare the results of controlling units from various
+directories. Conversely, if the ``_Short'' form of the format option
+is used, the file name is forced to the simple name (in case it was
+set to the long form before).
+
+@node Statistics, Disabling controls, Report messages, Controls
+@subsection Statistics
+After each run (@pxref{Go command}), statistics may be output,
+depending on the statistics level which is set with the ``-S'' option
+or the ``set statistics'' command. The meaning of the various levels
+is as follows:
+@itemize
+@item
+0: No statistics are output (default)
+@item
+1: A count of units, (raw) lines, error and warning messages is output
+@item
+2: The rule name and label (if any) of any control @i{not} triggered are
+output
+@item
+3: The rule name and label (if any) of every control is output,
+together with a count of each triggering kind (``check'', ``search'',
+``count''), or ``not triggered'' if the control was not triggered.
+@end itemize
+
+@node  Disabling controls, Multiple controls, Statistics, Controls
 @subsection Disabling controls
 It is possible to disable controls on parts of the source code by
 placing markers in the source code. A marker is an Ada comment, where
@@ -2473,6 +2485,34 @@ Since the disabling is based on special comments, there is a conflict
 with the rule ``header_comments'' which is based on the content of
 comments. Line disabling is not possible with this rule, and block
 disabling needs special care. @xref{Header_Comments}.
+
+@node Multiple controls,  , Disabling controls, Controls
+@subsection Multiple controls
+Most rules can be used in more than one control (with different
+parameters). There is no difference between a single or a multiple
+configuration rule use: outputs, efficiency, etc. are the same.
+
+The following command files produce an identical configuration:
+@example
+Search Pragmas (Pure, Elaborate_All);
+@end example
+and
+@example
+Search Pragmas (Pure);
+Search Pragmas (Elaborate_All);
+@end example
+
+However, the second form can be used to give different labels. Consider:
+@example
+Search Pragmas (Pure);
+No_Elaborate: Search Pragmas (Elaborate_All);
+@end example
+
+The messages for pragma @code{Pure} will contain ``PRAGMAS'', while
+those for @code{Elaborate_All} will contain ``No_Elaborate''. If a
+disabling comment mentions @code{pragmas}, it will disable both controls,
+but a disabling comment that mentions @code{No_Elaborate} will disable
+only the second one.
 
 @node  Other commands, Example of commands, Controls, Command language reference
 @section Other commands
@@ -2592,22 +2632,34 @@ This command sets various parameters of AdaControl.
 
 Syntax:
 @example
-set Format Gnat|Gnat_Short|CSV|CSV_Short|Source|Source_short|None;
-set Check_Key|Search_Key "<value>"
-set Max_Errors [min|max] [<value>];
-set Max_Messages [min|max] [<value>];
+set <switch> On|Off;
+    <switch> ::= Debug   | Exit_On_Error | Long_File_Name |
+                 Verbose | Warning       | Warning_As_Error
+
+set Check_Key|Search_Key "<value>";
+set Count_Format         "<format_string>";
+set Count_Format_Header  "<format_string>";
+set Fixes_Gen            Check | Search | None;
+set Format               <format_name> | "<format_string>";
+    <format_name> ::= Gnat   | Gnat_Short   | Gnat_Long   |
+                      CSV    | CSV_Short    | CSV_Long    |
+                      CSVX   | CSVX_Short   | CSVX_Long   |
+                      Source | Source_short | Source_Long |
+                      None
+set Format_Header     "<format string>";                      
+set Ignore            On | Off | Inverted;
+set Max_Errors        [min|max] [<value>];
+set Max_Messages      [min|max] [<value>];
 set Output|New_Output <output file>;
-set Fixes_Gen Check|Search|None
-set Statistics [min|max] <level>;
-set Tag1|Tag2 "<value>";
-set Trace <trace file>;
-set Debug|Exit_On_Error|Verbose|Warning|Warning_As_Error
-      On|Off;
-set Timing On|Off|Global
-set Ignore On|Off|Inverted;
+set Statistics        [min|max] <level>;
+set Tag1|Tag2         "<value>";
+set Timing            On | Off | Global
+set Trace             <trace file>;
+
 set <Rule_Name>.<Variable> [min|max] <Value>
 @end example
-When a parameter has an integer value, it can be preceded with the
+
+When a parameter has an integer value, it can be preceded by the
 keywords ``min'' or ``max''. If present, it indicates that the
 parameter should be set to at least (respectively at most) the
 indicated value, i.e. if the current value of the parameter is greater
@@ -2620,8 +2672,14 @@ rules files, where a value for the parameter has been previously set.
 set statistics min 2;
 @end example
 
-The ``set format'' command selects the output format for the messages,
-like the ``-F'' option; see @ref{Control kinds and report messages} for
+The ``set <switch>'' command activates (``on'') or deactivates
+(``off'') options. ``Debug'' corresponds to the ``-d'' option,
+``Exit_On_Error'' to the ``-x'' option, ``Ignore'' to the ``-i''
+option, ``Verbose'' to the ``-v'' option, ``Warning'' to the ``-E''
+option, ``Warning_As_Error'' to the ``-e'' option, and
+``Long_File_Name'' to a predefined format that ends in ``_Long''. See
+@ref{Verbose and debug mode}, @ref{Exit on error}, @ref{Treatment of
+warnings}, @ref{Output format}, and @ref{Local disabling control} for
 details.
 
 The ``set check_key'' command defines a string which is used in place
@@ -2634,6 +2692,33 @@ message could be misleading to the persons in charge of the
 review. Note however that if you set these keys, the GPS interface
 will not be able to recognize properly the messages.
 
+The ``set fixes_gen'' command controls the generation of fixes
+indications, like the ``-G'' option; see @ref{Output format} for
+details.
+
+The ``set format'' command selects the output format for the
+messages. The value is either one of the possible identifiers for the
+``-F'' option, or a string value for a custom format; see @ref{Report
+messages} for details, or @ref{Syntax of format strings} for the
+specification of a custom format.
+
+The ``set format_header'' defines the format of the header of the
+report, which is output only once on top of the messages. It is also
+set automatically when using one of the identifiers with ``set
+format''.
+
+The ``set count_format'' and ``set count_format_header'' do the same
+things, but for the count reports which is issued at the end of the
+run.
+
+The ``set ignore'' command governs handling of disabled messages
+(@pxref{Disabling controls}). In default mode (``Off''), disabled
+messages are not printed. When set to ``on'', all messages are
+printed, including those that are disabled. Setting this option can
+result in considerable speed-up of the printing of messages. When set
+to ``Inverted'', @i{only} disabled messages are printed. This is
+useful to check which messages have been disabled.
+
 The ``set max_errors'' and ``set max_messages'' limit the output of
 AdaControl, like the ``-m'' and ``-M'' options; see @ref{Output
 limits} for details. If no <value> is given after the command name,
@@ -2644,13 +2729,11 @@ of subsequent controls to the indicated file. If the string
 @code{console} (case irrelevant) is given as the <output file>, output
 is redirected to the console.
 
-The ``set fixes_gen'' command controls the generation of fixes
-indications, like the ``-G'' option; see @ref{Output format} for
-details.
-
+@itemize @bullet
+@item
 The ``set new_output'' always create a new file (or overwrites an
 existing file with the same name).
-
+@item
 The ``set output'' command appends if the file exists, unless the
 ``-w'' option is given, in which case it is overwritten. However, the
 file is overwritten only the first time it is mentionned in an
@@ -2660,11 +2743,12 @@ kept. Note however that for this to work, you need to specify the
 output files exactly the same way: if you specify it once as
 ``result.txt'', and then as ``./result.txt'', the second one will
 overwrite the first one.
+@end itemize
 
 The ``set statistics'' command sets the statistics level, like the
-``-S'' option;  see @ref{Control kinds and report messages} for details.
+``-S'' option;  see @ref{Report messages} for details.
 
-The ``set Tag1|Tag2'' command changes the tags used to disable (or
+The ``set tag1|tag2'' command changes the tags used to disable (or
 enable) rules. ``Tag1'' is the string that appears immediately after
 the comment indicator (@code{--}), and ``tag2'' is the tag that
 terminates the special comment. Note that these tags must be given as
@@ -2677,30 +2761,11 @@ The ``set trace'' command redirects the trace messages of the
 redirected to the console.  As with the ``-t'' option, if the file
 exists, output is appended to it.
 
-The ``set Debug|Exit_On_Error|Verbose|Warning|Warning_As_Error''
-command activates (``on'') or deactivates (``off'') options. ``Debug''
-corresponds to the ``-d'' option, ``Exit_On_Error'' to the ``-x''
-option, ``Ignore'' to the ``-i'' option, ``Timing'' to the ``-T''
-option, ``Verbose'' to the ``-v'' option, ``Warning'' to the ``-E''
-option, and ``Warning_As_Error'' to the ``-e'' option. See
-@ref{Verbose and debug mode}, @ref{Exit on error}, @ref{Treatment of
-warnings}, @ref{Output format}, and @ref{Local disabling control} for
-details.
-
-The ``set Timing'' command activates (``on'') or deactivates (``off'')
+The ``set timing'' command activates (``on'') or deactivates (``off'')
 the printing of the time spent in each rule after each ``go''
 command. If set to ``global'' instead of ``on'', the timings are
 accumulated over all ``go'' commands, and output when the program
 terminates.
-
-The ``set Ignore'' command governs handling of disabled messages
-(@pxref{Disabling controls}). In default mode (``set Ignore Off''),
-disabled messages are not printed. When set to ``on'' (``set Ignore
-On''), all messages are printed, including those that are
-disabled. Setting this option can result in considerable speed-up of
-the printing of messages. When set to ``Inverted'' (``set Ignore
-Inverted''), @i{only} disabled messages are printed. This is useful to
-check which messages have been disabled.
 
 Some rules may also have user-settable global variables that affect
 their behaviour; the last form of the ``set'' command allows changing
@@ -6615,7 +6680,7 @@ check max_nesting (separate, 0); -- Do not allow separate in separate
 check max_nesting (task, 0);     -- Do not allow a task in another task
 @end example
 
-@node Max_Primitives, Max_Nesting, Max_Size, Rules reference
+@node Max_Primitives, Max_Size, Max_Nesting, Rules reference
 @section Max_Primitives
 This rule controls the number of primitive operations of a type.
 
@@ -9787,8 +9852,8 @@ really violated.
 @end itemize
 If no keyword is given, all subrules are activated.
 
-As far as statistics are concerned (see @ref{Control kinds and report
-messages}), ``uncheckable'' messages from rules are counted under the
+As far as statistics are concerned (see @ref{Report messages}),
+``uncheckable'' messages from rules are counted under the
 corresponding rule's statistics (like other messages), but there will
 be also a count of all ``uncheckable'' messages under the rule
 ``UNCHECKABLE'', and also subtotals corresponding to the number of
@@ -11529,7 +11594,7 @@ The ``<>'' category matches any type, and is allowed only by rules
 that need a list of categories, to express that no special category is
 expected at the given location.
 
-@node Syntax of regular expressions, Non upward-compatible changes, Definition of type categories, Top
+@node Syntax of regular expressions, Syntax of format strings, Definition of type categories, Top
 @appendix Syntax of regular expressions
 The following syntax gives the complete definition of regular
 expressions, as used by several rules.  It is taken from the
@@ -11645,7 +11710,96 @@ Note that if you compiled AdaControl with the
 available, i.e. only ``*'' and ``?'' are supported, where ``*''
 matches any string of character and ``?'' matches a single character.
 
-@node  Non upward-compatible changes,  , Syntax of regular expressions, Top
+@node Syntax of format strings, Non upward-compatible changes, Syntax of regular expressions, Top
+@appendix Syntax of format strings
+The @code{Format},  @code{Format_Header}, @code{Count_Format}, and
+@code{Count_Format_Header} variables contain a string value that
+defines how messages and count reports are formated (like the format
+of the @code{printf} subprogram of the C language). These variables
+can be set normally with the ``@code{set}'' command. @xref{Set
+command}. In these strings, Some special character sequences are
+substituted with various pieces of information; any other character or
+unrecognized sequence is output as is.
+
+The special sequence starts with a percent (``@code{%}'') character,
+is optionally followed by a double-quote or back-slash character
+(``@code{"}'' or ``@code{\}''), and a key letter. If the double-quote
+or back-slash character is present, every double-quote in the
+substitution text will be preceded by that character. This is useful
+when the substitution is part of quoted text, like CSV for
+example. See examples below.
+
+The recognized key letters and their substitution are:
+@table @code
+@item %c, %"c, %\c
+The column number of the message.
+@item %d, %"d, %\d
+The defaulted label. It is the control label if there is one, the rule
+name otherwise.
+@item %D
+The current date, in ISO format.
+@item %E
+The current count of error (``check'') messages.
+@item %f, %"f, %\f
+The name of the file that contains the offending construct. The name
+uses a short or long format, depending on the value of the variable
+Long_File_Name.
+@item %k, %"k
+The kind of the control (``check'' or ``search'', unless redefined by
+the user). The value returned for the ``check'' and ``count'' value
+can be changed by setting the variables Check_Message or
+Search_Message. ``Count'' is never returned, since ``count'' controls
+are handled separately.
+@item %l
+The line number in the file.
+@item %m, %"m, %\m
+The message issued by the control. In a count format, the message is
+the number of occurrences.
+@item %n
+A new line.
+@item %r
+The rule name of the control.
+@item %s, %"s, %\s
+The full source line that contains the offending construct.
+@item %S
+A sequence number. The sequence starts at 1, and is incremented each
+time it is used. The sequence number can be reset to any value with a
+``set sequence'' command.
+@item %t, %"t, %\t
+The label (tag) of the control if any, the empty string otherwise.
+@item %T
+The current time, in ISO format.
+@item %W
+The current count of warning (``search'') messages.
+@item %!
+An indicator of the position of the error (a ``!'' character, preceded
+by @code{column-1} spaces; to be used with @code{%s}).
+@item %[ and %]
+The content of the format between ``%['' and ``%]'' is substituted
+only if it contains a substitution that didn't return an empty string
+or a new_line, otherwise it is replace by an emptry string. ``%[
+... %]'' sequences can be nested.
+@item %%
+A percent character.
+@end table
+
+In a header, the substitution related to a specific message (``%f'',
+``%m'' etc.) are those of the first message. Count messages recognize
+only ``%d'', ``%D'', ``%E'', ``%m'', ``%n'', ``%S'', ``%T'', and
+``%W''.
+
+Examples:
+@example
+-- Gnat format:
+set format "%[%f:%l:%c: %]%k: %d: %m"
+-- YAML format:
+set format "- Path: %f%n  Location:%n    Line: %l%n    Column: %c%n  Type: %k%n  %[Label: %t%n  %]Rule: %r%n  Message: %m";
+@end example
+The ``rules'' directory of the distribution of AdaControl contains the
+files ``toml.aru'' and ``yaml.aru'' that can be sourced from other
+command file to get output in Toml or Yaml formats, respectively.
+
+@node  Non upward-compatible changes,  , Syntax of format strings, Top
 @appendix Non upward-compatible changes
 This chapter is intended to users of a previous version of AdaControl,
 who want to migrate command files to the latest version. Although we
@@ -11654,6 +11808,17 @@ that making AdaControl more powerful and easier to use is sometimes
 more important than strict compatibility. Moreover, in most cases the
 changes are very straightforward and can be done easily by hand, or
 with scripts if many files are involved.
+
+@section Migrating from 1.21r6b
+
+Counts reports are now print in the same output as Stats reports.
+
+@subsection Format
+This variable now accepts two kinds of values, Identifier (as in 
+previous versions), and strings values. See @ref{Output format}
+for more details.
+
+Now, the default file path are in short version instead of long.
 
 @section Migrating from 1.19r10
 @subsection Default_Parameter

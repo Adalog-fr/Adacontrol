@@ -74,9 +74,6 @@ package Framework.Reports is
    procedure Set_Uncheckable (Risk : Uncheckable_Consequence; Ctl_Kind : Control_Kinds; Label : Wide_String);
    procedure Reset_Uncheckable;
 
-   function "and" (Left, Right : Wide_String) return Wide_String;
-   -- Concatenates the strings, separated by the separator appropriate to the output format
-
    procedure Raw_Report (Message : Wide_String);
    -- Just output the string without formating
 
@@ -85,7 +82,8 @@ package Framework.Reports is
 
    type Output_Format is (Source, Gnat, CSV, CSVX, None);
    -- None must stay last
-   function Current_Format return Output_Format;
+   procedure Set_Output_Format (Value : Wide_String);
+   -- Raises Constraint_Error if Value is not correct
 
    type Stats_Levels  is range 0 .. 3;
    No_Stats   : constant Stats_Levels := 0;
@@ -94,7 +92,7 @@ package Framework.Reports is
    Full       : constant Stats_Levels := 3;
    package Stats_Levels_Type is new Framework.Variables.Integer_Type (Stats_Levels);
 
-   Just_Created : Boolean := False;
+   Just_Created : Boolean := True;  -- State for Console, since output is Console when the program starts
    Total_Lines  : Natural := 0;
    -- Lines are counted by Semantic_Traverse during the first run only (to avoid counting many times, and since
    -- units can't change between runs, it's sufficient). If there are no semantic rules, they are counted by

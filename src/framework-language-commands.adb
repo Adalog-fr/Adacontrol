@@ -92,7 +92,8 @@ package body Framework.Language.Commands is
       User_Message ("   Quit;");
       User_Message ("   Rule_file_off ""<pattern>"" all | <rule name> {,<rule name>}");
       User_Message ("   Set check_key|search_key ""<key>""");
-      User_Message ("   Set format gnat|gnat_short|csv|csv_short|csvx|csvx_short|source|source_short|none ;");
+      User_Message ("   Set format gnat|gnat_long|gnat_short|csv|csv_long|csv_short|csvx|csvx_long|csvx_short" &
+        "|source|source_long|source_short|none;");
       User_Message ("   Set output <output file>;");
       User_Message ("   Set statistics <level: 0 .." & Stats_Levels'Wide_Image (Stats_Levels'Last) & ">;");
       User_Message ("   Set trace <trace file>;");
@@ -374,7 +375,7 @@ package body Framework.Language.Commands is
 
    procedure Set_Output_Command (Output_File : Wide_String; Force_Overwrite : Boolean) is
       use Ada.Characters.Handling, Ada.Wide_Text_IO;
-      use Adactl_Options, Framework.String_Set, Framework.Variables, Framework.Variables.Shared_Types;
+      use Adactl_Options, Framework.Reports, Framework.String_Set, Framework.Variables.Shared_Types;
    begin
       if Action = Check or Rule_Error_Occurred then
          return;
@@ -389,7 +390,6 @@ package body Framework.Language.Commands is
 
       if To_Upper (Output_File) = Console_Name then
          Utilities.Error_Is_Out         := True;
-         Framework.Reports.Just_Created := False;
       else
          Utilities.Error_Is_Out := False;
          begin
@@ -419,12 +419,7 @@ package body Framework.Language.Commands is
          if Output_File'Length >= 4
            and then To_Upper (Output_File (Output_File'Last - 3 .. Output_File'Last)) = ".CSV"
          then
-            -- Change format to CSV (or CSV_SHORT according to current value of Short_Name)
-            if Short_Name then
-               Set_Variable (Variable => "FORMAT", Val => "CSV");
-            else
-               Set_Variable (Variable => "FORMAT", Val => "CSV_SHORT");
-            end if;
+            Set_Output_Format ("CSV");
          end if;
       end if;
    exception

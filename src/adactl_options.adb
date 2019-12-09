@@ -143,7 +143,8 @@ package body Adactl_Options is
       User_Message ("   -e        treat warnings (Search) as errors (Check)");
       User_Message ("   -E        print only errors (Check)");
       User_Message ("   -f file   use a file for the specification of rules");
-      User_Message ("   -F format choose output format (GNAT, GNAT_SHORT, CSV, CSV_SHORT, CSVX, CSVX_SHORT, NONE)");
+      User_Message ("   -F format choose output format (GNAT, CSV, CSVX, NONE)");
+      User_Message ("             Append _SHORT or _LONG to format name to force short/long file name");
       User_Message ("   -G level  level to generate fixes for (NONE, SEARCH, CHECK)");
       User_Message ("   -i        ignore local deactivations");
       User_Message ("   -j        invert local deactivations");

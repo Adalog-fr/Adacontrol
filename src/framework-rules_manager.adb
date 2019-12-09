@@ -438,7 +438,7 @@ package body Framework.Rules_Manager is
    --------------------
 
    procedure Report_Timings (Global_Report : Boolean) is
-      use Framework.Reports, Utilities;
+      use Utilities;
       Total_Rules_Time : Duration := 0.0;
 
       procedure Add_One_Timing (Rule : Unbounded_Wide_String; Info : in out Rule_Info) is
@@ -451,6 +451,8 @@ package body Framework.Rules_Manager is
 
 
       procedure Report_One_Timing (Rule : Unbounded_Wide_String; Info : in out Rule_Info) is
+         use Framework.Reports;
+
          function Format_Duration (Item : Duration; Aft : Natural) return Wide_String is
             -- Remove leading space and leaves only Aft digits after decimal point
             use Ada.Strings.Wide_Fixed;
@@ -493,10 +495,8 @@ package body Framework.Rules_Manager is
 
       Add_All_Timings (Rule_Map);
 
-      if Current_Format not in CSV | CSVX | None then
-         User_Message;
-         User_Message ("Rules timing statistics (in s.)");
-      end if;
+      User_Message;
+      User_Message ("Rules timing statistics (in s.)");
       Report_All_Timings (Rule_Map);
 
    end Report_Timings;
