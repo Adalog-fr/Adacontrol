@@ -292,7 +292,6 @@ package body Rules.Style is
          case Subrule is
             when St_Compound_Statement
               | St_Default_In
-              | St_Negative_Condition
               | St_Renamed_Entity
               =>
                -- Those without parameters
@@ -589,9 +588,6 @@ package body Rules.Style is
                        Value (Image (St_Multiple_Elements) & Image (M)),
                        Basic.New_Context (Ctl_Kind, Ctl_Label));
          end loop;
-
-         -- Negative_Condition
-         Associate (Contexts, Value (Image (St_Negative_Condition)), Basic.New_Context (Ctl_Kind, Ctl_Label));
 
          -- No_Closing_Name
          Associate (Contexts,
@@ -1290,46 +1286,6 @@ package body Rules.Style is
             null;
       end case;
    end Process_Declaration;
-
-   --------------------------
-   -- Process_If_Statement --
-   --------------------------
-
-   procedure Process_If_Statement (Statement   : in Asis.Statement) is
-      use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
-      use Framework.Locations, Framework.Reports, Thick_Queries;
-   begin
-      if not Rule_Used (St_Negative_Condition) then
-         return;
-      end if;
-      Rules_Manager.Enter (Rule_Id);
-
-      declare
-         Paths : constant Asis.Path_List := Statement_Paths (Statement);
-         Func  : Asis.Expression;
-      begin
-         if Paths'Length = 2 and then Path_Kind (Paths (2)) = An_Else_Path then
-            declare
-               Expr : Asis.Expression := Condition_Expression (Paths (1));
-            begin
-               -- Get rid of possible spurious parentheses
-               while Expression_Kind (Expr) = A_Parenthesized_Expression loop
-                  Expr := Expression_Parenthesized (Expr);
-               end loop;
-
-               if Expression_Kind (Expr) = A_Function_Call then
-                  Func := Simple_Name (Prefix (Expr));
-                  if To_Upper (Name_Image (Func)) = """NOT""" then
-                     Report (Rule_Id,
-                             Corresponding_Context (St_Negative_Condition),
-                             Get_Location(Expr),
-                             "Negative condition in ""if"" statement could be made positive");
-                  end if;
-               end if;
-            end;
-         end if;
-      end;
-   end Process_If_Statement;
 
 
    ---------------------

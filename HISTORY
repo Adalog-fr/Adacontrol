@@ -15,6 +15,9 @@ Simplifiable_Statements:
 Statements:
    Add subrule multi_for_of_loop
 
+Style:
+   removed subrule negative_condition (redundant)
+
 ==============
 == V1.21r6b ==
 ==============

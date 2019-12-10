@@ -4,7 +4,6 @@ check reduceable_scope (no_blocks use, no_blocks use_type, no_blocks use_all_typ
 check style (no_closing_name);
 check style (casing_identifier, original, titlecase);
 check style (casing_attribute, titlecase);
-check style (negative_condition);
 check style (compound_statement);
 Multiple_Elements: check style (multiple_elements);  -- Label to ease making exceptions
 check style (casing_keyword, lowercase);

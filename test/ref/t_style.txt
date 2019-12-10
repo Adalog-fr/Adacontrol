@@ -382,8 +382,6 @@ t_style-parameter_order.adb:71:41: Error: order_regular: subprogram parameter ou
 t_style-parameter_order.adb:72:45: Found: No_Default_In: default IN mode used for parameter
 t_style-parameter_order.adb:72:45: Insert
 !in 
-t_style.adb:25:7: Error: Negative_Condition: Negative condition in "if" statement could be made positive
-t_style.adb:31:9: Error: Negative_Condition: Negative condition in "if" statement could be made positive
 t_style.adb:37:15: Error: Multiple_Keyword: "when" does not start line
 t_style.adb:37:15: Insert
 !

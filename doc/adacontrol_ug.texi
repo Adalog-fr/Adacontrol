@@ -9438,7 +9438,6 @@ This rules controls usage of various ``general'' Ada coding style.
 <control_kind> style (exposed_literal, <type_kw>, @{, <value_place>@});
 <control_kind> style (formal_parameter_order @{, <mode list>@});
 <control_kind> style (multiple_elements @{,<element_kw>@});
-<control_kind> style (negative_condition);
 <control_kind> style (no_closing_name [, <max_lines>]);
 <control_kind> style (numeric_literal, [not] <base> [, <block_size>]);
 <control_kind> style (parameter_order @{, <mode list>@});
@@ -9538,11 +9537,6 @@ front of ``clause'' (not allowed otherwise), it allows a
 clause, provided all packages named in the @code{@b{use}} clause are
 also named in the preceding @code{@b{with}} clause.
 @item
-``negative_condition'': controls ``if'' statements with an ``else''
-part and no ``elsif'', where the condition starts with a
-@code{@b{not}}, and should therefore preferably be expressed
-positively.
-@item
 ``no_closing_name'': controls declarations, like package or subprograms,
 that allow (but do not require) repeating the name at the end of the
 declaration, and where the closing name is omitted (which is
@@ -9627,7 +9621,6 @@ style (casing_keyword, lowercase);
 style (casing_number, uppercase);
 style (casing_pragma, titlecase);
 style (default_in);
-style (negative_condition)
 style (multiple_elements)
 style (literal, 10, 3);
 style (exposed_literal, integer, 0, 1)
@@ -11811,11 +11804,24 @@ with scripts if many files are involved.
 
 @section Migrating from 1.21r6b
 
-Counts reports are now print in the same output as Stats reports.
+@subsection Style
+The subrule ``Negative_Condition'' has been removed. It was redundant with
+``simplifiable_statements (if_not)'', except that it detected less cases.
 
-@subsection Format
-This variable now accepts two kinds of values, Identifier (as in 
-previous versions), and strings values. See @ref{Output format}
+Change:
+@example
+check Style (negative_condition);
+@end example
+to:
+@example
+check Simplifiable_Statements (if_not);
+@end example
+
+@subsection Output format
+Counts reports are now printed in the same output as Stats reports.
+
+The Format variable now accepts two kinds of values, Identifier (as in 
+previous versions), and string values. See @ref{Output format}
 for more details.
 
 Now, the default file path are in short version instead of long.

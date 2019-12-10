@@ -43,7 +43,6 @@ package Rules.Style is
    procedure Process_Declaration        (Declaration : in Asis.Declaration);
    procedure Process_Element            (Element     : in Asis.Element);
    procedure Process_Identifier         (Identifier  : in Asis.Expression);
-   procedure Process_If_Statement       (Statement   : in Asis.Statement);
    procedure Process_Literal            (Expression  : in Asis.Expression);
    procedure Process_Pragma             (Pr          : in Asis.Pragma_Element);
    procedure Process_Renaming           (Ren         : in Asis.Declaration);
@@ -61,9 +60,8 @@ private
                      St_Casing_Identifier,  St_Casing_Keyword,         St_Casing_Number,
                      St_Casing_Pragma,
 
-                     St_Compound_Statement, St_Default_In,             St_Exposed_Literal,
-                     St_Multiple_Elements,  St_Negative_Condition,     St_No_Closing_Name,
-                     St_Numeric_Literal,
+                     St_Compound_Statement, St_Default_In,      St_Exposed_Literal,
+                     St_Multiple_Elements,  St_No_Closing_Name, St_Numeric_Literal,
 
                      St_Parameter_Order,    St_Formal_Parameter_Order,                      -- parameter_order subrules
 

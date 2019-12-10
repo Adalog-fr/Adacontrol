@@ -8,7 +8,6 @@ Casing             : search style (casing_keyword,    LOWERCASE);
 Casing             : search style (casing_number,     UpperCase);
 Casing             : search style (casing_pragma,     uppercase);
 No_Default_In      : search style (default_in);
-Negative_Condition : check  style (negative_condition);
 Renamed_Entity     : check  style (renamed_entity);
 Literals           : check  style (numeric_literal,     10,  3);
 Base_2_Literals    : check  style (numeric_literal,      2,  4);

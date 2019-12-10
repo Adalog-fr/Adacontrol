@@ -1,22 +1,21 @@
 -- This is an example of rules that are most generally used
 
 -- Required:
-check unnecessary_use_clause;
-check style (no_closing_name);
-check style (casing_identifier, original);
-check style (negative_condition);
-check style (multiple_elements);
-check style (compound_statement);
-check style (casing_keyword, lowercase);
+check abnormal_function_return;
+check characters (control, trailing_space);
 check max_nesting (6);
 check parameter_aliasing (certain);
 check simplifiable_expressions;
 check simplifiable_statements;
+check style (no_closing_name);
+check style (casing_identifier, original);
+check style (multiple_elements);
+check style (compound_statement);
+check style (casing_keyword, lowercase);
+check unnecessary_use_clause;
 check with_clauses (reduceable);
-check abnormal_function_return;
-check characters (control, trailing_space);
 
 -- Acceptable, but should be looked at:
-search parameter_aliasing (possible);
-search max_nesting (4);
 search local_hiding;
+search max_nesting (4);
+search parameter_aliasing (possible);

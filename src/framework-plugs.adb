@@ -682,7 +682,6 @@ package body Framework.Plugs is
                   Rules.Unsafe_Paired_Calls.     Process_Call                  (Element);
 
                when An_If_Statement =>
-                  Rules.Style.                   Process_If_Statement       (Element);
                   Rules.Style.                   Process_Compound_Statement (Element);
 
                when A_Case_Statement =>
