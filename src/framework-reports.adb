@@ -691,8 +691,7 @@ package body Framework.Reports is
       -- Retrieve source line, but only if necessary since it can be quite
       -- a long operation
       Report_Enabled := Rules_Manager.Initial_Disabling_State (Rule_Id, Get_File_Name (Loc));
-      if Message_Format.Needs_Source or (Message_Format.Value /= "" and Ignore_Option.Value /= On)
-      then
+      if Message_Format.Needs_Source or Ignore_Option.Value /= On then
          declare
             use Ada.Characters.Handling, Ada.Wide_Text_IO;
             Source_File : File_Type;
