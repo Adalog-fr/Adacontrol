@@ -26,8 +26,6 @@
 @top AdaControl User Guide
 @end ifnottex
 
-Last edited: @today{}
-
 This is the AdaControl User Guide. It describes how to install and use
 AdaControl. Please refer to the AdaControl Programmer Manual to learn
 how to add new kinds of rules to AdaControl.

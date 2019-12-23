@@ -22,8 +22,6 @@
 @top AdaControl Programmer Manual
 @end ifnottex
 
-Last edited: @today{}
-
 This is the AdaControl Programmer Manual. It is intended for those who
 want to add new rules to AdaControl, or more generally modify (and
 presumably improve!) AdaControl. Reading this manual is not necessary
