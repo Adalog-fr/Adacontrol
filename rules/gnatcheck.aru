@@ -1,4 +1,7 @@
--- This file gives the AdaControl equivalents of rules checked by Gnatcheck
+-- This file gives the AdaControl equivalents of rules checked by Gnatcheck.
+-- To make comparisons easier, they are given in the order of the chapter 9 of
+-- the Gnatcheck Reference Manual
+--
 -- For rules where Gnatcheck requires a parameter, the AdaControl rule is given for
 -- the default value, or with an example value.
 --
@@ -6,11 +9,14 @@
 -- possibilities of AdaControl, this may not always be the most appropriate control...
 -- Small differences are indicated by a comment that starts with "Difference:"
 --
--- To make comparisons easier, they are given in the order of the chapter 8 of the Gnatcheck Reference Manual
+-- Not yet supported Gnatcheck rules are marked with TBSL (To Be Supplied Later)
+--
 
 
--- 9.1 Style related rules
--- 9.1.1 Tasking
+--------------------------------------------------
+-------- 9.1 Style related rules
+-------- 9.1.1 Tasking
+
 Multiple_Entries_In_Protected_Definitions:
    check declarations (multiple_protected_entries);
 
@@ -18,11 +24,12 @@ Volatile_Objects_Without_Address_Clauses:
    check object_declarations (volatile_no_address);
 
 
--- 9.1.2. Object Orientation
+-------- 9.1.2. Object Orientation
+
 Constructors:
    check declarations (constructor);
 
--- 9.1.2.2 Deep_Inheritance_Hierarchies
+"Deep_Inheritance_Hierarchies:4":
    check derivations (Max_Depth, tagged 4);
 
 -- TBSL Direct_Calls_To_Primitives
@@ -41,15 +48,16 @@ Downward_View_Conversions:
 "Too_Many_Parents:5":
    check derivations (Max_Parents, 5);
 
--- 9.1.2.10 Too_Many_Primitives
 "Too_Many_Primitives:5":
    check max_primitives (visible, tagged 5);
 
 Visible_Components:
    check declarations (public record_type, public extension);
 
+-------- 9.1.3. Portability
 
--- 9.1.3. Portability
+-- TBSL Bit_Records_Without_Layout_Definition
+
 "Forbidden_Attributes:all":
    check entities (all 'all);
 --"Forbidden_Attributes:gnat":
@@ -68,7 +76,12 @@ Visible_Components:
 Implicit_SMALL_For_Fixed_Point_Types:
    check declarations (ordinary_fixed_type_no_small);
 
+-- TBSL Incomplete_Representation_Specifications
+
+-- TBSL No_Explicit_Real_Range
+
 -- TBSL No_Scalar_Storage_Order_Specified
+-- Note: this is related to a Gnat specific attribute
 
 Predefined_Numeric_Types:
    check entities (Standard.Short_Short_Integer, Standard.Short_Integer, Standard.Integer,
@@ -84,7 +97,8 @@ Separate_Numeric_Error_Handlers:
    check declarations (non_joint_CE_NE_handler);
 
 
--- 9.1.4. Program Structure
+-------- 9.1.4. Program Structure
+
 "Deep_Library_Hierarchy:5":
    check dependencies (parent, max 5);
 
@@ -101,7 +115,12 @@ Non_Visible_Exceptions:
 Raising_External_Exceptions:
    check statements (raise_nonpublic);
 
--- 9.1.5. Programming Practice
+-------- 9.1.5. Programming Practice
+
+-- TBSL Address_Specifications_For_Initialized_Objects
+
+-- TBSL Address_Specifications_For_Local_Objects
+
 Anonymous_Arrays:
    check declarations (single_array);
 
@@ -158,8 +177,13 @@ Improper_Returns:
    check statements (procedure_return, function_return);
    -- Difference: AdaControl allows one return in each exception handler
 
+Local_USE_Clauses:
+   check use_clauses (local, type_local, all_type_local);
+
 "Maximum_Parameters:10":
    check parameter_declarations (all_parameters, max 10);
+
+-- TBSL Misplaced_Representation_Items
 
 Nested_Subprograms:
    check declarations (local procedure, local function, local expression_function);
@@ -186,10 +210,13 @@ OTHERS_In_CASE_Statements:
 OTHERS_In_Exception_Handlers:
    check statements (exception_others);
 
+-- TBSL Outbound_Protected_Assignments
+
 Overly_Nested_Control_Structures:
    check max_statement_nesting (all, 4);
 
--- TBSL POS_On_Enumeration_Types
+POS_On_Enumeration_Types:
+   check Type_Usage ('Pos, ());
 
 Positional_Actuals_For_Defaulted_Generic_Parameters:
    check actual_parameters (default_positional, instantiations, all);
@@ -210,6 +237,8 @@ Positional_Parameters:
 Recursive_Subprograms:
    check Max_Call_Depth (Finite);
 
+-- TBSL Single_Value_Enumeration_Types
+
 Unchecked_Address_Conversions:
    check instantiations (ada.unchecked_conversion, system.address, access),
    check instantiations (unchecked_conversion,     system.address, access);
@@ -227,17 +256,23 @@ Unnamed_Blocks_And_Loops:
    check statements (unnamed_block, unnamed_for_loop, unnamed_simple_loop, unnamed_while_loop);
 
 USE_PACKAGE_Clauses:
-   check use_clauses;
+   check use_clauses (global);
+   -- Note: if you don't use Local_Use_Clauses, you can use:
+   -- check use_clauses (package);
 
 
--- 9.1.6. Readability
+-------- 9.1.6. Readability
+
 -- Identifier_Casing
 -- Identifier_Prefixes
 -- Identifier_Suffixes
 -- There is no simple one-to-one mapping here between GNBATCheck and AdaControl rules.
 -- The same effect can be obtained by one or several of the following rules:
--- - Style (Casing)
--- - Naming_Convention
+--    Style (Casing)
+--    Naming_Convention
+
+"Max_Identifier_Length:40":
+   check Naming_Convention (all, ".{1,40}");
 
 -- TBSL Misnamed_Controlling_Parameters
 
@@ -245,15 +280,26 @@ Name_Clashes:
    check naming_convention (all, not file "clashes.txt");
    -- replace "clashes.txt" by the name of the file containing prohibited identifiers
 
+-- TBSL Object_Declarations_Out_Of_Order:
+
+One_Construct_Per_Line:
+   check style (multiple_elements);
+
 Uncommented_BEGIN_In_Package_Bodies:
    check comments (unnamed_begin, declaration package);
    -- difference: we do not require the begin to be alone on its line
    -- (better checked by other rules)
 
 
--- 9.1.7. Source Code Presentation (no gnatcheck rule)
+-------- 9.1.7. Source Code Presentation
+-- (no gnatcheck rule)
 
--- 9.2. Feature Usage Rules
+--------------------------------------------------
+-------- 9.2. Feature Usage Rules
+
+Abort_Statements:
+   check statements (abort);
+
 Abstract_Type_Declarations:
    check declarations (abstract_type);
 
@@ -323,6 +369,9 @@ Membership_Tests:
 Non_Qualified_Aggregates:
    check expressions (unqualified_aggregate);
 
+Number_Declarations:
+   check declarations (named_number);
+
 -- TBSL Numeric_Indexing
 
 "Numeric_Literals:10":
@@ -335,6 +384,9 @@ Parameters_Out_Of_Order:
 
 -- TBSL Predicate_Testing
 
+Relative_Delay_Statements:
+   check statements (delay);
+   
 Representation_Specifications:
    check Representation_Clauses;
    -- Difference: does not check repr. spec. given as aspects
@@ -359,8 +411,14 @@ Unassigned_OUT_Parameters:
 Unconstrained_Array_Returns:
    check return_type (unconstrained_array);
 
+Unconstrained_Arrays:
+   check declarations (unconstrained_array_type,
+                       unconstrained_array_constant,
+                       unconstrained_array_variable);
 
---9.3. Metrics-Related Rules
+--------------------------------------------------
+--------9.3. Metrics-Related Rules
+
 -- TBSL Metrics_Essential_Complexity
 
 -- TBSL Metrics_Cyclomatic_Complexity
@@ -369,7 +427,9 @@ Unconstrained_Array_Returns:
    check max_size (unit, 1000);
 
 
--- 9.4. SPARK Ada Rules
+--------------------------------------------------
+-------- 9.4. SPARK Ada Rules
+
 Annotated_Comments: -- example for "CMarker"
    check comments (Pattern, "^C[ \t]*Marker");
 
@@ -439,8 +499,8 @@ Slices:
 Universal_Ranges:
    check expressions (universal_range);
 
---------------------------------
--- Checks made by the compiler:
+--------------------------------------------------
+-------- Checks made by the compiler:
 
 "Style_Checks:O":
    check derivations (indicator);
