@@ -8,22 +8,33 @@ t_comments-test_terminating.adb:4:40: Error: Terminating: Not an allowed termina
 t_comments-test_terminating.adb:11:17: Error: Terminating: Not an allowed terminating comment
 t_comments-test_terminating.adb:14:18: Error: Terminating: Not an allowed terminating comment
 t_comments-test_terminating.adb:17:14: Error: Terminating: Not an allowed terminating comment
-t_comments-test_unnamed_begin.adb:52:1: Found: Begin: "begin" has no unit name comment for Test_Unnamed_Begin
+t_comments-test_unnamed_begin.adb:52:7: Found: Begin: "begin" has no comment naming Test_Unnamed_Begin
 t_comments-test_unnamed_begin.adb:52:6: Insert
 !  -- Test_Unnamed_Begin
-t_comments-test_unnamed_begin.adb:41:4: Found: Begin: "begin" has no unit name comment for Pack1
+t_comments-test_unnamed_begin.adb:41:10: Found: Begin: "begin" has no comment naming Pack1
 t_comments-test_unnamed_begin.adb:41:9: Insert
 !  -- Pack1
-t_comments-test_unnamed_begin.adb:15:7: Found: Begin: "begin" comment does not name P3
+t_comments-test_unnamed_begin.adb:15:13: Found: Begin: "begin" comment does not name P3
 t_comments-test_unnamed_begin.adb:15:32: Replace:15:34
 !P3
-t_comments-test_unnamed_begin.adb:26:7: Found: Begin: "begin" has no unit name comment for F2
+t_comments-test_unnamed_begin.adb:26:13: Found: Begin: "begin" has no comment naming F2
 t_comments-test_unnamed_begin.adb:26:12: Insert
 !  -- F2
-t_comments-test_unnamed_begin.adb:37:7: Found: Begin: "begin" comment does not name F4
+t_comments-test_unnamed_begin.adb:37:13: Found: Begin: "begin" comment does not name F4
 t_comments-test_unnamed_begin.adb:37:19: Replace:37:20
 !F4
 t_comments-test_unnamed_begin.adb:4:42: Error: Terminating: Not an allowed terminating comment
+t_comments-test_unnamed_end_record.adb:16:18: Error: End_Record: "end record" has no comment naming Bad_1
+t_comments-test_unnamed_end_record.adb:16:17: Insert
+!  -- Bad_1
+t_comments-test_unnamed_end_record.adb:21:18: Error: End_Record: "end record" comment does not name Bad_2
+t_comments-test_unnamed_end_record.adb:21:28: Replace:21:38
+!Bad_2
+t_comments-test_unnamed_end_record.adb:26:18: Error: End_Record: "end record" has no comment naming Bad_3
+t_comments-test_unnamed_end_record.adb:26:27: Insert
+! Bad_3
+t_comments-test_unnamed_end_record.adb:21:28: Error: Terminating: Not an allowed terminating comment
+t_comments-test_unnamed_end_record.adb:26:27: Error: Terminating: Not an allowed terminating comment
 
 Counts summary:
-Not_Col_4: 21
+Not_Col_4: 26

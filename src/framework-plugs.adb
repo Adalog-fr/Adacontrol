@@ -624,6 +624,7 @@ package body Framework.Plugs is
 
                when A_Record_Definition =>
                   Rules.Record_Declarations.Process_Record_Definition (Element);
+                  Rules.Comments.           Process_Record_Definition (Element);
 
                when A_Variant_Part =>
                   Rules.Declarations.Process_Definition (Element);

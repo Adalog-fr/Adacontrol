@@ -55,7 +55,10 @@ pragma Elaborate (Framework.Language);
 package body Rules.Comments is
    use Framework, Framework.Control_Manager, Framework.Language.Shared_Keys;
 
-   type Subrules is (Pattern, Position, Terminating, Unnamed_Begin);
+   Separators : constant Ada.Strings.Wide_Maps.Wide_Character_Set
+     := Ada.Strings.Wide_Maps.To_Set (Ada.Characters.Handling.To_Wide_String (' ' & Ada.Characters.Latin_1.HT));
+
+   type Subrules is (Pattern, Position, Terminating, Unnamed_Begin, Unnamed_End_Record);
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules);
    type Subrules_Set is array (Subrules) of Boolean;
    No_Rule : constant Subrules_Set := (others => False);
@@ -91,9 +94,10 @@ package body Rules.Comments is
    -- Declarations for Terminating
    type Terminating_Context is new Basic_Rule_Context with
       record
-         Begin_Allowed : Boolean;
-         End_Allowed   : Boolean;
-         Pattern_List  : Pattern_Node_Access;
+         Begin_Allowed      : Boolean;
+         End_Allowed        : Boolean;
+         End_Record_Allowed : Boolean;
+         Pattern_List       : Pattern_Node_Access;
       end record;
 
    Terminating_Contexts : Terminating_Context;
@@ -106,13 +110,16 @@ package body Rules.Comments is
    type Decl_Conditions is (Always, Declaration, Program_Unit);
    package Decl_Conditions_Utilities is new Framework.Language.Modifier_Utilities (Decl_Conditions);
 
-   type Unnamed_Context is new Basic_Rule_Context with
+   type Unnamed_Begin_Context is new Basic_Rule_Context with
       record
          Condition : Decl_Conditions;
       end record;
 
-   Units_Used       : array (True_Units) of Boolean := (others => False);
-   Unnamed_Contexts : array (True_Units) of Unnamed_Context;
+   Units_Used             : array (True_Units) of Boolean := (others => False);
+   Unnamed_Begin_Contexts : array (True_Units) of Unnamed_Begin_Context;
+
+   -- Declarations for Unnamed_End_Record
+   Unnamed_End_Record_Context : Basic_Rule_Context;
 
    -----------
    -- Clear --
@@ -143,6 +150,10 @@ package body Rules.Comments is
       Dc : Decl_Conditions;
       Un : Units;
    begin
+      if not Parameter_Exists then
+         Parameter_Error (Rule_Id, "at least one parameter required");
+      end if;
+
       Sr := Get_Flag_Parameter (Allow_Any => False);
 
       case Sr is
@@ -208,6 +219,10 @@ package body Rules.Comments is
                            Terminating_Contexts.Begin_Allowed := True;
                         elsif Key = "END" then
                            Terminating_Contexts.End_Allowed := True;
+                        elsif Key = "END_RECORD" then
+                           Terminating_Contexts.End_Record_Allowed := True;
+                        else
+                           Parameter_Error (Rule_Id, "Incorrect keyword: " & Key);
                         end if;
                      end;
                   end if;
@@ -228,16 +243,22 @@ package body Rules.Comments is
                   if Units_Used /= (True_Units => False) then
                      Parameter_Error (Rule_Id, "subrule already specified");
                   end if;
-                  Unnamed_Contexts := (others => (Basic.New_Context (Ctl_Kind, Ctl_Label) with Dc));
-                  Units_Used       := (others => True);
+                  Unnamed_Begin_Contexts := (others => (Basic.New_Context (Ctl_Kind, Ctl_Label) with Dc));
+                  Units_Used             := (others => True);
                else
                   if Units_Used (Un) then
                      Parameter_Error (Rule_Id, "subrule already specified for " & Image (Un, Lower_Case));
                   end if;
-                  Unnamed_Contexts (Un) := (Basic.New_Context (Ctl_Kind, Ctl_Label) with Dc);
-                  Units_Used (Un)       := True;
+                  Unnamed_Begin_Contexts (Un) := (Basic.New_Context (Ctl_Kind, Ctl_Label) with Dc);
+                  Units_Used (Un)             := True;
                end if;
             end loop;
+
+         when Unnamed_End_Record =>
+            if Rule_Used (Unnamed_End_Record) then
+               Parameter_Error (Rule_Id, "subrule already specified");
+            end if;
+            Unnamed_End_Record_Context := Basic.New_Context (Ctl_Kind, Ctl_Label);
       end case;
       Rule_Used (Sr) := True;
    end Add_Control;
@@ -291,19 +312,100 @@ package body Rules.Comments is
       end case;
    end Command;
 
+   ----------------------
+   -- Check_Identifier --
+   ----------------------
+
+   -- Check that a comment containing the name of Identifier appears after location After (but on the same line),
+   -- unless Optional.
+   -- Cont is the context for the error message, where Keyword is the keyword(s) of the check
+   -- (i.e. "begin", "end record")
+   procedure Check_Identifier (Identifier : Asis.Element;
+                               After      : Framework.Locations.Location;
+                               Optional   : Boolean;
+                               Keyword    : Wide_String;
+                               Cont       : Basic_Rule_Context'Class)
+   is
+      use Ada.Strings, Ada.Strings.Wide_Fixed, Ada.Strings.Wide_Maps;
+      use Asis, Asis.Text;
+      use Framework.Locations, Framework.Reports, Thick_Queries, Utilities;
+
+      Line_Nb    : constant Line_Number  := Get_First_Line (After);
+      Line_Text  : constant Program_Text := To_Upper (Trim (Line_Image
+                                                      (Lines (Identifier, Line_Nb, Line_Nb) (Line_Nb)),
+                                                      Side => Right));
+      -- Ignore trailing spaces to avoid problems in the replacement of the comment
+      Comment_Pos : Natural := 0;
+      Name_Inx    : Natural;
+      In_String   : Boolean := False;
+   begin
+      -- Find start of comment, but beware of string literals
+      for Inx in Line_Text'Range loop
+         if In_String then
+            if Line_Text (Inx) = '"' then
+               In_String := False;
+            end if;
+         else
+            case Line_Text (Inx) is
+               when '-' =>
+                  if Inx /= Line_Text'Last and then Line_Text (Inx + 1) = '-' then
+                     -- Comment found
+                     Comment_Pos := Inx;
+                     exit;
+                  end if;
+               when '"' =>
+                  In_String := True;
+               when others =>
+                  null;
+            end case;
+         end if;
+      end loop;
+
+      if Comment_Pos = 0 then -- No comment
+         if not Optional then
+            Report (Rule_Id,
+                    Cont,
+                    After+1,
+                    '"' & Keyword & """ has no comment naming " & Extended_Name_Image (Identifier));
+            Fixes.Insert ("  -- " & Extended_Name_Image (Identifier), From => After);
+         end if;
+      elsif Comment_Pos = Line_Text'Last - 1 then  -- Empty comment
+         if not Optional then
+            Report (Rule_Id,
+                    Cont,
+                    After + 1,
+                    '"' & Keyword & """ has no comment naming " & Extended_Name_Image (Identifier));
+            Fixes.Insert (' ' & Extended_Name_Image (Identifier),
+                          From => Create_Location (Get_File_Name (After), Line_Nb, Line_Text'Last) + 1);
+         end if;
+      else
+         Name_Inx := Comment_Pos + 2;
+         while Name_Inx <= Line_Text'Last and then Is_In (Line_Text (Name_Inx), Separators) loop
+            Name_Inx := Name_Inx + 1;
+         end loop;
+
+         if Line_Text (Name_Inx .. Line_Text'Last) /= To_Upper (Extended_Name_Image (Identifier)) then
+            Report (Rule_Id,
+                    Cont,
+                    After + 1,
+                    '"' & Keyword & """ comment does not name " & Extended_Name_Image (Identifier));
+            Fixes.Replace (From   => Create_Location (Get_File_Name (After), Line_Nb, Name_Inx),
+                           Length => Line_Text'Last - Name_Inx + 1,
+                           By     => Extended_Name_Image (Identifier));
+         end if;
+      end if;
+   end Check_Identifier;
+
    ------------------
    -- Process_Line --
    ------------------
-
-   Separators : constant Ada.Strings.Wide_Maps.Wide_Character_Set
-     := Ada.Strings.Wide_Maps.To_Set (Ada.Characters.Handling.To_Wide_String (' ' & Ada.Characters.Latin_1.HT));
 
    procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Locations.Location) is
       use Framework.Locations, Framework.Reports, String_Matching, Thick_Queries, Utilities;
       use Ada.Strings.Wide_Maps, Ada.Strings.Wide_Unbounded;
       use Asis.Text;   -- Gela-ASIS compatibility
 
-      type Found_State is (Nothing_Found, Begin_Found, End_Found, Others_Found);
+      type Found_State is (Nothing_Found, Begin_Found, End_Found, End_Record_Found, Others_Found);
       State     : Found_State := Nothing_Found;
       Inx       : Natural;
       In_String : Boolean := False;
@@ -356,6 +458,13 @@ package body Rules.Comments is
                      Inx := Inx + 2;
                   else
                      State := Others_Found;
+                  end if;
+               when 'r' | 'R' =>
+                  if State = End_Found
+                    and then Inx + 5 <= Line'Last
+                    and then To_Upper (Line (Inx .. Inx + 5)) = "RECORD"
+                  then
+                     State := End_Record_Found;
                   end if;
                when ';' =>
                   if State /= End_Found then
@@ -422,6 +531,8 @@ package body Rules.Comments is
             Matched := True;
          elsif Terminating_Contexts.End_Allowed and State = End_Found then
             Matched := True;
+         elsif Terminating_Contexts.End_Record_Allowed and State = End_Record_Found then
+            Matched := True;
          else
             Current_T := Terminating_Contexts.Pattern_List;
             while Current_T /= null loop
@@ -446,13 +557,12 @@ package body Rules.Comments is
    --------------------------
 
    procedure Process_Program_Unit (Unit : Asis.Declaration) is
-      use Ada.Strings, Ada.Strings.Wide_Fixed;
-      use Asis, Asis.Declarations, Asis.Elements, Asis.Text;
-      use Framework.Locations, Framework.Reports, Thick_Queries, Utilities;
+      use Asis, Asis.Declarations, Asis.Elements;
+      use Framework.Locations, Thick_Queries, Utilities;
 
       function Is_Comment_Optional (Un : Units) return Boolean is
       begin
-         case Unnamed_Contexts (Un).Condition is
+         case Unnamed_Begin_Contexts (Un).Condition is
             when Always =>
                return False;
             when Declaration =>
@@ -523,70 +633,36 @@ package body Rules.Comments is
          if Stmts = Nil_Element_List then
             return;
          end if;
-         declare
-            Begin_Loc  : constant Location     := Get_Previous_Word_Location (Stmts, "BEGIN");
-            Begin_Line : constant Line_Number  := Get_First_Line (Begin_Loc);
-            Begin_Text : constant Program_Text := To_Upper (Trim
-                                                            (Line_Image
-                                                               (Lines (Unit, Begin_Line, Begin_Line) (Begin_Line)),
-                                                            Side => Right));
-            -- Ignore trailing spaces to avoid problems in the replacement of the comment
-            Comment_Pos : Natural := 0;
-            Name_Inx    : Natural;
-            In_String   : Boolean := False;
-         begin
-            -- Find start of comment, but beware of string literals
-            for Inx in Begin_Text'Range loop
-               if In_String then
-                  if Begin_Text (Inx) = '"' then
-                     In_String := False;
-                  end if;
-               else
-                  case Begin_Text (Inx) is
-                     when '-' =>
-                        if Inx /= Begin_Text'Last and then Begin_Text (Inx + 1) = '-' then
-                           -- Comment found
-                           Comment_Pos := Inx;
-                           exit;
-                        end if;
-                     when '"' =>
-                        In_String := True;
-                     when others =>
-                        null;
-                  end case;
-               end if;
-            end loop;
 
-            if Comment_Pos = 0
-              or else Begin_Text (Comment_Pos + 2 .. Begin_Text'Last) = (Comment_Pos + 2 .. Begin_Text'Last => ' ')
-            then
-               if not Is_Comment_Optional (Un) then
-                  Report (Rule_Id,
-                          Unnamed_Contexts (Un),
-                          Begin_Loc,
-                          """begin"" has no unit name comment for " & Defining_Name_Image (Names (Unit) (1)));
-                  Fixes.Insert ("  -- " & Defining_Name_Image (Names (Unit) (1)), From => Begin_Loc + 5);
-               end if;
-            else
-               Name_Inx := Index (Begin_Text (Comment_Pos .. Begin_Text'Last), " ", Going => Backward);
-               if Name_Inx = 0 then
-                  Name_Inx := Comment_Pos + 2; -- just after "--"
-               else
-                  Name_Inx := Name_Inx + 1;
-               end if;
-               if Begin_Text (Name_Inx .. Begin_Text'Last) /= To_Upper (Defining_Name_Image (Names (Unit) (1))) then
-                  Report (Rule_Id,
-                          Unnamed_Contexts (Un),
-                          Begin_Loc,
-                          """begin"" comment does not name " & Defining_Name_Image (Names (Unit) (1)));
-                  Fixes.Replace (From   => Create_Location (Get_File_Name (Begin_Loc), Begin_Line, Name_Inx),
-                                 Length => Begin_Text'Last - Name_Inx + 1,
-                                 By     => Defining_Name_Image (Names (Unit) (1)));
-               end if;
-            end if;
-         end;
+         Check_Identifier (Identifier => Names (Unit) (1),
+                           After      => Get_Previous_Word_Location (Stmts, "BEGIN") + 5,
+                           Optional   => Is_Comment_Optional (Un),
+                           Keyword    => "begin",
+                           Cont       => Unnamed_Begin_Contexts (Un));
       end;
    end Process_Program_Unit;
+
+   -------------------------------
+   -- Process_Record_Definition --
+   -------------------------------
+
+   procedure Process_Record_Definition (Def : Asis.Definition) is
+      use Asis.Declarations, Asis.Elements;
+      use Framework.Locations;
+      Decl : constant Asis.Declaration := Enclosing_Element (Enclosing_Element (Def));
+      -- Reminder: A_Record_Definition in A_Record_Type_Definition in An_Ordinary_Type_Declaration
+   begin
+      if not Rule_Used (Unnamed_End_Record) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      Check_Identifier (Identifier => Names (Decl) (1),
+                        After      => Get_End_Location (Decl),
+                        Optional   => False,
+                        Keyword    => "end record",
+                        Cont       => Unnamed_End_Record_Context);
+   end Process_Record_Definition;
 
 begin  -- Rules.Comments
    Framework.Rules_Manager.Register (Rule_Id,

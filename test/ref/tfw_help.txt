@@ -106,7 +106,8 @@ Parameter(s): control | not_iso_646 | trailing_space |
 Rule: COMMENTS
 Control the content or placement of comments
 
-Parameter(1) pattern | position | terminating | unnamed_begin
+Parameter(1) pattern       | position           | terminating |
+             unnamed_begin | unnamed_end_record
 
 for pattern:
 Parameter(2..): "<comment pattern>"

@@ -3911,6 +3911,7 @@ This rule controls comments that must, or must not, appear in certain cases.
 <control_kind> comments (position, <value> | <bounds>);
 <control_kind> comments (terminating @{, "<pattern>" | begin | end@});
 <control_kind> comments (unnamed_begin, <kind> @{, <kind>@});
+<control_kind> comments (unnamed_end_record);
 <bounds>    ::= min|max <value> [, min|max <value> ]
 <kind>      ::= [<condition>] <unit_kind>
 <condition> ::= always | declaration | program_unit
@@ -3984,6 +3985,11 @@ declaration part contains the declarations of other program units
 The <unit_kind> keyword detemines the kind of program unit to which
 the rule applies (``all'' stands for all kinds).  The subrule can be
 given only once of each kind of program unit.
+@item
+``unnamed_end_record'' controls the @code{@b{end record}} of a record
+type declaration that does not have a comment that repeats the name of
+the record type. Except for spaces, the comment must not contain
+anything else than the type name.
 @end itemize
 
 Ex:
@@ -4009,8 +4015,13 @@ check comments (unnamed_begin, program_unit function);
 The following subrules generate fixes:
 @itemize @bullet
 @item
-``Unnamed_Begin'': a comment with the name of the entity is added to the @code{@b{begin}} if it has no comment, or
-replaces an existing comment.
+``Unnamed_Begin'': a comment with the name of the entity is added to
+the @code{@b{begin}} if it has no comment, or replaces an existing
+comment.
+@item
+``Unnamed_End_Record'': a comment with the name of the type is added to
+the @code{@b{end record}} if it has no comment, or replaces an existing
+comment.
 @end itemize
 
 @subsection Tips
@@ -4020,8 +4031,10 @@ the comment, or both.
 
 For ``unnamed_begin'', the <condition> defines cases where the comment
 is optional; however if a comment is present in an optional case, it
-has to be the name of the corresponding unit. The fix replaces an
-existing comment, on the ground that it is likely that the wrong
+has to be the name of the corresponding unit.
+
+For ``unnamed_begin'' and ``unnamed_end_record'', the fix replaces an
+existing comment on the ground that it is likely that the wrong
 comment is actually the old name of an entity that has been renamed.
 
 @subsection Limitations

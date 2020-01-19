@@ -32,7 +32,8 @@ package Rules.Comments is
 
    Rule_Id : constant Wide_String := "COMMENTS";
 
-   procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Locations.Location);
-   procedure Process_Program_Unit (Unit : Asis.Declaration);
+   procedure Process_Line              (Line : in Asis.Program_Text; Loc : Framework.Locations.Location);
+   procedure Process_Program_Unit      (Unit : Asis.Declaration);
+   procedure Process_Record_Definition (Def  : Asis.Definition);
 
 end Rules.Comments;

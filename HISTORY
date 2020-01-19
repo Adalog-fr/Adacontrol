@@ -9,6 +9,9 @@ Possibility to define any custom output format
 
 Changes to existing rules:
 --------------------------
+Comments
+   Add subrule Unnamed_End_Record
+
 Simplifiable_Statements:
    Add subrule if_not
    
