@@ -48,9 +48,11 @@ pragma Elaborate (Framework.Language);
 package body Rules.Use_Clauses is
    use Framework, Framework.Control_Manager;
 
-   type Subrules is (Sr_Package,  Sr_Local,          Sr_Global,
+   type Subrules is (Sr_Default,
+                     Sr_Package,  Sr_Local,          Sr_Global,
                      Sr_Type,     Sr_Type_Local,     Sr_Type_Global,
                      Sr_All_Type, Sr_All_Type_Local, Sr_All_Type_Global);
+   subtype True_Subrules is Subrules range Subrules'Succ (Subrules'First) .. Subrules'Last;
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, Prefix => "SR_");
 
    type Usage is array (Subrules, Control_Kinds) of Boolean;
@@ -78,7 +80,7 @@ package body Rules.Use_Clauses is
       User_Message ("Control occurrences of use clauses or use [all] type clauses that mention");
       User_Message ("any package/type other than the ones passed as parameters (if any)");
       User_Message;
-      Help_On_Flags ("Parameter(1): ", Footer => "(optional)");
+      Help_On_Flags ("Parameter(1): ", Footer => "(optional)", Extra_Value => "");
       User_Message ("Parameter(2..): <Allowed package/type name>");
    end Help;
 
@@ -94,11 +96,14 @@ package body Rules.Use_Clauses is
    begin
       if Parameter_Exists then
          Subrule := Get_Flag_Parameter (Allow_Any => True);
+         if Subrule = Sr_Default then
+            Subrule := Sr_Package;
+         end if;
       else
          Subrule := Sr_Package;
       end if;
 
-      case Subrule is
+      case True_Subrules'(Subrule) is
          when Sr_Package =>
             if Rule_Used (Sr_Local, Ctl_Kind) or Rule_Used (Sr_Global, Ctl_Kind) then
                Parameter_Error (Rule_Id, "this rule can be specified only once for each of check, search and count");
