@@ -125,6 +125,9 @@ Parameter(2..): [<condition>] <unit>
 <condition>: always | declaration | program_unit
 <unit>     : all  | procedure | function | entry | package |
              task
+
+for unnamed_end_record:
+Parameter(2): <nb lines>
 ----
 Rule: DECLARATIONS
 Control occurrences of Ada declarations

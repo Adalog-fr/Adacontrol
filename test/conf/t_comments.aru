@@ -1,12 +1,14 @@
 Rule_Off: check comments (pattern, "##.* off ");
 Pattern:  check comments (pattern, "tbsl");
 
-Terminating: check comments (terminating, "junk", begin, "^ok", end, end_record);
+Terminating: check comments (terminating, "junk", begin, "^ok", "^bad", "^$", end, end_record);
 
 Begin: search comments (unnamed_begin, program_unit package),
        search comments (unnamed_begin, procedure, declaration function);
 
-End_Record: check comments (unnamed_end_record);
+End_Record: search comments (unnamed_end_record, 1),
+            check  comments (unnamed_end_record, 4);
+All_End_Record: count comments (unnamed_end_record, 0);
 
 Position:  search comments (position, max 40),
            check  comments (position, min 1, Max 42);

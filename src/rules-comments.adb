@@ -41,6 +41,7 @@ with
 
 -- Adalog
 with
+  A4G_Bugs,
   String_Matching,
   Thick_Queries,
   Utilities;
@@ -119,7 +120,13 @@ package body Rules.Comments is
    Unnamed_Begin_Contexts : array (True_Units) of Unnamed_Begin_Context;
 
    -- Declarations for Unnamed_End_Record
-   Unnamed_End_Record_Context : Basic_Rule_Context;
+   type Unnamed_End_Record_Context is new Basic_Rule_Context with
+      record
+         Used     : Boolean := False;
+         Nb_Lines : Asis.Text.Line_Number;
+      end record;
+
+   Unnamed_End_Record_Contexts : array (Control_Kinds) of Unnamed_End_Record_Context;
 
    -----------
    -- Clear --
@@ -255,10 +262,15 @@ package body Rules.Comments is
             end loop;
 
          when Unnamed_End_Record =>
-            if Rule_Used (Unnamed_End_Record) then
-               Parameter_Error (Rule_Id, "subrule already specified");
+            if Unnamed_End_Record_Contexts (Ctl_Kind).Used then
+               Parameter_Error (Rule_Id,
+                                "Subrule ""Unnamed_End_Record"" already specified for" & Ctl_Kind'Wide_Image);
             end if;
-            Unnamed_End_Record_Context := Basic.New_Context (Ctl_Kind, Ctl_Label);
+
+            Unnamed_End_Record_Contexts (Ctl_Kind) := (Basic.New_Context (Ctl_Kind, Ctl_Label) with
+                                                       Used      => True,
+                                                       Nb_Lines  => (if Parameter_Exists then Get_Integer_Parameter
+                                                                                         else 0));
       end case;
       Rule_Used (Sr) := True;
    end Add_Control;
@@ -290,6 +302,9 @@ package body Rules.Comments is
       User_Message ("Parameter(2..): [<condition>] <unit>");
       Decl_Conditions_Utilities.Help_On_Modifiers (Header => "<condition>:");
       Units_Flags_Utilities.Help_On_Flags         (Header => "<unit>     :");
+      User_Message;
+      User_Message ("for unnamed_end_record:");
+      User_Message ("Parameter(2): <nb lines>");
    end Help;
 
    -------------
@@ -304,6 +319,10 @@ package body Rules.Comments is
             Rule_Used := No_Rule;
             Clear (Pattern_Contexts);
             Units_Used := (others => False);
+            for C : Unnamed_End_Record_Context of Unnamed_End_Record_Contexts loop
+               C.Used := False;
+            end loop;
+
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := No_Rule;
@@ -320,11 +339,13 @@ package body Rules.Comments is
    -- unless Optional.
    -- Cont is the context for the error message, where Keyword is the keyword(s) of the check
    -- (i.e. "begin", "end record")
-   procedure Check_Identifier (Identifier : Asis.Element;
-                               After      : Framework.Locations.Location;
-                               Optional   : Boolean;
-                               Keyword    : Wide_String;
-                               Cont       : Basic_Rule_Context'Class)
+   type Identifier_Status is (Ok, Not_Reported, Reported);
+   procedure Check_Identifier (Identifier : in  Asis.Element;
+                               After      : in  Framework.Locations.Location;
+                               Optional   : in  Boolean;
+                               Keyword    : in  Wide_String;
+                               Cont       : in  Basic_Rule_Context'Class;
+                               Result     : out Identifier_Status)
    is
       use Ada.Strings, Ada.Strings.Wide_Fixed, Ada.Strings.Wide_Maps;
       use Asis, Asis.Text;
@@ -362,21 +383,31 @@ package body Rules.Comments is
       end loop;
 
       if Comment_Pos = 0 then -- No comment
-         if not Optional then
+         if Optional then
+            Result := Not_Reported;
+         else
+            Result := Reported;
             Report (Rule_Id,
                     Cont,
                     After+1,
                     '"' & Keyword & """ has no comment naming " & Extended_Name_Image (Identifier));
-            Fixes.Insert ("  -- " & Extended_Name_Image (Identifier), From => After);
+            if Cont.Ctl_Kind /= Count then
+               Fixes.Insert ("  -- " & Extended_Name_Image (Identifier), From => After + 1);
+            end if;
          end if;
       elsif Comment_Pos = Line_Text'Last - 1 then  -- Empty comment
-         if not Optional then
+         if Optional then
+            Result := Not_Reported;
+         else
+            Result := Reported;
             Report (Rule_Id,
                     Cont,
                     After + 1,
                     '"' & Keyword & """ has no comment naming " & Extended_Name_Image (Identifier));
-            Fixes.Insert (' ' & Extended_Name_Image (Identifier),
-                          From => Create_Location (Get_File_Name (After), Line_Nb, Line_Text'Last) + 1);
+            if Cont.Ctl_Kind /= Count then
+               Fixes.Insert (' ' & Extended_Name_Image (Identifier),
+                             From => Create_Location (Get_File_Name (After), Line_Nb, Line_Text'Last) + 1);
+            end if;
          end if;
       else
          Name_Inx := Comment_Pos + 2;
@@ -384,14 +415,19 @@ package body Rules.Comments is
             Name_Inx := Name_Inx + 1;
          end loop;
 
-         if Line_Text (Name_Inx .. Line_Text'Last) /= To_Upper (Extended_Name_Image (Identifier)) then
+         if Line_Text (Name_Inx .. Line_Text'Last) = To_Upper (Extended_Name_Image (Identifier)) then
+            Result := Ok;
+         else
+            Result := Reported;
             Report (Rule_Id,
                     Cont,
                     After + 1,
                     '"' & Keyword & """ comment does not name " & Extended_Name_Image (Identifier));
-            Fixes.Replace (From   => Create_Location (Get_File_Name (After), Line_Nb, Name_Inx),
-                           Length => Line_Text'Last - Name_Inx + 1,
-                           By     => Extended_Name_Image (Identifier));
+            if Cont.Ctl_Kind /= Count then
+               Fixes.Replace (From   => Create_Location (Get_File_Name (After), Line_Nb, Name_Inx),
+                              Length => Line_Text'Last - Name_Inx + 1,
+                              By     => Extended_Name_Image (Identifier));
+            end if;
          end if;
       end if;
    end Check_Identifier;
@@ -628,17 +664,19 @@ package body Rules.Comments is
       end if;
 
       declare
-         Stmts : constant Statement_List := Statements (Unit);
+         Stmts   : constant Statement_List := Statements (Unit);
+         Ignored : Identifier_Status;
       begin
          if Stmts = Nil_Element_List then
             return;
          end if;
 
          Check_Identifier (Identifier => Names (Unit) (1),
-                           After      => Get_Previous_Word_Location (Stmts, "BEGIN") + 5,
+                           After      => Get_Previous_Word_Location (Stmts, "BEGIN") + 4,
                            Optional   => Is_Comment_Optional (Un),
                            Keyword    => "begin",
-                           Cont       => Unnamed_Begin_Contexts (Un));
+                           Cont       => Unnamed_Begin_Contexts (Un),
+                           Result     => Ignored);
       end;
    end Process_Program_Unit;
 
@@ -649,7 +687,6 @@ package body Rules.Comments is
    procedure Process_Record_Definition (Def : Asis.Definition) is
       use Asis.Declarations, Asis.Elements;
       use Framework.Locations;
-      Decl : constant Asis.Declaration := Enclosing_Element (Enclosing_Element (Def));
       -- Reminder: A_Record_Definition in A_Record_Type_Definition in An_Ordinary_Type_Declaration
    begin
       if not Rule_Used (Unnamed_End_Record) then
@@ -657,11 +694,46 @@ package body Rules.Comments is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      Check_Identifier (Identifier => Names (Decl) (1),
-                        After      => Get_End_Location (Decl),
-                        Optional   => False,
-                        Keyword    => "end record",
-                        Cont       => Unnamed_End_Record_Context);
+      declare
+         use Asis.Text;
+         Decl   : constant Asis.Declaration   := Enclosing_Element (Enclosing_Element (Def));
+         Name   : constant Asis.Defining_Name := Names (Decl) (1);
+         Loc    : constant Location           := Get_End_Location (Decl);
+         Length : constant Line_Number        :=   A4G_Bugs.Last_Line_Number  (Decl)
+                                                 - A4G_Bugs.First_Line_Number (Decl)
+                                                 + 1;
+         Result : Identifier_Status;
+      begin
+         if Unnamed_End_Record_Contexts (Check).Used then
+            Check_Identifier (Identifier => Name,
+                              After      => Loc,
+                              Optional   => Length <= Unnamed_End_Record_Contexts (Check).Nb_Lines,
+                              Keyword    => "end record",
+                              Cont       => Unnamed_End_Record_Contexts (Check),
+                              Result     => Result);
+         else
+            Result := Not_Reported;
+         end if;
+
+         if Unnamed_End_Record_Contexts (Search).Used and Result = Not_Reported then
+            Check_Identifier (Identifier => Name,
+                              After      => Loc,
+                              Optional   => Length <= Unnamed_End_Record_Contexts (Search).Nb_Lines,
+                              Keyword    => "end record",
+                              Cont       => Unnamed_End_Record_Contexts (Search),
+                              Result     => Result);
+         end if;
+
+         if Unnamed_End_Record_Contexts (Count).Used then
+            pragma Warnings (Off, Result); -- Warning that Result is modified and not used
+            Check_Identifier (Identifier => Name,
+                              After      => Loc,
+                              Optional   => Length <= Unnamed_End_Record_Contexts (Count).Nb_Lines,
+                              Keyword    => "end record",
+                              Cont       => Unnamed_End_Record_Contexts (Count),
+                              Result     => Result);
+         end if;
+      end;
    end Process_Record_Definition;
 
 begin  -- Rules.Comments

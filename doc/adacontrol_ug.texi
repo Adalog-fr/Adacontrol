@@ -3911,7 +3911,7 @@ This rule controls comments that must, or must not, appear in certain cases.
 <control_kind> comments (position, <value> | <bounds>);
 <control_kind> comments (terminating @{, "<pattern>" | begin | end@});
 <control_kind> comments (unnamed_begin, <kind> @{, <kind>@});
-<control_kind> comments (unnamed_end_record);
+<control_kind> comments (unnamed_end_record @{, <value>@});
 <bounds>    ::= min|max <value> [, min|max <value> ]
 <kind>      ::= [<condition>] <unit_kind>
 <condition> ::= always | declaration | program_unit
@@ -3983,13 +3983,25 @@ declaration part contains the declarations of other program units
 @end itemize
 
 The <unit_kind> keyword detemines the kind of program unit to which
-the rule applies (``all'' stands for all kinds).  The subrule can be
+the rule applies (``all'' stands for all kinds). This subrule can be
 given only once of each kind of program unit.
 @item
 ``unnamed_end_record'' controls the @code{@b{end record}} of a record
-type declaration that does not have a comment that repeats the name of
-the record type. Except for spaces, the comment must not contain
-anything else than the type name.
+type declaration (including tagged types and type extensions) that
+does not have a comment that repeats the name of the record
+type. Except for spaces, the comment must not contain anything else
+than the type name.
+
+If a <value> is given as the second paramater, it indicates the
+maximum size in lines of record type declarations where the comment
+may be omitted. If <value> is omitted or is 0, all record type
+declarations are controlled.
+
+This subrule can be given only once for each of check, search, and
+count. This way, it is possible to have a number of lines where the
+omission of the comment is considered a warning (search), and one
+considered an error (check). Of course, this makes sense only if the
+number of lines for search is less than the one for check.
 @end itemize
 
 Ex:
@@ -4009,6 +4021,9 @@ check comments (terminating, begin, "^ *##");
 check comments (unnamed_begin, declaration package);
 check comments (unnamed_begin, program_unit procedure);
 check comments (unnamed_begin, program_unit function);
+
+-- End record must be named if the declaration is more than 10 lines
+check comments (unnamed_end_record, 10);
 @end example
 
 @subsection Fixes
@@ -4031,7 +4046,15 @@ the comment, or both.
 
 For ``unnamed_begin'', the <condition> defines cases where the comment
 is optional; however if a comment is present in an optional case, it
-has to be the name of the corresponding unit.
+has to be the name of the corresponding unit. Similarly for
+``unnamed_end_record'', the comment is optional if the number of lines
+in the declaration is less than <value>; however if a comment is
+present, it has to be the name of the corresponding type.
+
+``unnamed_end_record'' does not control null record definitions
+(i.e. ``@code{@b{is null}}'') since there is no @code{@b{end record}} in
+that case (anyway, these declarations are so short that it would make
+little sense to require a naming comment).
 
 For ``unnamed_begin'' and ``unnamed_end_record'', the fix replaces an
 existing comment on the ground that it is likely that the wrong
