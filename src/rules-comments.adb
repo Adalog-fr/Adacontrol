@@ -188,7 +188,8 @@ package body Rules.Comments is
             end if;
 
             if Pos_Bounds (Ctl_Kind) /= Unlimited_Bounds then
-               Parameter_Error (Rule_Id, "rule already specified");
+               Parameter_Error (Rule_Id,
+                                "subrule ""Position"" already specified for " & Ctl_Kind'Wide_Image);
             end if;
 
             Pos_Bounds (Ctl_Kind) := Get_Bounds_Parameters (Rule_Id, Bound_Min => 1, Allow_Single => True);
@@ -197,7 +198,7 @@ package body Rules.Comments is
 
          when Terminating =>
             if Rule_Used (Terminating) then
-               Parameter_Error (Rule_Id, "subrule already specified");
+               Parameter_Error (Rule_Id, "subrule ""Terminating"" already specified");
             end if;
 
             Basic_Rule_Context (Terminating_Contexts) := Basic.New_Context (Ctl_Kind, Ctl_Label);
@@ -248,13 +249,13 @@ package body Rules.Comments is
                Un := Get_Flag_Parameter (Allow_Any => False);
                if Un = U_All then
                   if Units_Used /= (True_Units => False) then
-                     Parameter_Error (Rule_Id, "subrule already specified");
+                     Parameter_Error (Rule_Id, "Subrule already specified");
                   end if;
                   Unnamed_Begin_Contexts := (others => (Basic.New_Context (Ctl_Kind, Ctl_Label) with Dc));
                   Units_Used             := (others => True);
                else
                   if Units_Used (Un) then
-                     Parameter_Error (Rule_Id, "subrule already specified for " & Image (Un, Lower_Case));
+                     Parameter_Error (Rule_Id, "Subrule already specified for " & Image (Un, Lower_Case));
                   end if;
                   Unnamed_Begin_Contexts (Un) := (Basic.New_Context (Ctl_Kind, Ctl_Label) with Dc);
                   Units_Used (Un)             := True;
