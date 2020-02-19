@@ -23,6 +23,12 @@ procedure X_Declaration_Parameter is
       Cb.all;
    end Make_CB_L3;
 
+   procedure Make_CB_Double (CB1 : Acc_Proc; CB2 : Acc_Proc) is
+   begin
+      CB1.all;
+      CB2.all;
+   end Make_CB_Double;
+
    -- Level 0
    procedure Proc10;
    procedure Proc10 is
@@ -32,14 +38,14 @@ procedure X_Declaration_Parameter is
 
    -- Level 1
    procedure Proc11 is
-      CI : constant := 1+2;                             -- OK, named number
-      CR : constant := 1.0 + 2.0;                       -- OK, named number
-      type T1 is range 3 * 5 .. 2 ** 4 - 1;             -- OK, scalar type
-      type T2 is digits 3+1 range 3.0+1.0 .. 2.0 ** 3;  -- OK, scalar type
-      X  : Integer;                   -- declaration level 3
-      Y  : Integer := X + 1;          -- declaration level 1
+      CI : constant := 1 + 2;                              -- OK, named number
+      CR : constant := 1.0 + 2.0;                          -- OK, named number
+      type T1 is range 3 * 5 .. 2 ** 4 - 1;                -- OK, scalar type
+      type T2 is digits 3 + 1 range 3.0 + 1.0 .. 2.0 ** 3; -- OK, scalar type
+      X  : Integer;                                        -- declaration level 3
+      Y  : Integer := X + 1;                               -- declaration level 1
    begin
-      for I in 1 .. X loop            -- OK, loop parameter specification
+      for I in 1 .. X loop                                 -- OK, loop parameter specification
          null;
       end loop;
    exception
@@ -173,4 +179,11 @@ begin
    Inst2 (Proc10'Access);                     -- Registration proc from generic
 
    Make_Cb2 (Proc10'Access);                  -- Registration proc part of generic
+
+   -- Check several parameters
+   Make_Cb_Double (Proc10'Access, Proc10'Access); -- Propagating x2
+   Make_Cb_Double (Proc10'Access, Proc11'Access); -- Propagating 1st param
+   Make_Cb_Double (Proc11'Access, Proc10'Access); -- Propagating 2nd param
+   Make_Cb_Double (Proc11'Access, Proc11'Access); -- Not Propagating
+
 end X_Declaration_Parameter;

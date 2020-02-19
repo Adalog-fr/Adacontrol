@@ -247,11 +247,7 @@ package body Rules.Exception_Propagation is
    procedure Post_Procedure_Declaration (Element : in     Asis.Element;
                                          Control : in out Asis.Traverse_Control;
                                          State   : in out Risk_Level)
-   is
-      pragma Unreferenced (Element, Control, State);
-   begin
-      null;
-   end Post_Procedure_Declaration;
+   is null;
 
    procedure Traverse_Declaration is new Asis.Iterator.Traverse_Element (Risk_Level,
                                                                          Pre_Procedure_Declaration,
@@ -483,6 +479,10 @@ package body Rules.Exception_Propagation is
                   null;
             end case;
 
+         when A_Statement =>
+            -- We don't traverse statements (the case of package bodies is handled elsewhere)
+            Control := Abandon_Siblings;
+
          when A_Pragma =>
             -- Nothing interesting in pragmas
             Control := Abandon_Children;
@@ -511,11 +511,7 @@ package body Rules.Exception_Propagation is
    procedure Post_Procedure_Handler (Element : in     Asis.Element;
                                      Control : in out Asis.Traverse_Control;
                                      State   : in out Handler_State)
-   is
-      pragma Unreferenced (Element, Control, State);
-   begin
-      null;
-   end Post_Procedure_Handler;
+   is null;
 
    procedure Traverse_Handler is new Asis.Iterator.Traverse_Element (Handler_State,
                                                                      Pre_Procedure_Handler,
@@ -586,18 +582,18 @@ package body Rules.Exception_Propagation is
    end Pre_Procedure_Handler;
 
 
-   --------------------------------
-   -- Exception_Propagation_Risk --
-   --------------------------------
+   -------------------------------------
+   -- Body_Exception_Propagation_Risk --
+   -------------------------------------
 
-   function Exception_Propagation_Risk (Decl : Asis.Declaration; Max_Level : Risk_Level) return Risk_Level is
+   function Body_Exception_Propagation_Risk (Decl : Asis.Declaration; Max_Level : Risk_Level) return Risk_Level is
       use Asis, Asis.Elements, Asis.Declarations, Asis.Expressions, Asis.Statements;
       use Framework.Locations, Framework.Reports, Thick_Queries, Utilities;
-      SP_Body     : Asis.Declaration;
+      Good_Body   : Asis.Declaration;
       H_State     : Handler_State;
       Level       : Risk_Level;
       The_Control : Traverse_Control := Continue;
-   begin -- Exception_Propagation_Risk
+   begin -- Body_Exception_Propagation_Risk
       case Declaration_Kind (Decl) is
          when A_Null_Procedure_Declaration =>
             return No_Risk;  -- Can't raise exception
@@ -609,27 +605,31 @@ package body Rules.Exception_Propagation is
          when A_Procedure_Declaration
             | A_Function_Declaration
             =>
-            SP_Body := Corresponding_Body (Decl);
+            Good_Body := Corresponding_Body (Decl);
+
          when A_Procedure_Instantiation
             | A_Function_Instantiation
             =>
-            SP_Body := Corresponding_Body (Corresponding_Name_Declaration
-                                           (Simple_Name
-                                            (Generic_Unit_Name (Decl))));
+            Good_Body := Corresponding_Body (Corresponding_Name_Declaration
+                                             (Simple_Name
+                                              (Generic_Unit_Name (Decl))));
+
          when A_Procedure_Body_Declaration
             | A_Function_Body_Declaration
             | A_Task_Body_Declaration
             =>
-            SP_Body := Decl;
+            Good_Body := Decl;
+
          when A_Procedure_Body_Stub
             | A_Function_Body_Stub
             =>
-            SP_Body := Corresponding_Subunit (Decl);
+            Good_Body := Corresponding_Subunit (Decl);
+
          when others =>
             Failure ("Unexpected element in Exception_Propagation_Risk", Decl);
       end case;
 
-      if Is_Nil (SP_Body) then
+      if Is_Nil (Good_Body) then
          -- This happens only if some required unit is not available
          Uncheckable (Rule_Id,
                       False_Negative,
@@ -639,9 +639,9 @@ package body Rules.Exception_Propagation is
       end if;
 
       declare
-         Handlers : constant Asis.Exception_Handler_List := Body_Exception_Handlers (SP_Body);
+         Handlers : constant Asis.Exception_Handler_List := Body_Exception_Handlers (Good_Body);
       begin
-      -- Is there a handler ?
+         -- Is there a handler ?
          if Handlers = Nil_Element_List then
             return Always;
          end if;
@@ -661,12 +661,12 @@ package body Rules.Exception_Propagation is
                end if;
             end loop;
          end loop;
-         Level := No_Risk;
 
+         Level := No_Risk;
          -- No need to check declarations if not requested by the user
          if Max_Level < Always then
             The_Control := Continue;
-            for D : Asis.Declaration of Body_Declarative_Items (SP_Body) loop
+            for D : Asis.Declaration of Body_Declarative_Items (Good_Body) loop
                Traverse_Declaration (D, The_Control, Level);
                exit when Level >= Max_Level;
                -- Highest risk detected, no need to go further
@@ -675,7 +675,7 @@ package body Rules.Exception_Propagation is
 
          return Level;
       end;
-   end Exception_Propagation_Risk;
+   end Body_Exception_Propagation_Risk;
 
    ------------------
    -- Risk_Message --
@@ -698,6 +698,8 @@ package body Rules.Exception_Propagation is
    procedure Process_Call (Call : Asis.Element) is
       use Asis, Asis.Statements, Asis.Elements, Asis.Expressions;
       use Framework.Locations, Framework.Reports, Thick_Queries;
+
+      Parameter_Loc : Location;  -- Location of current parameter for error messages from pre-procedure
 
       -- Procedure to check if a 'Access or 'Address is encountered
       procedure Pre_Procedure_Parameter (Element : in     Asis.Element;
@@ -744,7 +746,7 @@ package body Rules.Exception_Propagation is
                   | A_Function_Body_Declaration
                   | A_Function_Body_Stub
                     =>
-                  Risk := Exception_Propagation_Risk (SP_Declaration, State.Check_Level);
+                  Risk := Body_Exception_Propagation_Risk (SP_Declaration, State.Check_Level);
                   if Risk >= State.Check_Level then
                      Report (Rule_Id,
                              State,
@@ -752,10 +754,10 @@ package body Rules.Exception_Propagation is
                              "subprogram """ &  Defining_Name_Image (Names (SP_Declaration)(1))
                              & """ can propagate exceptions"
                              & Risk_Message (Risk)
-                             & ", used as call-back at " & Image (Get_Location (Call)));
+                             & ", used as call-back at " & Image (Parameter_Loc));
                   end if;
                when A_Procedure_Instantiation | A_Function_Instantiation =>
-                  Risk := Exception_Propagation_Risk (SP_Declaration, State.Check_Level);
+                  Risk := Body_Exception_Propagation_Risk (SP_Declaration, State.Check_Level);
                   if Risk >= State.Check_Level then
                      Report (Rule_Id,
                              State,
@@ -769,7 +771,7 @@ package body Rules.Exception_Propagation is
                              & Risk_Message (Risk)
                              & ", instance """ &  Defining_Name_Image (Names (SP_Declaration)(1))
                              & """ at " & Image (Get_Location (SP_Declaration))
-                             & " used as call-back at " & Image (Get_Location (Call))
+                             & " used as call-back at " & Image (Parameter_Loc)
                             );
                   end if;
                when others =>
@@ -781,15 +783,11 @@ package body Rules.Exception_Propagation is
       procedure Post_Procedure_Parameter (Element : in     Asis.Element;
                                           Control : in out Asis.Traverse_Control;
                                           State   : in out EP_Rule_Context)
-      is
-         pragma Unreferenced (Element, Control, State);
-      begin
-         null;
-      end Post_Procedure_Parameter;
+      is null;
 
       procedure Traverse_Parameter is new Asis.Iterator.Traverse_Element (EP_Rule_Context,
-                                                                Pre_Procedure_Parameter,
-                                                                Post_Procedure_Parameter);
+                                                                          Pre_Procedure_Parameter,
+                                                                          Post_Procedure_Parameter);
 
    begin   -- Process_Call
       if not Rule_Used (Kw_Parameter) then
@@ -832,11 +830,8 @@ package body Rules.Exception_Propagation is
             begin
                if Current_Context /= No_Matching_Context then
                   -- Parameter found
+                  Parameter_Loc := Get_Location (Actuals (I));
                   Traverse_Parameter (Actual_Parameter (Actuals (I)), The_Control, EP_Rule_Context (Current_Context));
-
-                  -- The same formal parameter won't happen twice in the same call,
-                  -- no need to check further
-                  exit;
                end if;
             end;
          end loop;
@@ -870,9 +865,7 @@ package body Rules.Exception_Propagation is
                   -- Parameter found
                   -- Actual must be an identifier (or else it is not for us, dereference for example)
                   if Expression_Kind (Actual_Parameter (Actuals (I))) = An_Identifier then
-                     SP_Declaration := Corresponding_Name_Declaration (Ultimate_Name
-                                                                                (Actual_Parameter
-                                                                                 (Actuals (I))));
+                     SP_Declaration := Corresponding_Name_Declaration (Ultimate_Name (Actual_Parameter (Actuals (I))));
 
                      case Declaration_Kind (SP_Declaration) is
                         when A_Procedure_Declaration
@@ -884,8 +877,8 @@ package body Rules.Exception_Propagation is
                            | A_Function_Body_Declaration
                            | A_Function_Body_Stub
                            =>
-                           Risk := Exception_Propagation_Risk (SP_Declaration,
-                                                               EP_Rule_Context (Current_Context).Check_Level);
+                           Risk := Body_Exception_Propagation_Risk (SP_Declaration,
+                                                                    EP_Rule_Context (Current_Context).Check_Level);
                            if Risk >= EP_Rule_Context (Current_Context).Check_Level then
                               Report (Rule_Id,
                                       Current_Context,
@@ -898,8 +891,8 @@ package body Rules.Exception_Propagation is
                            end if;
 
                         when A_Procedure_Instantiation | A_Function_Instantiation =>
-                           Risk := Exception_Propagation_Risk (SP_Declaration,
-                                                               EP_Rule_Context (Current_Context).Check_Level);
+                           Risk := Body_Exception_Propagation_Risk (SP_Declaration,
+                                                                    EP_Rule_Context (Current_Context).Check_Level);
                            if Risk >= EP_Rule_Context (Current_Context).Check_Level then
                               Report (Rule_Id,
                                       Current_Context,
@@ -947,7 +940,7 @@ package body Rules.Exception_Propagation is
            := To_Unbounded_Wide_String (To_Upper (Name_Image (Convention)));
       begin
          if Is_Present (Conventions, Convention_Img) then
-            Risk := Exception_Propagation_Risk (Element,  Fetch (Conventions, Convention_Img).Check_Level);
+            Risk := Body_Exception_Propagation_Risk (Element,  Fetch (Conventions, Convention_Img).Check_Level);
             if Risk >= Fetch (Conventions, Convention_Img).Check_Level then
                Report (Rule_Id,
                        Fetch (Conventions, Convention_Img),
@@ -1002,7 +995,7 @@ package body Rules.Exception_Propagation is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      Risk := Exception_Propagation_Risk (Task_Body, Task_Context.Check_Level);
+      Risk := Body_Exception_Propagation_Risk (Task_Body, Task_Context.Check_Level);
       if Risk >= Task_Context.Check_Level then
          Report (Rule_Id,
                  Task_Context,
@@ -1020,7 +1013,7 @@ package body Rules.Exception_Propagation is
 
    procedure Process_Local_Exception (Exc : Asis.Definition) is
       use Asis, Asis.Elements, Asis.Expressions, Asis.Statements;
-      use Framework.Locations, Framework.Reports, Thick_Queries, Utilities;
+      use Framework.Locations, Framework.Reports, Thick_Queries;
 
       Scope : constant Asis.Declaration := Enclosing_Element (Enclosing_Element (Exc));
    begin
@@ -1065,7 +1058,7 @@ package body Rules.Exception_Propagation is
                     Local_Exc_Context,
                     Get_Location (Exc),
                     "No handler for local exception in enclosing "
-                    & Choose (Statement_Kind (Scope) = A_Block_Statement, "block", "body"));
+                    & (if Statement_Kind (Scope) = A_Block_Statement then "block" else "body"));
          end if;
       end;
    end Process_Local_Exception;
