@@ -77,7 +77,8 @@ package body Rules.Unit_Pattern is
    ---- Declarations for Single_Tagged type
    --                    ******************
 
-   package Declarations_Store is new Scope_Manager.Scoped_Store (Asis.Declaration);
+   package Declarations_Store is new Scope_Manager.Scoped_Store (Asis.Declaration,
+                                                                 Equivalent_Keys => Asis.Elements.Is_Equal);
 
 
    ---- Declarations for Tagged_Type_Hierarchy
