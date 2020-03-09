@@ -54,6 +54,9 @@ package Framework.Reports.Fixes is
 
    procedure Replace (Original : Asis.Element;
                       By       : Wide_String);
+   procedure Replace (Original : Asis.Element_List;
+                      By       : Wide_String);
+
    procedure Replace (Original   : Asis.Element;
                       By         : Asis.Element;
                       Add_Before : Wide_String := "";
@@ -62,6 +65,11 @@ package Framework.Reports.Fixes is
                       By         : Asis.Element_List;
                       Add_Before : Wide_String := "";
                       Add_After  : Wide_String := "");
+   procedure Replace (Original   : Asis.Element_List;
+                      By         : Asis.Element_List;
+                      Add_Before : Wide_String := "";
+                      Add_After  : Wide_String := "");
+
    procedure Replace (From   : Location;
                       Length : Positive;
                       By     : Wide_String);

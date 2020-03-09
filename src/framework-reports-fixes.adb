@@ -205,6 +205,21 @@ package body Framework.Reports.Fixes is
    -- Replace --
    -------------
 
+   procedure Replace (Original : Asis.Element_List; By : Wide_String) is
+   begin
+      if not Generate_Fixes then
+         return;
+      end if;
+
+      Gen_Replace (From => Get_Location     (Original (Original'First)),
+                   To   => Get_End_Location (Original (Original'Last)),
+                   By   => By);
+   end Replace;
+
+   -------------
+   -- Replace --
+   -------------
+
    procedure Replace (Original   : Asis.Element;
                       By         : Asis.Element;
                       Add_Before : Wide_String := "";
@@ -229,7 +244,32 @@ package body Framework.Reports.Fixes is
    -- Replace --
    -------------
 
-   procedure Replace (Original : Asis.Element;
+   procedure Replace (Original   : Asis.Element;
+                      By         : Asis.Element_List;
+                      Add_Before : Wide_String := "";
+                      Add_After  : Wide_String := "")
+   is
+      use Thick_Queries;
+   begin
+      if not Generate_Fixes then
+         return;
+      end if;
+
+      declare
+         By_Image : constant Asis.Program_Text := Element_List_Image (By);
+      begin
+         Replace (Original,
+                  By => Add_Before
+                        & By_Image (A4G_Bugs.Element_Span (By (By'First)).First_Column .. By_Image'Last)
+                        & Add_After);
+      end;
+   end Replace;
+
+   -------------
+   -- Replace --
+   -------------
+
+   procedure Replace (Original   : Asis.Element_List;
                       By         : Asis.Element_List;
                       Add_Before : Wide_String := "";
                       Add_After  : Wide_String := "")
