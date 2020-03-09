@@ -56,6 +56,11 @@ t_simplifiable_statements-test_if.adb:37:13: Error: SIMPLIFIABLE_STATEMENTS: con
 t_simplifiable_statements-test_if_for_case.adb:25:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
 t_simplifiable_statements-test_if_for_case.adb:31:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
 t_simplifiable_statements-test_if_for_case.adb:41:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+t_simplifiable_statements-test_if_for_case.adb:90:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+t_simplifiable_statements-test_if_for_case.adb:90:4: Replace:96:10
+!null;
+t_simplifiable_statements-test_if_for_case.adb:92:4: Error: SIMPLIFIABLE_STATEMENTS: alternative to a statically True path
+t_simplifiable_statements-test_if_for_case.adb:94:4: Error: SIMPLIFIABLE_STATEMENTS: alternative to a statically True path
 t_simplifiable_statements-test_if_not.adb:7:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
 t_simplifiable_statements-test_if_not.adb:7:4: Delete:8:11
 t_simplifiable_statements-test_if_not.adb:5:7: Error: SIMPLIFIABLE_STATEMENTS: Negative condition in "if-else" statement
@@ -90,6 +95,29 @@ t_simplifiable_statements-test_null.adb:24:7: Error: SIMPLIFIABLE_STATEMENTS: un
 t_simplifiable_statements-test_null.adb:24:7: Delete:24:11
 t_simplifiable_statements-test_null.adb:28:7: Error: SIMPLIFIABLE_STATEMENTS: unnecessary null statement
 t_simplifiable_statements-test_null.adb:28:7: Delete:28:11
+t_simplifiable_statements-test_true_if.adb:6:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+t_simplifiable_statements-test_true_if.adb:6:4: Replace:10:10
+!I := 1;
+t_simplifiable_statements-test_true_if.adb:8:4: Error: SIMPLIFIABLE_STATEMENTS: alternative to a statically True path
+t_simplifiable_statements-test_true_if.adb:12:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+t_simplifiable_statements-test_true_if.adb:12:4: Replace:16:10
+!I := 4;
+t_simplifiable_statements-test_true_if.adb:14:4: Error: SIMPLIFIABLE_STATEMENTS: alternative to a statically false path
+t_simplifiable_statements-test_true_if.adb:20:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+t_simplifiable_statements-test_true_if.adb:20:4: Replace:25:13
+!else I := 2;
+t_simplifiable_statements-test_true_if.adb:22:4: Error: SIMPLIFIABLE_STATEMENTS: alternative to a statically True path
+t_simplifiable_statements-test_true_if.adb:24:4: Error: SIMPLIFIABLE_STATEMENTS: alternative to a statically True path
+t_simplifiable_statements-test_true_if.adb:30:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+t_simplifiable_statements-test_true_if.adb:30:4: Delete:31:13
+t_simplifiable_statements-test_true_if.adb:32:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+t_simplifiable_statements-test_true_if.adb:32:4: Replace:35:13
+!else I := 2;
+t_simplifiable_statements-test_true_if.adb:34:4: Error: SIMPLIFIABLE_STATEMENTS: alternative to a statically True path
+t_simplifiable_statements-test_true_if.adb:38:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+t_simplifiable_statements-test_true_if.adb:38:4: Delete:39:13
+t_simplifiable_statements-test_true_if.adb:40:4: Replace:40:6
+!
 t_simplifiable_statements-test_unnecessary_if.adb:7:4: Error: SIMPLIFIABLE_STATEMENTS: If statement can be replaced by direct use of logical expression into assignment/return
 t_simplifiable_statements-test_unnecessary_if.adb:7:4: Delete:8:6
 t_simplifiable_statements-test_unnecessary_if.adb:8:13: Replace:8:16
@@ -207,6 +235,11 @@ t_simplifiable_statements-test_if.adb:37:13: Error: SIMPLIFIABLE_STATEMENTS: con
 t_simplifiable_statements-test_if_for_case.adb:25:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
 t_simplifiable_statements-test_if_for_case.adb:31:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
 t_simplifiable_statements-test_if_for_case.adb:41:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+t_simplifiable_statements-test_if_for_case.adb:90:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+t_simplifiable_statements-test_if_for_case.adb:90:4: Replace:96:10
+!null;
+t_simplifiable_statements-test_if_for_case.adb:92:4: Error: SIMPLIFIABLE_STATEMENTS: alternative to a statically True path
+t_simplifiable_statements-test_if_for_case.adb:94:4: Error: SIMPLIFIABLE_STATEMENTS: alternative to a statically True path
 t_simplifiable_statements-test_if_not.adb:7:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
 t_simplifiable_statements-test_if_not.adb:7:4: Delete:8:11
 t_simplifiable_statements-test_if_not.adb:5:7: Error: SIMPLIFIABLE_STATEMENTS: Negative condition in "if-else" statement
@@ -241,6 +274,29 @@ t_simplifiable_statements-test_null.adb:24:7: Error: SIMPLIFIABLE_STATEMENTS: un
 t_simplifiable_statements-test_null.adb:24:7: Delete:24:11
 t_simplifiable_statements-test_null.adb:28:7: Error: SIMPLIFIABLE_STATEMENTS: unnecessary null statement
 t_simplifiable_statements-test_null.adb:28:7: Delete:28:11
+t_simplifiable_statements-test_true_if.adb:6:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+t_simplifiable_statements-test_true_if.adb:6:4: Replace:10:10
+!I := 1;
+t_simplifiable_statements-test_true_if.adb:8:4: Error: SIMPLIFIABLE_STATEMENTS: alternative to a statically True path
+t_simplifiable_statements-test_true_if.adb:12:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+t_simplifiable_statements-test_true_if.adb:12:4: Replace:16:10
+!I := 4;
+t_simplifiable_statements-test_true_if.adb:14:4: Error: SIMPLIFIABLE_STATEMENTS: alternative to a statically false path
+t_simplifiable_statements-test_true_if.adb:20:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+t_simplifiable_statements-test_true_if.adb:20:4: Replace:25:13
+!else I := 2;
+t_simplifiable_statements-test_true_if.adb:22:4: Error: SIMPLIFIABLE_STATEMENTS: alternative to a statically True path
+t_simplifiable_statements-test_true_if.adb:24:4: Error: SIMPLIFIABLE_STATEMENTS: alternative to a statically True path
+t_simplifiable_statements-test_true_if.adb:30:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+t_simplifiable_statements-test_true_if.adb:30:4: Delete:31:13
+t_simplifiable_statements-test_true_if.adb:32:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+t_simplifiable_statements-test_true_if.adb:32:4: Replace:35:13
+!else I := 2;
+t_simplifiable_statements-test_true_if.adb:34:4: Error: SIMPLIFIABLE_STATEMENTS: alternative to a statically True path
+t_simplifiable_statements-test_true_if.adb:38:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+t_simplifiable_statements-test_true_if.adb:38:4: Delete:39:13
+t_simplifiable_statements-test_true_if.adb:40:4: Replace:40:6
+!
 t_simplifiable_statements-test_unnecessary_if.adb:7:4: Error: SIMPLIFIABLE_STATEMENTS: If statement can be replaced by direct use of logical expression into assignment/return
 t_simplifiable_statements-test_unnecessary_if.adb:7:4: Delete:8:6
 t_simplifiable_statements-test_unnecessary_if.adb:8:13: Replace:8:16

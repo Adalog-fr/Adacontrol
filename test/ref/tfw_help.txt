@@ -739,14 +739,14 @@ Parameter(s): conversion | if_not        | membership  | parentheses  |
 Rule: SIMPLIFIABLE_STATEMENTS
 Control Ada statements that can be made simpler
 
-Parameter(s): [no_exit] [full_range] all               | block          |
-                                     dead              | for_for_slice  |
-                                     for_in_for_for_of | handler        |
-                                     if                | if_for_case    |
-                                     if_not            | loop           |
-                                     loop_for_while    | nested_path    |
-                                     null              | unnecessary_if |
-                                     while_for_for
+Parameter(s): [no_exit] [full_range] all               | block         |
+                                     dead              | for_for_slice |
+                                     for_in_for_for_of | handler       |
+                                     if                | if_for_case   |
+                                     if_not            | loop          |
+                                     loop_for_while    | nested_path   |
+                                     null              | true_if       |
+                                     unnecessary_if    | while_for_for
 no_exit can be given with "all" and "while_for_for"
 full_range can be given with "all" and "for_in_for_for_of"
 Variables:
@@ -1099,14 +1099,14 @@ Parameter(s): conversion | if_not        | membership  | parentheses  |
 Rule: SIMPLIFIABLE_STATEMENTS
 Control Ada statements that can be made simpler
 
-Parameter(s): [no_exit] [full_range] all               | block          |
-                                     dead              | for_for_slice  |
-                                     for_in_for_for_of | handler        |
-                                     if                | if_for_case    |
-                                     if_not            | loop           |
-                                     loop_for_while    | nested_path    |
-                                     null              | unnecessary_if |
-                                     while_for_for
+Parameter(s): [no_exit] [full_range] all               | block         |
+                                     dead              | for_for_slice |
+                                     for_in_for_for_of | handler       |
+                                     if                | if_for_case   |
+                                     if_not            | loop          |
+                                     loop_for_while    | nested_path   |
+                                     null              | true_if       |
+                                     unnecessary_if    | while_for_for
 no_exit can be given with "all" and "while_for_for"
 full_range can be given with "all" and "for_in_for_for_of"
 Variables:

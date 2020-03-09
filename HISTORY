@@ -13,7 +13,7 @@ Comments
    Add subrule Unnamed_End_Record
 
 Simplifiable_Statements:
-   Add subrule if_not
+   Add subrule true_if. Improved subrule dead.
    
 Statements:
    Add subrule multi_for_of_loop

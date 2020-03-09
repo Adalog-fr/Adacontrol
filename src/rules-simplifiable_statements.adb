@@ -2,7 +2,7 @@
 --  Rules.Simplifiable_Statements - Package body                    --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
---  of Air  Navigation (EUROCONTROL) and Adalog  2004-2005.         --
+--  of Air  Navigation (EUROCONTROL) and Adalog  2004-2020.         --
 --  The Ada Controller is  free software; you can  redistribute  it --
 --  and/or modify it under  terms of the GNU General Public License --
 --  as published by the Free Software Foundation; either version 2, --
@@ -50,10 +50,10 @@ package body Rules.Simplifiable_Statements is
    use Framework, Framework.Control_Manager, Framework.Variables, Framework.Variables.Shared_Types;
 
    type Subrules is (Stmt_All,
-                     Stmt_Block,          Stmt_Dead,           Stmt_For_For_Slice, Stmt_For_In_For_For_Of,
-                     Stmt_Handler,        Stmt_If,             Stmt_If_For_Case,   Stmt_If_Not,
-                     Stmt_Loop,           Stmt_Loop_For_While, Stmt_Nested_Path,   Stmt_Null,
-                     Stmt_Unnecessary_If, Stmt_While_For_For);
+                     Stmt_Block,   Stmt_Dead,           Stmt_For_For_Slice, Stmt_For_In_For_For_Of,
+                     Stmt_Handler, Stmt_If,             Stmt_If_For_Case,   Stmt_If_Not,
+                     Stmt_Loop,    Stmt_Loop_For_While, Stmt_Nested_Path,   Stmt_Null,
+                     Stmt_True_If, Stmt_Unnecessary_If, Stmt_While_For_For);
    subtype True_Subrules is Subrules range Subrules'Succ (Stmt_All) .. Subrules'Last;
 
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules, "STMT_");
@@ -484,7 +484,105 @@ package body Rules.Simplifiable_Statements is
       If_Cond        : Asis.Expression;
       Op             : Asis.Operator_Kinds;
 
-      procedure Process_Unnecessary_If is
+      procedure Process_If_Static_Paths is
+         -- Called with Dead and/or True_If
+         use Utilities;
+
+         First_Path_Cond : constant Wide_String := Static_Expression_Value_Image (Condition_Expression
+                                                                                  (Paths (Paths'First)));
+         Already_Fixed   : Boolean := False;
+         All_Paths_Dead  : Boolean := False; -- after a statically True if/elsif
+      begin
+         -- Special case for "if" path: if followed by "elsif", change it to "if". If followed by "else", replace
+         -- by the content of the "else" path. And if none of these, remove the whole if statement
+         if First_Path_Cond = "0" then  -- "0" => False
+            if Rule_Used (Stmt_Dead) then
+               Report (Rule_Id,
+                       Usage (Stmt_Dead),
+                       Get_Location (Paths (1)),
+                       "condition is always false");
+            if Paths'Length = 1 then -- no else or elsif
+               Fixes.Delete (Stmt);
+            else
+               case Path_Kind (Paths (2)) is
+                     when An_Elsif_Path =>
+                        Fixes.Delete (Paths (1));
+                        Fixes.Replace (Get_Location (Paths (2)), Length => 3, By => ""); -- 3 characters: "els"
+                     when An_Else_Path =>
+                        Fixes.Replace (Stmt, Sequence_Of_Statements (Paths (2), Include_Pragmas => True));
+                     when others =>
+                        Utilities.Failure ("Process_If_Statement: Incorrect path", Paths (2));
+                  end case;
+               end if;
+               Already_Fixed := True;
+            end if;
+
+            if Rule_Used (Stmt_True_If) and then Paths'Length > 1 and then Path_Kind (Paths (2)) = An_Else_Path then
+               Report (Rule_Id,
+                       Usage (Stmt_True_If),
+                       Get_Location (Paths (2)),
+                       "alternative to a statically false path");
+            end if;
+         elsif Rule_Used (Stmt_True_If)  and then First_Path_Cond = "1" then  -- "1" => True
+            Report (Rule_Id,
+                    Usage (Stmt_True_If),
+                    Get_Location (Paths (Paths'First)),
+                    "condition is always true");
+            Fixes.Replace (Stmt, Sequence_Of_Statements (Paths (Paths'First), Include_Pragmas => True));
+            Already_Fixed  := True;
+            All_Paths_Dead := True;
+         end if;
+
+         -- If the if statement has been fixed globally (Already_Fixed), don't fix the individual paths,
+         -- but give error messages nonetheless
+         for Path_Inx in Asis_Natural range Paths'First + 1 .. Paths'Last loop
+            if Path_Kind (Paths (Path_Inx)) = An_Else_Path then
+               if All_Paths_Dead then
+                  Report (Rule_Id,
+                          Usage (Stmt_Dead),
+                          Get_Location (Paths (Path_Inx)),
+                          "alternative to a statically True path");
+               end if;
+               exit;
+            end if;
+
+            declare
+               Path_Cond : constant Wide_String (1 .. 1) := Choose (Static_Expression_Value_Image
+                                                                    (Condition_Expression (Paths (Path_Inx))),
+                                                                    " ");  -- can be only "0", "1", or " "
+            begin
+               if All_Paths_Dead then
+                  Report (Rule_Id,
+                          Usage (Stmt_Dead),
+                          Get_Location (Paths (Path_Inx)),
+                          "alternative to a statically True path");
+               elsif Path_Cond = "0" then  -- "0" => False
+                  Report (Rule_Id,
+                          Usage (Stmt_Dead),
+                          Get_Location (Paths (Path_Inx)),
+                          "condition is always false");
+                  if not Already_Fixed then
+                     Fixes.Delete (Paths (Path_Inx));
+                  end if;
+               elsif Path_Cond = "1" then  -- "1" => True
+                  Report (Rule_Id,
+                          Usage (Stmt_True_If),
+                          Get_Location (Paths (Path_Inx)),
+                          "condition is always true");
+                  if not Already_Fixed then
+                     -- Replace this path and all remaining ones with an else path
+                     Fixes.Replace (Original   => Paths (Path_Inx .. Paths'Last),
+                                    By         => Sequence_Of_Statements (Paths (Path_Inx)),
+                                    Add_Before => "else ");
+                     All_Paths_Dead := True;
+                     Already_Fixed  := True;
+                  end if;
+               end if;
+            end;
+         end loop;
+      end Process_If_Static_Paths;
+
+      procedure Process_Same_Logical_Assignment is
          use Utilities;
          use Asis.Declarations;
 
@@ -559,7 +657,7 @@ package body Rules.Simplifiable_Statements is
          Else_Type  : Asis.Declaration;
          Then_Val   : Extended_Biggest_Int;
          Else_Val   : Extended_Biggest_Int;
-      begin  -- Process_Unnecessary_If
+      begin  -- Process_Same_Logical_Assignment
          -- Only one statement in each path
          if Then_Stmts'Length /= 1 or Else_Stmts'Length /= 1 then
             return;
@@ -644,7 +742,7 @@ package body Rules.Simplifiable_Statements is
                           To   => No_Indent (Get_Next_Word_Location (Stmt, Starting => From_Tail), Stmt));
          end if;
 
-      end Process_Unnecessary_If;
+      end Process_Same_Logical_Assignment;
 
    begin   -- Process_If_Statement
       -- Stmt_If, Stmt_Nested_Path, Stmt_If_Not
@@ -741,48 +839,17 @@ package body Rules.Simplifiable_Statements is
       end if;
 
       -- Stmt_Dead
-      if Rule_Used (Stmt_Dead) then
-         -- Special case for "if" path: if followed by "elsif", change it to "if". If followed by "else", replace
-         -- by the content of the "else" path. And if none of these, remove the whole if statement
-         if Static_Expression_Value_Image (Condition_Expression (Paths (Paths'First))) = "0"  -- "0" => False
-         then
-            Report (Rule_Id,
-                    Usage (Stmt_Dead),
-                    Get_Location (Paths (1)),
-                    "condition is always false");
-            if Paths'Length = 1 then -- no else or elsif
-               Fixes.Delete (Stmt);
-            else
-               case Path_Kind (Paths (2)) is
-                  when An_Elsif_Path =>
-                     Fixes.Delete (Paths (1));
-                     Fixes.Replace (Get_Location (Paths(2)), Length => 3, By => ""); -- 3 characters: "els"
-                  when An_Else_Path =>
-                     Fixes.Replace (Stmt, Sequence_Of_Statements (Paths (2), Include_Pragmas => True));
-                  when others =>
-                     Utilities.Failure ("Process_If_Statement: Incorrect path", Paths (2));
-               end case;
-            end if;
-         end if;
-
-         for Path : Asis.Path of Paths (Paths'First + 1 .. Paths'Last) loop
-            if Path_Kind (Path) /= An_Else_Path
-              and then Static_Expression_Value_Image (Condition_Expression (Path)) = "0"  -- "0" => False
-            then
-               Report (Rule_Id,
-                       Usage (Stmt_Dead),
-                       Get_Location (Path),
-                       "condition is always false");
-               Fixes.Delete (Path);
-            end if;
-         end loop;
+      -- Stmt_True_If
+      if Rule_Used (Stmt_Dead) or Rule_Used (Stmt_True_If) then
+         Process_If_Static_Paths;
       end if;
 
-      -- Stmt_Unnecessary_If
-      if Rule_Used (Stmt_Unnecessary_If) then
+         -- Stmt_Unnecessary_If
+         -- Assignment of True or False to same variable:
          -- Must be strictly if... then... else... end if;
+      if Rule_Used (Stmt_Unnecessary_If) then
          if Paths'Length = 2  and then Path_Kind (Paths (2)) = An_Else_Path then
-            Process_Unnecessary_If;
+            Process_Same_Logical_Assignment;
          end if;
       end if;
    end Process_If_Statement;
@@ -1460,8 +1527,8 @@ package body Rules.Simplifiable_Statements is
          when An_If_Statement =>
             if (Rule_Used and Usage_Flags'(Stmt_If          | Stmt_Nested_Path | Stmt_If_Not |
                                            Stmt_If_For_Case | Stmt_Dead        | Stmt_Unnecessary_If
-                                           => True,
-                                           others                       => False)) /= Not_Used
+                                                   => True,
+                                           others  => False)) /= Not_Used
             then
                Process_If_Statement (Stmt);
             end if;

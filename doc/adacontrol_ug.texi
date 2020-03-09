@@ -8819,12 +8819,12 @@ various ways without changing the meaning of the program.
 @subsection Syntax
 @example
 <control_kind> simplifiable_statements [(<subrule> @{, <subrule>@})];
-<subrule> ::= [no_exit] [full_range] all      | block          |
-              dead        | for_in_for_for_of | for_for_slice  |
-              handler     | if                | if_for_case    |
-              if_not      | loop              | loop_for_while |
-              nested_path | null              | unnecessary_if |
-              [no_exit] while_for_for
+<subrule> ::= [no_exit] [full_range] all      |
+              block          | dead           | [full_range] for_in_for_for_of |
+              for_for_slice  | handler        | if                             |
+              if_for_case    | if_not         | loop                           |
+              loop_for_while | nested_path    | null                           |
+              true_if        | unnecessary_if | [no_exit] while_for_for
 @end example
 @subsection Action
 The parameters are subrule keywords:
@@ -8846,9 +8846,12 @@ known to be never executed. This includes statements that follow a
 or an @code{@b{exit}} statement that is either unconditional or whose
 condition is statically known to be true. It includes also
 @code{@b{while}} statements and @code{@b{if}} statements (including
-@code{@b{elsif}} paths) whose condition is statically false, branches
-of @code{@b{case}} statements whose choices are all statically null
-ranges, and @code{@b{for}} loops whose range is statically empty.
+@code{@b{elsif}} paths) whose condition is statically false,
+@code{@b{else}} and @code{@b{elsif}} paths that follow an
+@code{@b{if}} statement (or @code{@b{elsif}} path) whose condition is
+known to be true, branches of @code{@b{case}} statements whose choices
+are all statically null ranges, and @code{@b{for}} loops whose range
+is statically empty.
 @item
 ``for_in_for_for_of'': controls @code{@b{for}} .. @code{@b{in}} loops
 where the loop index is used only for indexing a single variable. Such
@@ -9010,6 +9013,9 @@ would break the symetry of the statement:
 ``null'': controls @code{@b{null}} statements that serve no purpose
 and can be removed.  Note that if a @code{@b{null}} statement carries
 a label, it is not considered  simplifiable.
+@item
+``true_if'': controls @code{@b{if}} statements and @code{@b{elsif}} paths
+whose condition is statically known to be true.
 @item
 ``unnecessary_if'': controls @code{@b{if}} statements with no
 @code{@b{elsif}} path whose @code{@b{then}} and @code{@b{else}} paths

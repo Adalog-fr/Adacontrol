@@ -87,11 +87,11 @@ begin
       I := 0;
    end if;
 
-   if A = A then
+   if A = A then      -- If_True
       null;
-   elsif B = B then
+   elsif B = B then   -- Dead
       null;
-   else
+   else               -- Dead
       I := 0;
    end if;
 
