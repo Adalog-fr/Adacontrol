@@ -2824,7 +2824,7 @@ Example:
 @example
 -- Disable all messages from units located in the
 -- "external_components" directory:
-rule_file off "/external_components/" all
+rule_file_off "/external_components/" all
 
 -- Disable rules expressions and statements for bodies of unit
 -- Compo and children (in Gnat file notation):

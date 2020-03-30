@@ -1078,9 +1078,9 @@ Rules:
 
 ADACTL v. 1.22b1 
 ----
-Copyright (C) 2004-2019 Eurocontrol/Adalog and others.
+Copyright (C) 2004-2020 Eurocontrol/Adalog and others.
 This software is covered by the GNU Modified General Public License.
-Commercial support is available, see http://www.adalog.fr/en/adacontrol.html
+Commercial support is available, see https://www.adacontrol.fr
 Rule: SIMPLIFIABLE_EXPRESSIONS
 Control occurrence of various forms of expressions that could be made simpler:
   - Conversions of universal values, or to the expression's subtype

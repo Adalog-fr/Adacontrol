@@ -329,7 +329,7 @@ procedure T_declarations is     -- library procedure, no_spec_procedure
    protected body Al5 is
    end Al5;
 
-   procedure Null_2005 is null;                                         -- null_procedure_declaration, null_procedure, not librar_procedure, local_procedure
+   procedure Null_2005 is null;                                         -- null_procedure_declaration, null_procedure, not library_procedure, local_procedure
    function "=" (L : Rec1; R : Rec1) return Boolean is                  -- operator, predefined_operator, equality_operator, no_spec_function
    begin
       return False;

@@ -1204,9 +1204,10 @@ package body Rules.Simplifiable_Statements is
       end Check_While_For_For;
 
    begin  -- Process_While_Statement
-      -- For stmt_loop, signal an explicit "while True" (or statically known True)
+          -- For stmt_loop, signal an explicit "while True" (or statically known True)
+
       if Rule_Used (Stmt_Loop)
-        and then Discrete_Static_Expression_Value (Cond) = Boolean'Pos (True)
+        and then Static_Expression_Value_Image (Cond) = "1"  -- = Boolean'Pos (True)
       then
          Report (Rule_Id,
                  Usage (Stmt_Loop),
@@ -1217,7 +1218,7 @@ package body Rules.Simplifiable_Statements is
 
       -- For stmt_dead, signal any expression statically false
       if Rule_Used (Stmt_Dead)
-        and then Discrete_Static_Expression_Value (Cond) = Boolean'Pos (False)
+        and then Static_Expression_Value_Image (Cond) = "0"  -- = Boolean'Pos (False)
       then
          Report (Rule_Id,
                  Usage (Stmt_Dead),

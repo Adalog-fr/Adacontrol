@@ -168,6 +168,6 @@ locations : check declarations (block       procedure,
                                 task_body   procedure,
                                 not library procedure,
                                 not library in_generic public procedure);
-Nb_entries: count declarations (entry);
+Nb_entries :     count declarations (entry);
 Nb_array_types : count declarations (array_type);
-All_Decls : count declarations (any_declaration);
+All_Decls :      count declarations (any_declaration);

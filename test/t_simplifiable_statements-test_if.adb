@@ -8,7 +8,7 @@ begin
       null;
    end if;
 
-   if I = 0 then
+   if I = 0 then           -- if_for_case
       null;
    elsif I = 1 then
      null;
@@ -34,8 +34,8 @@ begin
       I := 1;
    end if;
 
-   if I < 0 then
-      I := 1;              -- Movable then
+   if I < 0 then           -- Movable then
+      I := 1;
    else
       B2: begin
          B3: begin

@@ -61,9 +61,9 @@ package body Framework.Language.Commands is
    use Utilities;
 
    --  Messages
-   Copyright_1 : constant Wide_String := "Copyright (C) 2004-2019 Eurocontrol/Adalog and others.";
+   Copyright_1 : constant Wide_String := "Copyright (C) 2004-2020 Eurocontrol/Adalog and others.";
    Copyright_2 : constant Wide_String := "This software is covered by the GNU Modified General Public License.";
-   Support     : constant Wide_String := "Commercial support is available, see http://www.adalog.fr/en/adacontrol.html";
+   Support     : constant Wide_String := "Commercial support is available, see https://www.adacontrol.fr";
 
    --  Output management
    Console_Name : constant Wide_String := "CONSOLE";

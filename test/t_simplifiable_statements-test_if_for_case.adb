@@ -22,13 +22,13 @@ begin
    -- Replaceable by case:
    --
 
-   if E = A then
+   if E = A then  -- if_for_case
       null;
    elsif E = B then
       null;
    end if;
 
-   if E = Enum'First then
+   if E = Enum'First then  -- if_for_case
       null;
    elsif B = E then
       null;
@@ -38,7 +38,7 @@ begin
       null;
    end if;
 
-   if Standard."=" (I, 1) then
+   if Standard."=" (I, 1) then  -- if_for_case
       null;
    elsif Test_If_For_Case.I = 2 or I = 3 or Alias = 4 then
       null;

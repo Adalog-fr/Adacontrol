@@ -855,7 +855,7 @@ package body Rules.Style is
       Length : Line_Number;
    begin
       if not Rule_Used (St_No_Closing_Name) then
-         return ;
+         return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
