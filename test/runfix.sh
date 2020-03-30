@@ -80,7 +80,7 @@ put_line_line
 # Tests
 #
 
-list=`find res/ -maxdepth 1 -name "t_*.txt" -printf "%f "`
+list=`find res/ -maxdepth 1 \( -name "t_*.txt" -o -name "ts_*.txt" -o -name "tfw_*.txt" \) -printf "%f "`
 nb_fixes=0
 run_start=`date +%s`
 for i in $list; do
@@ -138,7 +138,7 @@ if [ $SILENT -eq 1 ] ; then
     fi
 else
     print_time "Total run time: " `expr $run_stop - $run_start`
-    if [ $nb_failed -ne 0 ] ; then
+    if [ $((nb_failed+nb_new)) -ne 0 ] ; then
 	(cd fixed ; . ../failed.sh)
     fi
 fi

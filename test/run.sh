@@ -18,6 +18,14 @@
 #
 . ./run_funcs.sh
 
+help() {
+    echo "Usage:"
+    echo "   ./run.sh [-q] [-s] [<adactl options>]"
+    echo "   ./run.sh -h"
+    echo "   -q: quiet mode, no display"
+    echo "   -s: speedup mode, no framework test"
+}
+
 ########################################################
 # Actual beginning
 ########################################################
@@ -68,11 +76,7 @@ EXTRA_OPTS="-v"
 while true ; do
     case "${1:-}" in
         -h)
-            echo "Usage:"
-            echo "   ./run.sh [-q] [-s] [<adactl options>]"
-            echo "   ./run.sh -h"
-            echo "   -q: quiet mode, no display"
-            echo "   -s: speedup mode, no framework test"
+            help
             exit
             ;;
         -q)
@@ -83,6 +87,11 @@ while true ; do
         -s)
             SPEEDUP=1
             shift
+            ;;
+        -*)
+            echo "Unknown option ${1:-}"
+            help
+            exit
             ;;
         *)
             break
@@ -271,8 +280,8 @@ if [ $SUPPORT95 = 1 ] ; then
 fi
 nb_rules=0
 for i in $list; do
-    nb_rules=$((nb_rules+1))
     test_case=`echo $i | cut -f 1 -d "."`
+    nb_rules=$((nb_rules+1))
     status=0
     ${ADACTL} -ruw -f conf/${test_case}.aru ${test_case} -o res/${test_case}.txt || true
     dos2unix -q res/${test_case}.txt
@@ -285,20 +294,20 @@ done
 
 # Units. Special because:
 #   Must not include some withed units, must include a non-withed unit
-nb_rules=$((nb_rules+1))
 test_case=ts_units
-${ADACTL} -uw -f conf/${test_case}.aru $test_case+x_units_2 \
-	| tr -d \\r >res/${test_case}.txt
+nb_rules=$((nb_rules+1))
+${ADACTL} -uw -f conf/${test_case}.aru ${test_case}+x_units_2 -o res/${test_case}.txt || true
+dos2unix -q res/${test_case}.txt
 
 #
 # Tests finalization
 #
-
+            
 run_stop=`date +%s`
 if  [ $SPEEDUP = 1 ] ; then
-    list=`find ref -name "t_*.txt" -printf "%P "`
+    list=`find ref \( -name "t_*.txt" -o -name "ts_*.txt"                      \) -printf "%P "`
 else
-    list=`find ref \( -name "t_*.txt" -o -name "tfw_*.txt" -o -name "ts_*.txt" \) -printf "%P "`
+    list=`find ref \( -name "t_*.txt" -o -name "ts_*.txt" -o -name "tfw_*.txt" \) -printf "%P "`
 fi
 if [ $SUPPORT95 = 1 ] ; then
     cd ref
@@ -308,6 +317,7 @@ fi
 
 nb_passed=0
 nb_failed=0
+nb_new=0
 put_line_line
 put_title_line "Test result for $nb_rules rules tests, $nb_fw framework tests"
 put_line_line
@@ -325,9 +335,21 @@ for test_case in $list ; do
     fi
 done
 
+(cd res
+ for test_case in `ls *.txt`; do
+     if [ ! -e ../ref/$test_case ] ; then
+	 printf "=> %-60s%-13s <=\n" ${test_case} "          NEW"
+         nb_new=$((nb_new+1))
+     fi;
+ done
+)
+
 put_line_line
 put_title_line "`${ADACTL} -h version 2>&1 | tr -d \\\\r`"
-put_title_line "Passed= $nb_passed, Failed= $nb_failed"
+put_title_line "Passed= $nb_passed, Failed= $nb_failed, New= $nb_new"
+if [ $((nb_passed+nb_failed+nb_new)) -ne $((nb_rules+$nb_fw)) ] ; then
+    put_title_line "INCONSISTENT RULE COUNT, total=$((nb_passed+nb_failed+nb_new)), $nb_rules rules tests, $nb_fw framework tests"
+fi
 put_line_line
 
 rm -f *.ali *.adt
