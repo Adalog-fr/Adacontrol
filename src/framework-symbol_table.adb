@@ -292,6 +292,8 @@ package body Framework.Symbol_Table is
          if Symbol.Contents = Empty_Content then
             -- no more used
             Delete (Global_Map, Key);
+         else
+            Add (Global_Map, Key, Symbol); -- Update the map!
          end if;
       end Delete;
 
@@ -321,7 +323,9 @@ package body Framework.Symbol_Table is
       -- Scope_Of --
       --------------
 
-      function Scope_Of (Element : Asis.Element; Scope_Kind : Scope_Kinds := Declaration) return Asis.Element is
+      function Scope_Of (Element : Asis.Element; Scope_Kind : Usage_Scope_Kinds := Declaration_Scope)
+                         return Asis.Element
+      is
          use Framework.Queries;
 
          Key : constant Unbounded_Wide_String := To_Key_Upper (Element);
@@ -338,9 +342,9 @@ package body Framework.Symbol_Table is
          end if;
 
          case Scope_Kind is
-            when Declaration =>
+            when Declaration_Scope =>
                return Data.Declaration_Scope;
-            when Visibility =>
+            when Visibility_Scope =>
                return Data.Visibility_Scope;
          end case;
       end Scope_Of;
@@ -367,12 +371,15 @@ package body Framework.Symbol_Table is
             Sym_Scope : Asis.Element;
          begin
             case Scope_Kind is
-               when Declaration =>
+               when Declaration_Scope =>
                   Sym_Scope := Symbol.Declaration_Scope;
-               when Visibility =>
+               when Visibility_Scope =>
                   Sym_Scope := Symbol.Visibility_Scope;
+               when All_Scopes =>
+                  null;
             end case;
-            if Is_Equal (Sym_Scope, Scope) and then Symbol.Contents (My_Inx) /= null then
+            if (Scope_Kind = All_Scopes or else Is_Equal (Sym_Scope, Scope)) and then Symbol.Contents (My_Inx) /= null
+            then
                begin
                   Action (Symbol.Name, Content_Hook (Symbol.Contents (My_Inx).all).The_Content);
                exception

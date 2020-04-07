@@ -888,9 +888,9 @@ package body Rules.Expressions is
                            Do_Report (E_Array_Range, Get_Location (Choice));
                            if Rule_Used (E_Array_Non_Static_Range) then
                               declare
-                                 Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (Choice);
+                                 Bounds : constant Asis.Element_List := Discrete_Constraining_Bounds (Choice);
                               begin
-                                 if Bounds (1) = Not_Static or Bounds (2) = Not_Static then
+                                 if not Is_Static_Expression (Bounds (1)) or not Is_Static_Expression (Bounds (2)) then
                                     Do_Report (E_Array_Non_Static_Range, Get_Location (Choice));
                                  end if;
                               end;

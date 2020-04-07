@@ -129,6 +129,11 @@ nb_fw=0
 if [ $SPEEDUP = 0 ] ; then
     put_line "--- General framework tests"
 
+    test_case=tfw_fixes
+    nb_fw=$((nb_fw+1))
+    ${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
+    | tr -d \\r >res/${test_case}.txt
+
     # This one has full path names in the result file, the result depends on the directory 
     # where it's run from...
     # translate \ to / to make independant from OS, keep only the "test/" part of the path
@@ -201,11 +206,11 @@ if [ $SPEEDUP = 0 ] ; then
     ${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
     | tr -d \\r >res/${test_case}.txt
 
-    test_case=tfw_fixes
+    test_case=tfw_object_tracker
     nb_fw=$((nb_fw+1))
     ${ADACTL} -w -f conf/${test_case}.aru ${test_case}.adb \
     | tr -d \\r >res/${test_case}.txt
-
+    
     put_line "--- Syntax check test"
     test_case=tfw_check
     nb_fw=$((nb_fw+1))

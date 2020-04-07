@@ -1062,7 +1062,7 @@ package body Rules.Reduceable_Scope is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      Report_All_Package_Names (Scope_Kind => Symbol_Table.Visibility);
+      Report_All_Package_Names (Scope_Kind => Symbol_Table.Visibility_Scope);
 
       Local_Declarations.Reset (Current_Scope_Only);
       while Local_Declarations.Data_Available loop
@@ -1130,7 +1130,7 @@ package body Rules.Reduceable_Scope is
       Rules_Manager.Enter (Rule_Id);
 
       -- Report on declarations from library packages
-      Report_All_Package_Names (Scope_Kind => Symbol_Table.Visibility);
+      Report_All_Package_Names (Scope_Kind => Symbol_Table.Visibility_Scope);
 
       Package_Visibles.Clear;
    end Finalize;

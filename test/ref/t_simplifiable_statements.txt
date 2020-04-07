@@ -20,18 +20,18 @@ t_simplifiable_statements-test_dead.adb:34:7: Error: SIMPLIFIABLE_STATEMENTS: ch
 t_simplifiable_statements-test_dead.adb:34:7: Delete:35:16
 t_simplifiable_statements-test_dead.adb:42:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
 t_simplifiable_statements-test_dead.adb:42:4: Delete:44:10
-t_simplifiable_statements-test_dead.adb:61:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
-t_simplifiable_statements-test_dead.adb:62:7: Delete:65:11
-t_simplifiable_statements-test_dead.adb:63:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
-t_simplifiable_statements-test_dead.adb:64:7: Delete:65:11
-t_simplifiable_statements-test_dead.adb:67:4: Error: SIMPLIFIABLE_STATEMENTS: while loop is never executed
-t_simplifiable_statements-test_dead.adb:67:4: Delete:69:12
-t_simplifiable_statements-test_dead.adb:71:4: Error: SIMPLIFIABLE_STATEMENTS: for loop is never executed
-t_simplifiable_statements-test_dead.adb:71:4: Delete:73:12
+t_simplifiable_statements-test_dead.adb:60:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:61:7: Delete:64:11
+t_simplifiable_statements-test_dead.adb:62:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:63:7: Delete:64:11
+t_simplifiable_statements-test_dead.adb:66:4: Error: SIMPLIFIABLE_STATEMENTS: while loop is never executed
+t_simplifiable_statements-test_dead.adb:66:4: Delete:68:12
+t_simplifiable_statements-test_dead.adb:70:4: Error: SIMPLIFIABLE_STATEMENTS: for loop is never executed
+t_simplifiable_statements-test_dead.adb:70:4: Delete:72:12
+t_simplifiable_statements-test_dead.adb:81:4: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:82:4: Delete:83:10
 t_simplifiable_statements-test_dead.adb:82:4: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
-t_simplifiable_statements-test_dead.adb:83:4: Delete:84:10
-t_simplifiable_statements-test_dead.adb:83:4: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
-t_simplifiable_statements-test_dead.adb:84:4: Delete:84:10
+t_simplifiable_statements-test_dead.adb:83:4: Delete:83:10
 t_simplifiable_statements-test_for_for_slice.adb:9:4: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
 t_simplifiable_statements-test_for_for_slice.adb:14:4: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
 t_simplifiable_statements-test_for_for_slice.adb:19:4: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
@@ -193,18 +193,18 @@ t_simplifiable_statements-test_dead.adb:34:7: Error: SIMPLIFIABLE_STATEMENTS: ch
 t_simplifiable_statements-test_dead.adb:34:7: Delete:35:16
 t_simplifiable_statements-test_dead.adb:42:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
 t_simplifiable_statements-test_dead.adb:42:4: Delete:44:10
-t_simplifiable_statements-test_dead.adb:61:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
-t_simplifiable_statements-test_dead.adb:62:7: Delete:65:11
-t_simplifiable_statements-test_dead.adb:63:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
-t_simplifiable_statements-test_dead.adb:64:7: Delete:65:11
-t_simplifiable_statements-test_dead.adb:67:4: Error: SIMPLIFIABLE_STATEMENTS: while loop is never executed
-t_simplifiable_statements-test_dead.adb:67:4: Delete:69:12
-t_simplifiable_statements-test_dead.adb:71:4: Error: SIMPLIFIABLE_STATEMENTS: for loop is never executed
-t_simplifiable_statements-test_dead.adb:71:4: Delete:73:12
+t_simplifiable_statements-test_dead.adb:60:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:61:7: Delete:64:11
+t_simplifiable_statements-test_dead.adb:62:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:63:7: Delete:64:11
+t_simplifiable_statements-test_dead.adb:66:4: Error: SIMPLIFIABLE_STATEMENTS: while loop is never executed
+t_simplifiable_statements-test_dead.adb:66:4: Delete:68:12
+t_simplifiable_statements-test_dead.adb:70:4: Error: SIMPLIFIABLE_STATEMENTS: for loop is never executed
+t_simplifiable_statements-test_dead.adb:70:4: Delete:72:12
+t_simplifiable_statements-test_dead.adb:81:4: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:82:4: Delete:83:10
 t_simplifiable_statements-test_dead.adb:82:4: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
-t_simplifiable_statements-test_dead.adb:83:4: Delete:84:10
-t_simplifiable_statements-test_dead.adb:83:4: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
-t_simplifiable_statements-test_dead.adb:84:4: Delete:84:10
+t_simplifiable_statements-test_dead.adb:83:4: Delete:83:10
 t_simplifiable_statements-test_for_for_slice.adb:9:4: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
 t_simplifiable_statements-test_for_for_slice.adb:9:4: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
 t_simplifiable_statements-test_for_for_slice.adb:14:4: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments

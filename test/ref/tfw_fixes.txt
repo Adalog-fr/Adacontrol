@@ -65,8 +65,8 @@ tfw_fixes.adb:7:27: Delete:7:54
 tfw_fixes.adb:7:56: Insert
 !
 !      use all type Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
-tfw_fixes.adb:37:9: Error: COMMENTS: "begin" has no comment naming Hello
-tfw_fixes.adb:37:9: Insert
+tfw_fixes.adb:41:9: Error: COMMENTS: "begin" has no comment naming Hello
+tfw_fixes.adb:41:9: Insert
 !  -- Hello
 tfw_fixes.adb:17:11: Error: UNNECESSARY_USE_CLAUSE: Nested: "use" clause for Ada.Text_IO in scope of use clause for same package at tfw_fixes.ads:5:5
 tfw_fixes.adb:17:7: Delete:17:22
@@ -78,25 +78,28 @@ tfw_fixes.adb:24:10: Delete:25:17
 tfw_fixes.adb:28:10: Found: SIMPLIFIABLE_STATEMENTS: condition is always false
 tfw_fixes.adb:28:10: Replace:32:16
 !Put_Line ("!");
-tfw_fixes.adb:43:10: Found: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
-tfw_fixes.adb:44:10: Delete:47:14
-tfw_fixes.adb:45:10: Found: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
-tfw_fixes.adb:46:10: Delete:47:14
-tfw_fixes.adb:49:7: Found: SIMPLIFIABLE_STATEMENTS: while loop is never executed
-tfw_fixes.adb:49:7: Delete:51:15
+tfw_fixes.adb:38:12: Error: COMMENTS: "begin" has no comment naming Not_Static
+tfw_fixes.adb:38:12: Insert
+!  -- Not_Static
+tfw_fixes.adb:47:10: Found: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+tfw_fixes.adb:48:10: Delete:51:14
+tfw_fixes.adb:49:10: Found: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+tfw_fixes.adb:50:10: Delete:51:14
+tfw_fixes.adb:53:7: Found: SIMPLIFIABLE_STATEMENTS: while loop is never executed
+tfw_fixes.adb:53:7: Delete:55:15
 tfw_fixes.adb:6:14: Error: REDUCEABLE_SCOPE: Console_Log is not used
 tfw_fixes.ads:6:5: Error: REDUCEABLE_SCOPE: "use" clause for Xfw_Fixes.Child is not necessary
 tfw_fixes.ads:6:1: Delete:6:20
-tfw_fixes.adb:58:17: Error: UNNECESSARY_USE_CLAUSE: Operator: "use all type" clause for Xfw_Fixes.Child2.Mod_Type2 used for operators of Xfw_Fixes.Child2.Mod_Type2
-tfw_fixes.adb:57:17: Error: UNNECESSARY_USE_CLAUSE: Operator: "use all type" clause for Xfw_Fixes.Child2.Mod_Type1 used for operators of Xfw_Fixes.Child2.Mod_Type1
-tfw_fixes.adb:58:4: Delete:58:43
+tfw_fixes.adb:62:17: Error: UNNECESSARY_USE_CLAUSE: Operator: "use all type" clause for Xfw_Fixes.Child2.Mod_Type2 used for operators of Xfw_Fixes.Child2.Mod_Type2
+tfw_fixes.adb:61:17: Error: UNNECESSARY_USE_CLAUSE: Operator: "use all type" clause for Xfw_Fixes.Child2.Mod_Type1 used for operators of Xfw_Fixes.Child2.Mod_Type1
+tfw_fixes.adb:62:4: Delete:62:43
 tfw_fixes.ads:6:5: Error: UNNECESSARY_USE_CLAUSE: Unused: "use" clause for Xfw_Fixes.Child (possible usage in child units)
-tfw_fixes.adb:57:4: Delete:57:43
+tfw_fixes.adb:61:4: Delete:61:43
 tfw_fixes.ads:6:1: Delete:6:20
-tfw_fixes.adb:57:44: Insert
+tfw_fixes.adb:61:44: Insert
 !
 !   use type Xfw_Fixes.Child2.Mod_Type1;
-tfw_fixes.adb:58:44: Insert
+tfw_fixes.adb:62:44: Insert
 !
 !   use type Xfw_Fixes.Child2.Mod_Type2;
 tfw_fixes.adb:2:6: Found: WITH_CLAUSES: Unnecessary with clause for "Ada.Calendar"

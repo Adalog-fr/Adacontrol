@@ -2921,6 +2921,13 @@ applying to an entity when this entity is aliased and accessed through
 an access value, or rules applying to subprogram calls when the call
 is a dispatching call.
 
+Starting with version 1.22, AdaControl performs some data flow tracing
+that allows it to check conditions that are provably always True/False
+although not @i{static} as defined in the reference manual. When the
+description of a rule talks about something being static, it really
+means statically provable. If a condition needs to be legalistically
+static, we use the term @i{RM_Static}.
+
 @menu
 * Abnormal_Function_Return::
 * Actual_Parameters::

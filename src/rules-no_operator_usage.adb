@@ -512,7 +512,7 @@ package body Rules.No_Operator_Usage is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      Report_All (Visibility);
+      Report_All (Visibility_Scope);
    end Process_Scope_Exit;
 
 begin  -- Rules.No_Operator_Usage

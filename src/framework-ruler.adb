@@ -56,6 +56,7 @@ with
   Framework.Queries,
   Framework.Reports,
   Framework.Rules_Manager,
+  Framework.Object_Tracker,
   Scope_Manager,
   Framework.Specific_Plugs,
   Framework.Symbol_Table,
@@ -601,7 +602,7 @@ package body Framework.Ruler is
       Framework.Specific_Plugs.Enter_Statement_List (Decl);
 
       -- Statements : for everybody
-      for S : Asis.Statement of Statements (Decl) loop
+      for S : Asis.Statement of Thick_Queries.Statements (Decl) loop
          Semantic_Traverse_Elements (S, Control, State);
          case Control is
             when Continue =>
@@ -720,6 +721,13 @@ package body Framework.Ruler is
       case Element_Kind (Element) is
          when A_Declaration =>
             case Declaration_Kind (Element) is
+               when An_Ordinary_Type_Declaration
+                  | A_Subtype_Declaration
+                  =>
+                  Framework.Plugs.         Pre_Procedure            (Element);
+                  Framework.Specific_Plugs.Pre_Procedure            (Element);
+                  Framework.Object_Tracker.Process_Type_Declaration (Element);
+
                when A_Function_Declaration
                   | An_Expression_Function_Declaration   -- Ada 2012
                   | A_Procedure_Declaration
@@ -745,13 +753,18 @@ package body Framework.Ruler is
                   | A_Generic_Procedure_Renaming_Declaration
                   | A_Generic_Function_Renaming_Declaration
                   | A_Generic_Package_Renaming_Declaration
+                  =>
+                  Framework.Plugs.         Pre_Procedure         (Element);
+                  Framework.Specific_Plugs.Pre_Procedure         (Element);
+                  Enter_Scope (Element);
 
-                  | A_Package_Instantiation
+               when A_Package_Instantiation
                   | A_Procedure_Instantiation
                   | A_Function_Instantiation
-                 =>
-                  Framework.Plugs.         Pre_Procedure (Element);
-                  Framework.Specific_Plugs.Pre_Procedure (Element);
+                  =>
+                  Framework.Plugs.         Pre_Procedure         (Element);
+                  Framework.Specific_Plugs.Pre_Procedure         (Element);
+                  Framework.Object_Tracker.Process_Instantiation (Element);
                   Enter_Scope (Element);
 
                when A_Procedure_Body_Declaration
@@ -806,6 +819,13 @@ package body Framework.Ruler is
                   Post_Procedure (Element, Control, State);
                   Control := Abandon_Children;
 
+               when A_Constant_Declaration
+                  | A_Variable_Declaration
+                  =>
+                  Framework.Plugs.         Pre_Procedure (Element);
+                  Framework.Specific_Plugs.Pre_Procedure (Element);
+                  Framework.Object_Tracker.Process_Object_Declaration (Element);
+
                when others =>
                   Framework.Plugs.         Pre_Procedure (Element);
                   Framework.Specific_Plugs.Pre_Procedure (Element);
@@ -814,8 +834,8 @@ package body Framework.Ruler is
          when A_Definition =>
             case Definition_Kind (Element) is
                when A_Task_Definition   -- Things that can have a private part
-                 | A_Protected_Definition
-                 =>
+                  | A_Protected_Definition
+                  =>
                   Framework.Plugs.         Pre_Procedure (Element);
                   Framework.Specific_Plugs.Pre_Procedure (Element);
                   Traverse_With_Private (Element,
@@ -854,12 +874,15 @@ package body Framework.Ruler is
          when An_Exception_Handler =>
             Framework.Plugs.         Pre_Procedure (Element);
             Framework.Specific_Plugs.Pre_Procedure (Element);
+            Framework.Object_Tracker.Process_Handler (Element);
             Enter_Scope (Element);
 
             Framework.Plugs.         Enter_Statement_List (Element);
             Framework.Specific_Plugs.Enter_Statement_List (Element);
 
          when A_Statement =>
+            Object_Tracker.Process_Outer_Statement (Element);
+
             case Statement_Kind (Element) is
                when A_For_Loop_Statement     -- Statements with declarations and statement list
                   | A_Block_Statement
@@ -886,10 +909,12 @@ package body Framework.Ruler is
                   Framework.Plugs.         Pre_Procedure (Element);
                   Framework.Specific_Plugs.Pre_Procedure (Element);
             end case;
+            Object_Tracker.Process_Statement (Element);
 
          when A_Path =>
             Framework.Plugs.         Pre_Procedure (Element);
             Framework.Specific_Plugs.Pre_Procedure (Element);
+            Framework.Object_Tracker.Process_Path  (Element);
 
             if Path_Kind (Element) in A_Statement_Path then
                Framework.Plugs.         Enter_Statement_List (Element);
@@ -940,6 +965,11 @@ package body Framework.Ruler is
 
                   Framework.Plugs.         Pre_Procedure (Element);
                   Framework.Specific_Plugs.Pre_Procedure (Element);
+
+               when A_Function_Call =>
+                  Framework.Plugs.         Pre_Procedure (Element);
+                  Framework.Specific_Plugs.Pre_Procedure (Element);
+                  Framework.Object_Tracker.Process_Function_Call (Element);
 
                when others =>
                   Framework.Plugs.         Pre_Procedure (Element);
@@ -1010,13 +1040,6 @@ package body Framework.Ruler is
                   | A_Protected_Type_Declaration
                   | A_Single_Protected_Declaration
 
-                  | A_Procedure_Body_Declaration
-                  | A_Function_Body_Declaration
-                  | An_Entry_Body_Declaration
-                  | A_Package_Body_Declaration
-                  | A_Task_Body_Declaration
-                  | A_Protected_Body_Declaration
-
                   | A_Generic_Procedure_Declaration
                   | A_Generic_Function_Declaration
                   | A_Generic_Package_Declaration
@@ -1034,10 +1057,22 @@ package body Framework.Ruler is
                   | A_Procedure_Instantiation
                   | A_Function_Instantiation
                   | A_Package_Instantiation
-                    =>
+                  =>
                   Exit_Scope (Element);
                   Framework.Plugs.         Post_Procedure (Element);
                   Framework.Specific_Plugs.Post_Procedure (Element);
+
+               when A_Procedure_Body_Declaration
+                  | A_Function_Body_Declaration
+                  | An_Entry_Body_Declaration
+                  | A_Package_Body_Declaration
+                  | A_Task_Body_Declaration
+                  | A_Protected_Body_Declaration
+                  =>
+                  Exit_Scope (Element);
+                  Framework.Object_Tracker.Post_Process_Path (Element);
+                  Framework.Plugs.         Post_Procedure    (Element);
+                  Framework.Specific_Plugs.Post_Procedure    (Element);
 
                when A_Body_Stub =>
                   Exit_Scope (Element);
@@ -1083,8 +1118,9 @@ package body Framework.Ruler is
 
          when An_Exception_Handler =>
             Exit_Scope (Element);
-            Framework.Plugs.         Post_Procedure (Element);
-            Framework.Specific_Plugs.Post_Procedure (Element);
+            Framework.Object_Tracker.Post_Process_Path (Element);
+            Framework.Plugs.         Post_Procedure    (Element);
+            Framework.Specific_Plugs.Post_Procedure    (Element);
 
          when A_Statement =>
             case Statement_Kind (Element) is
@@ -1094,13 +1130,18 @@ package body Framework.Ruler is
                   | An_Accept_Statement
                   =>
                   Exit_Scope (Element);
-                  Framework.Plugs.         Post_Procedure (Element);
-                  Framework.Specific_Plugs.Post_Procedure (Element);
+                  Framework.Object_Tracker.Post_Process_Statement (Element);
+                  Framework.Plugs.         Post_Procedure         (Element);
+                  Framework.Specific_Plugs.Post_Procedure         (Element);
 
               when others =>
-                 Framework.Plugs.         Post_Procedure (Element);
-                 Framework.Specific_Plugs.Post_Procedure (Element);
+                  Object_Tracker.          Post_Process_Statement (Element);
+                  Framework.Plugs.         Post_Procedure         (Element);
+                  Framework.Specific_Plugs.Post_Procedure         (Element);
             end case;
+
+         when A_Path =>
+            Object_Tracker.Post_Process_Path (Element);
 
          when others =>
             Framework.Plugs.         Post_Procedure (Element);

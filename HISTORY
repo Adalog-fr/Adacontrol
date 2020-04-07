@@ -5,7 +5,11 @@
 General:
 --------
 Bug fixes
+
 Possibility to define any custom output format
+
+Add data flow analysis, to extend cases that are
+   statically determinable, improves several rules.
 
 Changes to existing rules:
 --------------------------
@@ -13,13 +17,15 @@ Comments
    Add subrule Unnamed_End_Record
 
 Simplifiable_Statements:
-   Add subrule true_if. Improved subrule dead.
+   Add subrule true_if.
+   Improve subrule dead.
+   Add rule variable Acceptable_Dead_Case
    
 Statements:
    Add subrule multi_for_of_loop
 
 Style:
-   removed subrule negative_condition (redundant)
+   remove subrule negative_condition (redundant)
 
 ==============
 == V1.21r6b ==

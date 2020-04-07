@@ -1,0 +1,2 @@
+check simplifiable_statements (true_if, dead);
+search case_statement (others_span, min 100);

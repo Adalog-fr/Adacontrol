@@ -230,7 +230,7 @@ package body Rules.Type_Initial_Values is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      Check_All_Types (Declaration);
+      Check_All_Types (Declaration_Scope);
    end Process_Scope_Exit;
 
 begin  -- Rules.Type_Initial_Values

@@ -643,7 +643,7 @@ package body Rules.Silent_Exceptions is
                   end case;
 
                   case Nb_Values is
-                     when 1 .. Biggest_Int'Last =>
+                     when 1 .. Biggest_Int'Last =>   --## Rule line off SIMPLIFIABLE_STATEMENTS ## Biggest_Int'Last
                         -- Always executed
                         Result := Result and Statement_List_Usage (Loop_Statements (Stmt));
                      when 0 =>

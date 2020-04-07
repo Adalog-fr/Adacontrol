@@ -99,11 +99,11 @@ begin
       end loop;
    end;
 
-   declare                             -- Nested loops, outer one is for of
+   declare
       V3 : array (1 .. 10) of String (1 .. 10);
    begin
-      for Str of V3 loop
-         for I in Str'Range loop
+      for Str of V3 loop               -- for_in_for_for_of
+         for I in Str'Range loop       -- for_in_for_for_of
             Str (I) := ' ';
          end loop;
       end loop;

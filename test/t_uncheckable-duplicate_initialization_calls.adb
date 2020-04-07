@@ -6,7 +6,7 @@ procedure Duplicate_Initialization_Calls is
    end Out_Proc;
 
    Tab : array (1 .. 10) of Integer;
-   I : Integer := 1;
+   I : Integer;
 begin
    Out_Proc (Tab (1), 1);
    Out_Proc (Tab (I), 2);    -- uncheckable

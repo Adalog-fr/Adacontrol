@@ -852,11 +852,11 @@ package body Rules.Object_Declarations is
       Rules_Manager.Enter (Rule_Id);
 
       if Rule_Used (S_Volatile_No_Address) or Rule_Used (S_Address_Not_Volatile) then
-         Process_All_Volatile_Address (Declaration);
+         Process_All_Volatile_Address (Declaration_Scope);
       end if;
 
       if Rule_Used (S_Not_Required_Type) then
-         Process_All_Not_Required_Type (Visibility);
+         Process_All_Not_Required_Type (Visibility_Scope);
       end if;
    end Process_Scope_Exit;
 

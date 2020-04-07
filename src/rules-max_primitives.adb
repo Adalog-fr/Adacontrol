@@ -413,7 +413,7 @@ package body Rules.Max_Primitives is
          return;
       end if;
 
-      Iterate_Types_Table (Framework.Symbol_Table.Declaration);
+      Iterate_Types_Table (Framework.Symbol_Table.Declaration_Scope);
    end Post_Process_Spec;
 
 

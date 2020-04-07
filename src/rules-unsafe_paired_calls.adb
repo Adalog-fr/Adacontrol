@@ -418,10 +418,11 @@ package body Rules.Unsafe_Paired_Calls is
             -- The lock value can be a static expression of a discrete type, or
             -- a constant of any type, or anything else (since it is an error).
             declare
-               Val_Image : constant Wide_String
-                 := Static_Expression_Value_Image (Actual_Expression (The_Call, Called_Context.Lock.Formal));
+               Expr      : constant Asis.Expression := Actual_Expression (The_Call, Called_Context.Lock.Formal);
+               Val_Image : constant Wide_String     := Static_Expression_Value_Image (Expr);
             begin
-               if Val_Image = "" then
+               -- The image of an access value is not a real value
+               if Is_Access_Expression (Expr) or else Val_Image = "" then
                   return Sp_Image & " (different or non static lock value)";
                else
                   return Sp_Image & " with lock value " & Val_Image ;

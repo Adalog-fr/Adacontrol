@@ -56,7 +56,6 @@ begin
    end if;
 
    while I = 1 loop
-      I := 0;
       exit when I /= 1;
       exit when C = 1;                             -- unreachable
       I := 3;

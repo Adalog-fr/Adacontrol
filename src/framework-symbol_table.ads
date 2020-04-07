@@ -33,7 +33,7 @@ package Framework.Symbol_Table is
    -- This declaration is here for use in the private part of the generic,
    -- no use for the user
 
-   Max_Instances : constant := 7;
+   Max_Instances : constant := 9;
    -- Max allowed number of instantiations of Data_Access.
    -- Exceeding this number will immediately result in Failure
    -- If necessary, just increase the above constant, no other change required.
@@ -42,7 +42,8 @@ package Framework.Symbol_Table is
    --
    -- Declarations common to all instantiations
    --
-   type Scope_Kinds is (Declaration, Visibility);
+   type Scope_Kinds is (Declaration_Scope, Visibility_Scope, All_Scopes);
+   subtype Usage_Scope_Kinds is Scope_Kinds range Declaration_Scope .. Visibility_Scope;
    -- The Declaration scope is the scope where the entity is declared
    -- The Visibility scope is the outermost scope where the entity is visible
    -- They are different for entities declared in package specs and formal parameters
@@ -69,13 +70,15 @@ package Framework.Symbol_Table is
       procedure Delete (Element : Asis.Element);
 
       function Is_Present (Element : Asis.Element) return Boolean;
-      function Scope_Of   (Element : Asis.Element; Scope_Kind : Scope_Kinds := Declaration) return Asis.Element;
+      function Scope_Of   (Element : Asis.Element; Scope_Kind : Usage_Scope_Kinds := Declaration_Scope)
+                           return Asis.Element;
       -- Raises Not_In_Table if not present
 
       procedure Clear;
       -- Remove all data stored by this package
 
       -- Apply Action to all entities whose declaration or visibility scope is the current scope
+      -- Raise Delete_Current if the current node is to be removed.
       generic
          with procedure Action (Entity : Asis.Defining_Name; Content_Value : in out Content);
       procedure On_Every_Entity_From_Scope (Scope_Kind : Scope_Kinds);
