@@ -12,6 +12,7 @@ One_Dimensional :
       S1 : String (1 .. 10);
       S2 : String (2 .. 11);
       subtype From_2 is String (2 .. 11);
+      I,J : Integer := 1;
    begin
       S1 := (1 => 'a', others => ' ');   -- OK
       S2 := From_2'("1234567890");
@@ -22,19 +23,22 @@ One_Dimensional :
       Make_Other_Group;
       S1 := (2 .. 11 => ' ');            -- Sliding
       Make_Other_Group;
-      S1 := (2 => ' ', 6 .. 11 => ' ' , 3 .. 5 => ' ');                               -- Sliding
+      S1 := (2 => ' ', 6 .. 11 => ' ' , 3 .. 5 => ' ');                            -- Sliding
       Make_Other_Group;
-      S1 := (4 .. 10 => ' ', 3 => ' ', 1 .. 2 => ' ');                                -- OK
+      S1 := (4 .. 10 => ' ', 3 => ' ', 1 .. 2 => ' ');                             -- OK
       Make_Other_Group;
-      S1 := (2 => 'a', 3 .. 5 => 'c', 8 => 'd', 11 => 'b', 6 | 7 | 9 | 10 => 'z');  -- Sliding
-      S2 := (1 => 'a', 3 .. 5 => 'c', 8 => 'd', 2  => 'b', 6 | 7 | 9 | 10 => 'z');  -- Sliding
+      S1 := (2 => 'a', 3 .. 5 => 'c', 8 => 'd', 11 => 'b', 6 | 7 | 9 | 10 => 'z'); -- Sliding
+      S2 := (1 => 'a', 3 .. 5 => 'c', 8 => 'd', 2  => 'b', 6 | 7 | 9 | 10 => 'z'); -- Sliding
       Make_Other_Group;
-      S1 := From_2'("1234567890");       -- Sliding
+      S1 := From_2'("1234567890");        -- Sliding
       Make_Other_Group;
-      S1 := From_2 (S1);                 -- Sliding
+      S1 := From_2 (S1);                  -- Sliding
       Make_Other_Group;
-      S1 := S2;                          -- Sliding
-      S2 := "2345678901";                -- Sliding
+      S1 := S2;                           -- Sliding
+      S2 := "2345678901";                 -- Sliding
+
+      J := I + 1;
+      S1 (I .. I + 2) := S2 (J .. J + 2); -- Sliding (almost static)
    end One_Dimensional;
 
 Two_Dimensional :
