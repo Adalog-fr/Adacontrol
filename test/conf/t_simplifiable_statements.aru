@@ -1,8 +1,8 @@
 set simplifiable_statements.acceptable_indexings 1;
 set simplifiable_statements.while_for_expression no_function;
+set simplifiable_statements.acceptable_dead_case null_and_raise;
 check simplifiable_statements (full_range no_exit all);
 go;
 
 clear simplifiable_statements;
 check simplifiable_statements; -- all defaults
-

@@ -3,7 +3,9 @@ separate (T_Simplifiable_Statements)
 procedure Test_Dead is
    I : Integer;
    C : constant Integer := 1;
-   subtype ST is Integer range 5 .. 4;
+   Lim : Integer := C;
+   subtype ST1 is Integer range 5 .. 4;
+   subtype ST2 is Integer range 2 * Lim .. 5 * Lim; -- 2..5
 
    S : String (1 .. 10);
    type S_Ptr is access String;
@@ -31,12 +33,21 @@ begin
          null;
       when C + 5 .. C + 3 =>                       -- choices cover no value
          I := 1;
-      when ST =>                                   -- choices cover no value
+      when ST1 =>                                  -- choices cover no value
          I := 2;
       when 8 .. 7 | 2 =>
          I := 3;
       when others =>
          I := 0;
+   end case;
+
+   case ST2 (I) is
+      when 0 .. 1 =>                               -- choices cover no value
+         null;
+      when 2 | 3.. 5 =>                            -- OK (bounds deducted from subtype conversion)
+         I := 1;
+      when others =>
+         null;
    end case;
 
    if S'Length = 0 then                            -- always false

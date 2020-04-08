@@ -8858,7 +8858,10 @@ condition is statically known to be true. It includes also
 @code{@b{if}} statement (or @code{@b{elsif}} path) whose condition is
 known to be true, branches of @code{@b{case}} statements whose choices
 are all statically null ranges, and @code{@b{for}} loops whose range
-is statically empty.
+is statically empty. For @code{@b{case}} statements, it is possible to
+not control branches that contain only @code{@b{null}} or
+@code{@b{raise}} statements, see variable ``acceptable_dead_case''
+below.
 @item
 ``for_in_for_for_of'': controls @code{@b{for}} .. @code{@b{in}} loops
 where the loop index is used only for indexing a single variable. Such
@@ -9080,6 +9083,9 @@ check simplifiable_statements (no_exit while_for_for);
 @end example
 
 @subsection Variables
+The rule provides a variable to define branches of @code{@b{case}}
+statements that are not to be controlled.
+
 The rule provides a variable to define the maximum number of allowed
 indexings for the @code{for_in_for_for_of} subrule.
 
@@ -9089,6 +9095,18 @@ loops to be considered changeable to @code{@b{for}} loops.
 @need 400
 @multitable @columnfractions .25 .20 .55
 @item @b{Variable} @tab @b{Values} @tab @b{Effect}
+@item Acceptable_Dead_Case
+@tab none (default)
+@tab All dead branches are controlled.
+@item
+@tab only_null
+@tab Dead branches that contain only null statements are not controlled.
+@item
+@tab only_raise
+@tab Dead branches that contain only a raise statement are not controlled.
+@item
+@tab null_and_raise
+@tab Dead branches that contain only null statements or a raise statement are not controlled.
 @item Acceptable_Indexings
 @tab <Integer> (default = 0)
 @tab @code{@b{for}} loops that use their loop index for indexing a variable up to the indicated number of times are not controlled by the @code{for_in_for_for_of} subrule.
@@ -9131,6 +9149,12 @@ that covers no value at all; this can be checked with:
 @example
 check case_statement (others_span, min 1);
 @end example
+
+Ignoring dead @code{@b{case}} branches that contain only
+@code{@b{null}} or @code{@b{raise}} statements is useful when the
+language requires some branches to be given due to the completion
+check of the @code{@b{case}} statement, but these values are actually
+impossible due to the logic of the program.
 
 A @code{@b{for} .. @b{in}} loop whose index does not cover the
 totality of the range of the indexed variable can be replaced by a
@@ -11817,7 +11841,7 @@ by @code{column-1} spaces; to be used with @code{%s}).
 @item %[ and %]
 The content of the format between ``%['' and ``%]'' is substituted
 only if it contains a substitution that didn't return an empty string
-or a new_line, otherwise it is replace by an emptry string. ``%[
+or a new_line, otherwise it is replaced by an empty string. ``%[
 ... %]'' sequences can be nested.
 @item %%
 A percent character.

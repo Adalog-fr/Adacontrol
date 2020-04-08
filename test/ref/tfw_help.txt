@@ -749,7 +749,9 @@ Parameter(s): [no_exit] [full_range] all               | block         |
                                      unnecessary_if    | while_for_for
 no_exit can be given with "all" and "while_for_for"
 full_range can be given with "all" and "for_in_for_for_of"
+
 Variables:
+Simplifiable_Statements.Acceptable_Dead_Case: (None, Only_Null, Only_Raise, Null_And_Raise) = None
 Simplifiable_Statements.Acceptable_Indexings: 0 .. 2147483647 =  0
 Simplifiable_Statements.While_For_Expression: (Any, No_Function, Static) = Any
 ----
@@ -1109,7 +1111,9 @@ Parameter(s): [no_exit] [full_range] all               | block         |
                                      unnecessary_if    | while_for_for
 no_exit can be given with "all" and "while_for_for"
 full_range can be given with "all" and "for_in_for_for_of"
+
 Variables:
+Simplifiable_Statements.Acceptable_Dead_Case: (None, Only_Null, Only_Raise, Null_And_Raise) = None
 Simplifiable_Statements.Acceptable_Indexings: 0 .. 2147483647 =  0
 Simplifiable_Statements.While_For_Expression: (Any, No_Function, Static) = Any
 Variables: 

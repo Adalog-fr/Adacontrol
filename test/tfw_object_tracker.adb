@@ -217,7 +217,6 @@ begin
    end if;
 
    -- Check "case" paths
-   I := 1;
    case I is
       when 1 =>
          if I in 1 .. 3 then          -- True

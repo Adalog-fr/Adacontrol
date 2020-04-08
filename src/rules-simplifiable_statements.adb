@@ -70,9 +70,13 @@ package body Rules.Simplifiable_Statements is
    type While_For_Expression_Kind is (Any, No_Function, Static);
    package Expression_Kind_Type is new Discrete_Type (While_For_Expression_Kind);
 
+   type Dead_Case_Acceptable_Kind is (None, Only_Null, Only_Raise, Null_And_Raise);
+   package Acceptable_Kind_Type is new Discrete_Type (Dead_Case_Acceptable_Kind);
+
    -- Rule variable
    Acceptable_Indexings : aliased Natural_Type.Object          := (Value => 0);
    While_For_Expression : aliased Expression_Kind_Type .Object := (Value => Any);
+   Acceptable_Dead_Case : aliased Acceptable_Kind_Type .Object := (Value => None);
 
    ----------
    -- Help --
@@ -87,7 +91,9 @@ package body Rules.Simplifiable_Statements is
       Help_On_Flags ("Parameter(s): [no_exit] [full_range]");
       User_Message  ("no_exit can be given with ""all"" and ""while_for_for""");
       User_Message  ("full_range can be given with ""all"" and ""for_in_for_for_of""");
+      User_Message;
       User_Message ("Variables:");
+      Help_On_Variable (Rule_Id & ".Acceptable_Dead_Case");
       Help_On_Variable (Rule_Id & ".Acceptable_Indexings");
       Help_On_Variable (Rule_Id & ".While_For_Expression");
    end Help;
@@ -168,6 +174,7 @@ package body Rules.Simplifiable_Statements is
             Rule_Used            := Not_Used;
             No_Exit              := False;
             Acceptable_Indexings := (Value => 0);
+            Acceptable_Dead_Case := (Value => None);
             While_For_Expression := (Value => Any);
          when Suspend =>
             Save_Used := Rule_Used;
@@ -858,20 +865,30 @@ package body Rules.Simplifiable_Statements is
    -- Process_Case_Statement --
    ----------------------------
 
+   ----------------------------
+   -- Process_Case_Statement --
+   ----------------------------
+
    procedure Process_Case_Statement (Stmt  : in Asis.Statement) is
       use Asis, Asis.Elements, Asis.Statements;
       use Framework.Locations, Framework.Reports;
       use Utilities, Thick_Queries;
+      Select_Min : Extended_Biggest_Int;
+      Select_Max : Extended_Biggest_Int;
    begin
       -- Stmt_Dead
       if Rule_Used (Stmt_Dead) then -- always True (for the moment)
+         Select_Min := Discrete_Static_Expression_Value (Case_Expression (Stmt), Wanted => Minimum);
+         Select_Max := Discrete_Static_Expression_Value (Case_Expression (Stmt), Wanted => Maximum);
          for CP : Asis.Path of Statement_Paths (Stmt) loop
             declare
-               Temp  : Extended_Biggest_Natural;
-               Count : Extended_Biggest_Natural := 0;
+               Bounds          : Extended_Biggest_Int_List (1 .. 2);
+               Count           : Extended_Biggest_Natural := 0;
+               Spurious_Values : Boolean;
             begin
                Count_Values :
                for PE : Asis.Element of Case_Statement_Alternative_Choices (CP) loop
+                  Spurious_Values := False;
                   if Definition_Kind (PE) = A_Discrete_Range then
                      if Discrete_Range_Kind (PE) = A_Discrete_Subtype_Indication
                        and then not Is_Nil (Corresponding_Static_Predicates
@@ -885,8 +902,8 @@ package body Rules.Simplifiable_Statements is
                         Count := 1; -- or whatever /= 0
                         exit Count_Values;
                      end if;
-                     Temp := Discrete_Constraining_Lengths (PE) (1);
-                     if Temp = Not_Static then
+                     Bounds := Discrete_Constraining_Values (PE, Static_Only => False);
+                     if Bounds (1) = Not_Static or Bounds (2) = Not_Static then
                         -- it IS static, but the evaluator cannot evaluate it...
                         -- unless it is of a generic formal type
                         Uncheckable (Rule_Id,
@@ -896,22 +913,69 @@ package body Rules.Simplifiable_Statements is
                         Count := 1; -- or whatever /= 0
                         exit Count_Values;
                      end if;
-                     Count := Count + Temp;
+                     if Select_Min /= Not_Static and then Select_Min > Bounds (1) then
+                        Bounds (1)      := Select_Min;
+                        Spurious_Values := True;
+                     end if;
+                     if Select_Max /= Not_Static and then Select_Max < Bounds (2) then
+                        Bounds (2)      := Select_Max;
+                        Spurious_Values := True;
+                     end if;
+                     if Bounds (2) >= Bounds (1) then -- beware of null ranges
+                        Count := Count + Bounds (2) - Bounds (1) + 1;
+                     end if;
 
                   elsif Definition_Kind (PE) = An_Others_Choice then
                      -- Not handled here, equivalent to check Case_Statement (Others_Span, min 1)
-                     Count := 1; -- or whatever /= 0
+                     Count := 1; -- or whatever /= 0  TBSL null_and_raise
                      exit Count_Values;
 
-                  elsif Element_Kind (PE) = An_Expression then
-                     Count := 1;
-                     exit Count_Values;
+                  elsif Element_Kind (PE) = An_Expression then   -- It's not a discrete range => it's a real expression
+                     Count := Count + 1;
 
                   else
                      Failure ("Unexpected path kind:", PE);
                   end if;
                end loop Count_Values;
+
                if Count = 0 then
+                  case Acceptable_Dead_Case.Value is
+                     when None =>
+                        null;
+                     when Only_Null =>
+                        if Are_Null_Statements (Sequence_Of_Statements (CP)) then
+                           Count           := 1; -- anything not 0
+                           Spurious_Values := False;
+                        end if;
+                     when Only_Raise =>
+                        if Statement_Kind (Sequence_Of_Statements (CP)(1)) = A_Raise_Statement then
+                           Count           := 1; -- anything not 0
+                           Spurious_Values := False;
+                        end if;
+                     when Null_And_Raise =>
+                        declare
+                           Stmts : constant Asis.Statement_List := Sequence_Of_Statements (CP);
+                        begin
+                           if Statement_Kind (Stmts (1)) = A_Raise_Statement
+                             or else Are_Null_Statements (Stmts)
+                           then
+                              Count           := 1; -- anything not 0
+                              Spurious_Values := False;
+                           end if;
+                        end;
+                  end case;
+               end if;
+               if Count = 0 and Spurious_Values then
+                  Report (Rule_Id,
+                          Usage (Stmt_Dead),
+                          Get_Location (CP),
+                          "choices cover no value of case expression");
+               elsif Spurious_Values then
+                  Report (Rule_Id,
+                          Usage (Stmt_Dead),
+                          Get_Location (CP),
+                          "some choices not covering any value of case expression");
+               elsif Count = 0 then
                   Report (Rule_Id,
                           Usage (Stmt_Dead),
                           Get_Location (CP),
@@ -1649,4 +1713,6 @@ begin  -- Rules.Simplifiable_Statements
                                  Variable_Name => Rule_Id & ".ACCEPTABLE_INDEXINGS");
    Framework.Variables.Register (While_For_Expression'Access,
                                  Variable_Name => Rule_Id & ".WHILE_FOR_EXPRESSION");
+   Framework.Variables.Register (Acceptable_Dead_Case'Access,
+                                 Variable_Name => Rule_Id & ".ACCEPTABLE_DEAD_CASE");
 end Rules.Simplifiable_Statements;
