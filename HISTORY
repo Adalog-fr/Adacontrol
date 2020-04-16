@@ -22,7 +22,7 @@ Simplifiable_Statements:
    Add rule variable Acceptable_Dead_Case
    
 Statements:
-   Add subrule multi_for_of_loop
+   Add subrules hard_bounds_array_for_loop, multi_for_of_loop, 
 
 Style:
    remove subrule negative_condition (redundant)

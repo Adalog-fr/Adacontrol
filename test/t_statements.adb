@@ -2,6 +2,8 @@ with Ada.Calendar; use Ada.Calendar;
 with Ada.Containers.Vectors;
 procedure T_statements is
    procedure Test_Raise is separate;
+   procedure Test_Hard_Bounds is separate;
+
    type Acc_Proc is access procedure;
    Ptr_Proc : Acc_Proc := Test_Raise'Access;
 

@@ -74,6 +74,9 @@ Loop_Stmts:       check  statements (exit,
                                      unnamed_while_loop,
                                      while_loop);
 
+Bad_Bounds:        check statements (hard_bounds_array_for_loop);
+
+
 null_stmts:        check statements (null_case_path,
                                      null_if_path,
                                      null_loop_body);

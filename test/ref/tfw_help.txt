@@ -758,46 +758,46 @@ Simplifiable_Statements.While_For_Expression: (Any, No_Function, Static) = Any
 Rule: STATEMENTS
 Control occurrences of Ada statements
 
-Parameter(s): any_statement            | abort                  |
-              accept                   | accept_return          |
-              assignment               | asynchronous_select    |
-              backward_goto            | block                  |
-              case                     | case_others            |
-              case_others_null         | code                   |
-              conditional_entry_call   | declare_block          |
-              delay                    | delay_until            |
-              dispatching_call         | dynamic_procedure_call |
-              effective_declare_block  | entry_call             |
-              entry_return             | exception_others       |
-              exception_others_null    | exit                   |
-              exit_expanded_name       | exit_for_loop          |
-              exit_outer_loop          | exit_plain_loop        |
-              exit_while_loop          | exited_extended_return |
-              extended_return          | for_loop               |
-              for_in_loop              | for_iterator_loop      |
-              for_of_loop              | function_return        |
-              goto                     | goto_not_continue      |
-              if                       | if_elsif               |
-              inherited_procedure_call | labelled               |
-              loop_return              | multi_for_of_loop      |
-              multiple_exits           | named_exit             |
-              no_else                  | null                   |
-              null_case_path           | null_if_path           |
-              null_loop_body           | procedure_call         |
-              procedure_return         | raise                  |
-              raise_foreign            | raise_locally_handled  |
-              raise_nonpublic          | raise_standard         |
-              reraise                  | redispatching_call     |
-              requeue                  | selective_accept       |
-              simple_block             | simple_loop            |
-              terminate                | timed_entry_call       |
-              unconditional_exit       | unnamed_block          |
-              unnamed_exit             | unnamed_loop_exited    |
-              unnamed_for_loop         | unnamed_multiple_loop  |
-              unnamed_simple_block     | unnamed_simple_loop    |
-              unnamed_while_loop       | untyped_for            |
-              untyped_for_in           | untyped_for_of         |
-              while_loop
+Parameter(s): any_statement              | abort                    |
+              accept                     | accept_return            |
+              assignment                 | asynchronous_select      |
+              backward_goto              | block                    |
+              case                       | case_others              |
+              case_others_null           | code                     |
+              conditional_entry_call     | declare_block            |
+              delay                      | delay_until              |
+              dispatching_call           | dynamic_procedure_call   |
+              effective_declare_block    | entry_call               |
+              entry_return               | exception_others         |
+              exception_others_null      | exit                     |
+              exit_expanded_name         | exit_for_loop            |
+              exit_outer_loop            | exit_plain_loop          |
+              exit_while_loop            | exited_extended_return   |
+              extended_return            | for_loop                 |
+              for_in_loop                | for_iterator_loop        |
+              for_of_loop                | function_return          |
+              goto                       | goto_not_continue        |
+              hard_bounds_array_for_loop | if                       |
+              if_elsif                   | inherited_procedure_call |
+              labelled                   | loop_return              |
+              multi_for_of_loop          | multiple_exits           |
+              named_exit                 | no_else                  |
+              null                       | null_case_path           |
+              null_if_path               | null_loop_body           |
+              procedure_call             | procedure_return         |
+              raise                      | raise_foreign            |
+              raise_locally_handled      | raise_nonpublic          |
+              raise_standard             | reraise                  |
+              redispatching_call         | requeue                  |
+              selective_accept           | simple_block             |
+              simple_loop                | terminate                |
+              timed_entry_call           | unconditional_exit       |
+              unnamed_block              | unnamed_exit             |
+              unnamed_loop_exited        | unnamed_for_loop         |
+              unnamed_multiple_loop      | unnamed_simple_block     |
+              unnamed_simple_loop        | unnamed_while_loop       |
+              untyped_for                | untyped_for_in           |
+              untyped_for_of             | while_loop
 
 Variables:
 Statements.Called_Info: (None, Compact, Detailed, Root_Detailed) = None

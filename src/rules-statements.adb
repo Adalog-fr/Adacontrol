@@ -24,6 +24,10 @@
 --  covered by the GNU Public License.                              --
 ----------------------------------------------------------------------
 
+-- Ada
+with
+   Ada.Strings.Wide_Fixed;
+
 -- ASIS
 with
   Asis.Compilation_Units,
@@ -32,10 +36,12 @@ with
   Asis.Elements,
   Asis.Expressions,
   Asis.Iterator,
-  Asis.Statements;
+  Asis.Statements,
+  Asis.Text;
 
 -- Adalog
 with
+  Elements_Set,
   Scope_Manager,
   Thick_Queries,
   Utilities;
@@ -49,6 +55,17 @@ pragma Elaborate (Framework.Language);
 
 package body Rules.Statements is
    use Adactl_Constants, Framework, Framework.Control_Manager, Framework.Variables, Framework.Variables.Shared_Types;
+
+   -- Algorithm
+   --
+   -- Subrule Hard_Bounds_Array_For_Loop:
+   -- At the time a for loop is traversed, it is easy to check whether the bounds countain references to attributes.
+   -- If not, the loop parameter is stored in the element set Not_For_Indexing, meaning that this parameter should
+   -- not be used for indexing.
+   -- When an indexed variable is traversed, the indexing expression is traversed, and if a reference to an identifier
+   -- in Not_For_Indexing is found, the error is reported, and the identifier is removed from Not_For_Indexing to
+   -- avoid further messages (since the error is on the for loop statement).
+
 
    -- all "filtered_raise" subrules (i.e. raise subrules except the plain one) must stay together
    type Subrules is (Stmt_Any_Statement,
@@ -74,6 +91,8 @@ package body Rules.Statements is
                      Stmt_For_Of_Loop,             Stmt_Function_Return,
 
                      Stmt_Goto,                    Stmt_Goto_Not_Continue,
+
+                     Stmt_Hard_Bounds_Array_For_Loop,
 
                      Stmt_If,                      Stmt_If_Elsif,               Stmt_Inherited_Procedure_Call,
 
@@ -114,6 +133,10 @@ package body Rules.Statements is
    Rule_Used : Usage_Flags := No_Rule;
    Save_Used : Usage_Flags;
    Usage     : array (Subrules) of Basic_Rule_Context;
+
+   -- For Stmt_Hard_Bounds_Array_For_Loop
+   type Loop_Parameter_Status is (Indexing_OK, Indexing_KO);
+   Not_For_Indexing: Elements_Set.Set;
 
    -- For Stmt_Unnamed_Multiple_Loop:
    type Loops_Level is range 0 .. Max_Loop_Nesting;
@@ -808,6 +831,61 @@ package body Rules.Statements is
       end if;
    end Process_Others;
 
+   ------------------------------
+   -- Process_Index_Expression --
+   ------------------------------
+
+   procedure Process_Index_Expression (Expr : in Asis.Expression) is
+      use Asis,Asis.Iterator, Asis.Expressions;
+
+      procedure Pre_Procedure (Element : in     Asis.Element;
+                               Control : in out Traverse_Control;
+                               State   : in out Null_State);
+      procedure Check_Var is new Traverse_Element (Null_State, Pre_Procedure, Null_State_Procedure);
+
+      procedure Pre_Procedure (Element : in     Asis.Element;
+                               Control : in out Traverse_Control;
+                               State   : in out Null_State)
+      is
+         use Asis.Declarations, Asis.Elements, Asis.Text, Ada.Strings.Wide_Fixed;
+         use Elements_Set, Framework.Locations, Framework.Reports;
+         pragma Unreferenced (State);
+      begin
+         case Expression_Kind (Element) is
+            when An_Identifier =>
+               if Contains (Not_For_Indexing, Element) then
+                  Report (Rule_Id,
+                          Usage (Stmt_Hard_Bounds_Array_For_Loop),
+                          Get_Location (Specification_Subtype_Definition (Corresponding_Name_Declaration (Element))),
+                          "Bounds of loop do not mention 'First, 'Last or 'Range, used for indexing "
+                          & Trim (Element_Image (Prefix (Expr)), Ada.Strings.Both)
+                          & " at "
+                          & Image (Get_Location (Expr)));
+                  Delete (Not_For_Indexing, Element);  -- No more messages for this loop
+                  Control := Terminate_Immediately;
+               end if;
+            when An_Attribute_Reference =>
+               -- Don't traverse the attribute
+               Check_Var (Prefix (Element), Control, State);
+               Control := Abandon_Children;
+            when others =>
+               null;
+         end case;
+      end Pre_Procedure;
+
+      Control : Traverse_Control;
+      State   : Null_State;
+   begin  -- Process_Index_Expression
+      if not Rule_Used (Stmt_Hard_Bounds_Array_For_Loop) then
+         return;
+      end if;
+
+      for Index : Asis.Expression of Index_Expressions (Expr) loop
+         Control := Continue;
+         Check_Var (Index, Control, State);
+      end loop;
+   end Process_Index_Expression;
+
    ---------------------------
    -- Process_Function_Body --
    ---------------------------
@@ -954,6 +1032,81 @@ package body Rules.Statements is
       end loop;
    end Process_Loop_Statements;
 
+   ----------------------------
+   -- Process_Loop_Parameter --
+   ----------------------------
+
+   procedure Process_Loop_Parameter (Spec : Asis.Declaration) is
+      use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Iterator;
+      use Elements_Set, Utilities;
+
+      Parameter   : constant Asis.Defining_Name := Names (Spec) (1);
+      Subtype_Def : constant Asis.Definition    := Specification_Subtype_Definition (Spec);
+      Constraint  : Asis.Constraint;
+
+      procedure Pre_Procedure  (Element : in     Asis.Element;
+                                Control : in out Traverse_Control;
+                                State   : in out Loop_Parameter_Status);
+      procedure Post_Procedure (Element : in     Asis.Element;
+                                Control : in out Traverse_Control;
+                                State   : in out Loop_Parameter_Status) is null;
+      procedure Check_Attribute is new Traverse_Element (Loop_Parameter_Status, Pre_Procedure, Post_Procedure);
+      procedure Pre_Procedure (Element : in     Asis.Element;
+                               Control : in out Traverse_Control;
+                               State   : in out Loop_Parameter_Status)
+      is
+      begin
+         case Attribute_Kind (Element) is
+            when A_First_Attribute | A_Last_Attribute | A_Range_Attribute =>
+               State   := Indexing_OK;
+               Control := Terminate_Immediately;
+            when others =>
+               -- Including Not_An_Attribute
+               null;
+         end case;
+      end Pre_Procedure;
+
+      Control : Traverse_Control;
+      State   : Loop_Parameter_Status;
+   begin  --Process_Loop_Parameter
+      case Discrete_Range_Kind (Subtype_Def) is
+         when A_Discrete_Subtype_Indication =>
+            -- Subtype_simple_name
+            Constraint := Subtype_Constraint (Subtype_Def);
+            if Is_Nil (Constraint) then
+               Add (Not_For_Indexing, Parameter);
+            else
+               Control := Continue;
+               State   := Indexing_KO;
+               Check_Attribute (Lower_Bound (Constraint), Control, State);
+               if State = Indexing_OK then
+                  Control := Continue;
+                  State   := Indexing_KO;
+                  Check_Attribute (Upper_Bound (Constraint), Control, State);
+               end if;
+               if State = Indexing_KO then
+                  Add (Not_For_Indexing, Parameter);
+               end if;
+            end if;
+         when A_Discrete_Range_Attribute_Reference =>
+            null; -- OK for indexing
+         when A_Discrete_Simple_Expression_Range =>
+            Control := Continue;
+            State   := Indexing_KO;
+            Check_Attribute (Lower_Bound (Subtype_Def), Control, State);
+            if State = Indexing_OK then
+               Control := Continue;
+               State   := Indexing_KO;
+               Check_Attribute (Upper_Bound (Subtype_Def), Control, State);
+            end if;
+            if State = Indexing_KO then
+               Add (Not_For_Indexing, Parameter);
+            end if;
+         when Not_A_Discrete_Range =>
+            Failure ("Process_Loop_Parameter: bad range", Subtype_Def);
+      end case;
+   end Process_Loop_Parameter;
+
    ----------------------
    -- Pre_Process_Loop --
    ----------------------
@@ -961,10 +1114,14 @@ package body Rules.Statements is
    procedure Pre_Process_Loop  (Stmt : in Asis.Statement) is
       use Asis, Asis.Elements, Asis.Statements;
       use Framework.Locations, Framework.Reports, Utilities;
+      Loop_Spec : Asis.Declaration;
    begin
-      if not Rule_Used (Stmt_Unnamed_Multiple_Loop)
-        and not Rule_Used (Stmt_Multiple_Exits)
-        and not Rule_Used (Stmt_Loop_Return)
+      if (Rule_Used and Usage_Flags'(Stmt_Hard_Bounds_Array_For_Loop
+                                   | Stmt_Unnamed_Multiple_Loop
+                                   | Stmt_Multiple_Exits
+                                   | Stmt_Loop_Return => True,
+                                   others             => False))
+        = No_Rule
       then
          return;
       end if;
@@ -972,6 +1129,13 @@ package body Rules.Statements is
 
       if Rule_Used (Stmt_Multiple_Exits) then
          Process_Loop_Statements (Stmt);
+      end if;
+
+      if Rule_Used (Stmt_Hard_Bounds_Array_For_Loop) and then Statement_Kind (Stmt) = A_For_Loop_Statement then
+         Loop_Spec := For_Loop_Parameter_Specification (Stmt);
+         if Declaration_Kind (Loop_Spec) = A_Loop_Parameter_Specification then
+            Process_Loop_Parameter (Loop_Spec);
+         end if;
       end if;
 
       if Loops_Depth (Body_Depth) = Loops_Level'Last then
@@ -1012,17 +1176,30 @@ package body Rules.Statements is
    -----------------------
 
    procedure Post_Process_Loop (Stmt : in Asis.Statement) is
-      pragma Unreferenced (Stmt);
+      use Asis, Asis.Declarations, Asis.Elements, Asis.Statements;
+      use Elements_Set;
+
+      Parameter : Asis.Defining_Name;
    begin
-      if not Rule_Used (Stmt_Unnamed_Multiple_Loop)
-        and not Rule_Used (Stmt_Multiple_Exits)
-        and not Rule_Used (Stmt_Loop_Return)
+      if (Rule_Used and Usage_Flags'(Stmt_Hard_Bounds_Array_For_Loop
+                                   | Stmt_Unnamed_Multiple_Loop
+                                   | Stmt_Multiple_Exits
+                                   | Stmt_Loop_Return => True,
+                                   others             => False))
+        = No_Rule
       then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
       Loops_Depth (Body_Depth) := Loops_Depth (Body_Depth) - 1;
+
+      if Rule_Used (Stmt_Hard_Bounds_Array_For_Loop) and then Statement_Kind (Stmt) = A_For_Loop_Statement then
+         Parameter := Names (For_Loop_Parameter_Specification (Stmt)) (1);
+         if Contains (Not_For_Indexing, Parameter) then
+            Delete (Not_For_Indexing, Parameter);
+         end if;
+      end if;
    end Post_Process_Loop;
 
    -------------------------
