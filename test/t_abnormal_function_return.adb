@@ -67,19 +67,26 @@ function T_Abnormal_Function_Return return Integer is
    end F2;
 
    function F3_OK return Integer is
-      procedure No_Ret;
-      pragma No_Return (No_Ret);
-      procedure No_Ret is
+      procedure No_Ret1;
+      pragma No_Return (No_Ret1);
+      procedure No_Ret1 is
       begin
          raise Constraint_Error;
-      end No_Ret;
+      end No_Ret1;
+      procedure No_Ret2 with No_Return is
+      begin
+         raise Constraint_Error;
+      end No_Ret2;
+
    begin
       if True then
          return 1;
       elsif True then
          Raise_Exception (Constraint_Error'Identity);
+      elsif True then
+         No_Ret1;
       else
-         No_Ret;
+         No_Ret2;
       end if;
    end F3_OK;
 

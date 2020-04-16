@@ -126,6 +126,7 @@ package body Rules.Abnormal_Function_Return is
                   if SP_Name = "ADA.EXCEPTIONS.RAISE_EXCEPTION"
                     or else SP_Name = "ADA.EXCEPTIONS.RERAISE_OCCURRENCE"
                     or else Corresponding_Pragma_Set (Called_Simple_Name (Stmt)) (A_No_Return_Pragma)
+                    or else Corresponding_Aspects (Called_Simple_Name (Stmt), "NO_RETURN") /= Nil_Element_List
                   then
                      return;
                   end if;

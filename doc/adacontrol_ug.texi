@@ -3024,7 +3024,8 @@ a @code{@b{raise}} statement (or equivalently, a call to
 @code{Ada.Exceptions.Raise_Exception} or
 @code{Ada.Exceptions.Reraise_Occurrence});
 @item
-a call to a procedure which is the target of a @code{@b{pragma} No_Return};
+a call to a procedure which is the target of a @code{@b{pragma} No_Return} or
+has a @code{No_Return} aspect;
 @item
 a block statement, whose last statement of its sequence and any
 exception handler is one of these;

@@ -13,6 +13,9 @@ Add data flow analysis, to extend cases that are
 
 Changes to existing rules:
 --------------------------
+Abnormal_Function_Returrn
+   Accept calls to a procedure with a No_Return aspect
+   
 Comments
    Add subrule Unnamed_End_Record
 
