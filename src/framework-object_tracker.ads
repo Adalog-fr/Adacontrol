@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
---  Framework.Variable_Tracker - Package specification              --
+--  Framework.Object_Tracker - Package specification                --
 --  Copyright (C) 2020 Adalog - Eurocontrol                         --
 --  Author: J-P. Rosen                                              --
 --                                                                  --

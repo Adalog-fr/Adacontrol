@@ -3,6 +3,7 @@ procedure Tfw_Object_Tracker is
    I     : Integer          := 0;
    X     : Integer;
    Const : constant Integer := I;
+   I_Bis : Integer renames I;
 
    function I_Plus_1 return Integer is (I + 1);
 
@@ -40,7 +41,7 @@ begin
       X := 1;
    end if;
 
-   if I = 10 then                     -- False
+   if I_Bis = 10 then                 -- False
       X := 1;
    end if;
 
@@ -222,7 +223,7 @@ begin
          if I in 1 .. 3 then          -- True
             X := 1;
          end if;
-      when 2 .. 20 =>
+      when 2 .. 20 =>                 -- Choice covers no value
          if I not in 0 .. 30 then     -- False
             X := 1;
          end if;
@@ -447,6 +448,72 @@ begin
          X := 1;
       end if;
    end;
+
+   -- Check discriminants
+   Regular_Discriminants: declare
+      type Enum is (E1, E2, E3);
+      type Rec (D1 : Integer := 0; D2, D3 : Enum := E1) is
+         record
+            Val : Integer;
+         end record;
+      R1 : Rec (1, E1, E2);         -- Discriminants: Initialization by explicit value
+      R2 : Rec;                     -- Discriminants: Initialization by default value
+      R3 : Rec := (10, E3, E2, 0);  -- Discriminants: Initialization by initial value
+   begin
+      if R1.D1 = 1 then                                      -- True
+         I := 1;
+      end if;
+
+      R1 := (I, E1, E2, I);
+      if R1.D1 in 3 .. 5 then
+         if R1.D1 in 1 .. 10 then                            -- True
+            I := 1;
+         end if;
+      end if;
+
+      R2 := (4, E3, E2, 0);
+      if R2.D1 = 3 then                                      -- False
+         I := 0;
+      end if;
+      if R2.D2 = E3 and R2.D3 = E2 then                      -- True
+         I := 0;
+      end if;
+
+      R1 := R2;
+      if R1.D1 /= R2.D1 or R1.D2 /= E3 then                  -- False
+         I := 0;
+      end if;
+
+      if R3.D1 = 10 and not (R3.D2 = E3 xor R3.D3 = E2) then -- True
+         I := 0;
+      end if;
+   end Regular_Discriminants;
+
+   Access_Discriminants  : declare
+      type Acc is access all Integer;
+      type Acc_Rec1 (Ptr : Acc) is null record;
+      type Acc_Rec2 (Ptr : not null access Integer) is null record;
+      A11 : Acc_Rec1 (new Integer'(2));
+      A12 : Acc_Rec1 (null);
+      A21 : Acc_Rec2 (new Integer);
+      A22 : Acc_Rec2 := (Ptr => new Integer);
+      A23 : Acc_Rec2 := A22;
+   begin
+      -- check initialization
+      if A11.Ptr = null then             -- False
+         I := 0;
+      elsif A12.Ptr = null then          -- True
+         I := 0;
+      elsif A21.Ptr = null then          -- False
+         I := 0;
+      elsif A22.Ptr = null then          -- False;
+         I := 0;
+      elsif A23.Ptr = null then          -- False;
+         I := 0;
+      elsif A23.Ptr = A22.Ptr then       -- True;
+         I := 0;
+      end if;
+   end Access_Discriminants;
 
    I := 10; -- This assignment to (possibly) fool the exception handler
 exception
