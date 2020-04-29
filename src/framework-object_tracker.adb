@@ -1466,7 +1466,7 @@ package body Framework.Object_Tracker is
       case Kind is
          when Discrete_Type_Kinds =>
             declare
-               Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (Decl, Static_Only => False);
+               Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (Decl, RM_Static => False);
                -- Bounds'Length = 0 in some crazy cases, like T'base...
                Imin   : constant Extended_Biggest_Int := (if Bounds'Length = 0 then Not_Static else Bounds (1));
                Imax   : constant Extended_Biggest_Int := (if Bounds'Length = 0 then Not_Static else Bounds (2));

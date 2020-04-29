@@ -902,7 +902,7 @@ package body Rules.Simplifiable_Statements is
                         Count := 1; -- or whatever /= 0
                         exit Count_Values;
                      end if;
-                     Bounds := Discrete_Constraining_Values (PE, Static_Only => False);
+                     Bounds := Discrete_Constraining_Values (PE);
                      if Bounds (1) = Not_Static or Bounds (2) = Not_Static then
                         -- it IS static, but the evaluator cannot evaluate it...
                         -- unless it is of a generic formal type

@@ -395,8 +395,8 @@ package body Rules.Assignments is
       end if;
 
       declare
-         LH_Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (LHS, Static_Only => False);
-         RH_Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (RHS, Static_Only => False);
+         LH_Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (LHS);
+         RH_Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (RHS);
          Inx       : Asis.List_Index;
       begin
          if LH_Bounds = Nil_Extended_Biggest_Int_List or RH_Bounds = Nil_Extended_Biggest_Int_List then
