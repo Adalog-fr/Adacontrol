@@ -18,6 +18,7 @@ esac
 
 if [ "$1" = "-h" ] ; then
     echo "usage: showfix [<pattern>]"
+    echo "<pattern>: file wildcard without extension (.ad[sb] assumed)"
     exit
 fi
 

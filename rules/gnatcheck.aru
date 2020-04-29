@@ -266,7 +266,7 @@ USE_PACKAGE_Clauses:
 -- Identifier_Casing
 -- Identifier_Prefixes
 -- Identifier_Suffixes
--- There is no simple one-to-one mapping here between GNBATCheck and AdaControl rules.
+-- There is no simple one-to-one mapping here between GNATCheck and AdaControl rules.
 -- The same effect can be obtained by one or several of the following rules:
 --    Style (Casing)
 --    Naming_Convention

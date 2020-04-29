@@ -40,7 +40,6 @@ package body Framework.Variables.Shared_Types is
          pragma Unreferenced (Variable);
       begin
          return "String";
-
       end All_Values;
    end String_Type;
 

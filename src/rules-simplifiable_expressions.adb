@@ -59,7 +59,7 @@ package body Rules.Simplifiable_Expressions is
    -- Subrule Membership:
    -- -------------------
    -- The goal is to identify comparisons to a same variable that are compatible with a membership test
-   -- Such conditions are connected by "or" (for "in") or "and" (for "not in"). We do not accept "or then"
+   -- Such conditions are connected by "or" (for "in") or "and" (for "not in"). We do not accept "and then"
    -- and "or else", because these have a dependence on order of evaluation that would be lost with a membership
    -- test.
    --

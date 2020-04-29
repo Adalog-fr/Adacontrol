@@ -849,7 +849,6 @@ package body Rules.Statements is
       is
          use Asis.Declarations, Asis.Elements, Asis.Text, Ada.Strings.Wide_Fixed;
          use Elements_Set, Framework.Locations, Framework.Reports;
-         pragma Unreferenced (State);
       begin
          case Expression_Kind (Element) is
             when An_Identifier =>
