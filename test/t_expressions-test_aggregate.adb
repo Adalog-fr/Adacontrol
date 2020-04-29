@@ -20,6 +20,10 @@ procedure Test_Aggregate is
    D2  : Der2;
    One : Integer := 1;
 begin
+   A := Arr'(One .. 4 => 0);                    -- Array_Aggregate, Array_Range, (Array_Non_Static_Range OK)
+   if A (1) = 0 then
+      One := 2;  -- Make One unknown
+   end if;
    A := Arr'(1 => 1, 2 .. 3 => 3, 4 => 4);    -- Array_Aggregate, Array_Range, Universal_Range
    A :=     (1 => 1, 2 => 2, 3 => 3, 4 => 4); -- Array_Aggregate, Unqualified
    A := Arr'(1, 2, 3, 4);                     -- Array_Aggregate

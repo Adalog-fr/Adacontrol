@@ -1,4 +1,5 @@
 procedure T_Case_Statement is
+  V : Integer;
 begin
 
    -- Simple cases
@@ -100,16 +101,25 @@ begin
 
    -- Dynamic subtype:
    -- Must consider the range of the type
+   if True then
+      V := 10;  -- Make V not statically evaluable
+   end if;
    declare
 
       type Parent is range 1..20;
       Max : Parent := 10;
 
-      subtype Int is Parent range 1..Max;
-      I : Int;
+      subtype Int1 is Parent range 1 .. Max;
+      I1 : Int1;
+      subtype Int2 is Parent range 1 .. Parent (V);
+      I2 : Int2;
    begin
-      case I is                                       -- Min_Paths check, count
+      case I1 is                                      -- Min_Paths check, count
          when 1..3 => null;
+         when others => null;                         -- Min_Others covers 7, search
+      end case;
+      case I2 is                                      -- Min_Paths check, count
+         when 1 .. 3 => null;
          when others => null;                         -- Min_Others covers 17, search
       end case;
    end;
