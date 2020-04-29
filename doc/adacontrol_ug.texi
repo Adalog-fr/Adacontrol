@@ -7361,8 +7361,13 @@ static.
 @end example
 
 @subsection Action
-The parameters are subrule keywords that
-define the elements that are required to be static:
+Since this rule is generally used for making sure that some elements
+are ``hard coded'', or of a known size, by default staticness for all checks is
+``RM_Static''.  However, a rule variable allows to use the more
+general notion of ``statically provable''. @xref{Rules reference}.
+
+The parameters are subrule keywords that define the elements that are
+required to be static:
 @itemize
 @item
 ``constant_initialization'': expressions used as initial value in
@@ -7391,6 +7396,21 @@ Ex:
 @example
 check non_static (index_constraint);
 @end example
+
+@subsection Variable
+The rule provides a variable to select the definition of staticness as defined in the reference manual,
+or more generally as statically provable.
+
+@need 1800
+@multitable @columnfractions .25 .20 .55
+@item @b{Variable} @tab @b{Values} @tab @b{Effect}
+@item RM_Static
+@tab off
+@tab Staticness is defined as statically provable.
+@item
+@tab on (default)
+@tab Staticness is defined in accordance with the Ada Reference Manual.
+@end multitable
 
 @subsection Limitations
 Currently, ``constant_initialization'' and ``variable_initialization''

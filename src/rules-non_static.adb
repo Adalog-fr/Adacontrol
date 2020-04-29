@@ -38,11 +38,13 @@ with
 
 -- AdaControl
 with
-  Framework.Language;
+  Framework.Language,
+  Framework.Variables,
+  Framework.Variables.Shared_Types;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Non_Static is
-   use Framework, Framework.Control_Manager;
+   use Framework, Framework.Control_Manager, Framework.Variables.Shared_Types;
 
    type Subrules is (K_Variable_Initialization, K_Constant_Initialization,
                      K_Index_Constraint,        K_Discriminant_Constraint,
@@ -55,6 +57,9 @@ package body Rules.Non_Static is
    Rule_Used  : Usage_Flags := (others => False);
    Save_Used  : Usage_Flags;
    Usage      : array (Subrules) of Basic_Rule_Context;
+
+   -- Rule variables
+   RM_Static : aliased Switch_Type.Object := (Value => On);
 
 
    ----------
@@ -134,7 +139,7 @@ package body Rules.Non_Static is
       use Framework.Locations, Framework.Reports, Thick_Queries;
    begin
       for Const : Asis.Element of Constraint_List loop
-         if Discrete_Constraining_Lengths (Const)(1) = Not_Static then
+         if Discrete_Constraining_Lengths (Const, RM_Static => RM_Static.Value = On)(1) = Not_Static then
             Report (Rule_Id,
                     Usage (K_Index_Constraint),
                     Get_Location (Const),
@@ -190,7 +195,7 @@ package body Rules.Non_Static is
       Rules_Manager.Enter (Rule_Id);
 
       for Const : Asis.Discriminant_Association of Discriminant_Associations (Elem) loop
-         if not Is_Static_Expression (Discriminant_Expression (Const)) then
+         if not Is_Static_Expression (Discriminant_Expression (Const), RM_Static => RM_Static.Value = On) then
             Report (Rule_Id,
                     Usage (K_Discriminant_Constraint),
                     Get_Location (Const),
@@ -234,7 +239,7 @@ package body Rules.Non_Static is
                when A_Formal_Object_Declaration =>
                   case Mode_Kind (Param_Decl) is
                      when An_In_Mode | A_Default_In_Mode =>
-                        if not Is_Static_Expression (Actual_Parameter (A)) then
+                        if not Is_Static_Expression (Actual_Parameter (A), RM_Static => RM_Static.Value = On) then
                            Do_Report (A);
                         end if;
                      when An_In_Out_Mode =>
@@ -335,7 +340,7 @@ package body Rules.Non_Static is
 
       if Rule_Used (K_Variable_Initialization)
         and then Declaration_Kind (Decl) = A_Variable_Declaration
-        and then not Is_Static_Expression (Expr)
+        and then not Is_Static_Expression (Expr, RM_Static => RM_Static.Value = On)
       then
          Report (Rule_Id,
                  Usage (K_Variable_Initialization),
@@ -345,7 +350,7 @@ package body Rules.Non_Static is
 
       if Rule_Used (K_Constant_Initialization)
         and then Declaration_Kind (Decl) = A_Constant_Declaration
-        and then not Is_Static_Expression (Expr)
+        and then not Is_Static_Expression (Expr, RM_Static => RM_Static.Value = On)
       then
          Report (Rule_Id,
                  Usage (K_Constant_Initialization),
@@ -384,7 +389,7 @@ package body Rules.Non_Static is
                        "indexing of non statically constrained array");
             else
                -- static bounds
-               Inx := Discrete_Static_Expression_Value (Inx_List (I));
+               Inx := Discrete_Static_Expression_Value (Inx_List (I), RM_Static => RM_Static.Value = On);
                if Inx = Not_Static then
                   -- static bounds, non static index
                   if Expression_Kind (Simple_Name (Inx_List (I))) = An_Identifier then
@@ -429,4 +434,6 @@ begin  -- Rules.Non_Static
                                      Help_CB        => Help'Access,
                                      Add_Control_CB => Add_Control'Access,
                                      Command_CB     => Command'Access);
+   Framework.Variables.Register (RM_Static'Access,
+                                 Rule_Id & ".RM_STATIC");
 end Rules.Non_Static;

@@ -15,7 +15,11 @@ Changes to existing rules:
 --------------------------
 Abnormal_Function_Returrn
    Accept calls to a procedure with a No_Return aspect
-   
+
+Non_Static
+   Add a rule variable to select between "statically provable"
+   and strictly RM static
+
 Comments
    Add subrule Unnamed_End_Record
 
