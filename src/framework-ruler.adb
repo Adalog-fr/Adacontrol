@@ -206,18 +206,17 @@ package body Framework.Ruler is
    begin
       -- An identifier appearing in a pragma that is not a true identifier raises
       -- ASIS_Inappropriate_Element for its Corresponding_Name_Definition
-      if State.Pragma_Or_Attribute_Level /= 0 then
-         begin
-            Junk := Corresponding_Name_Definition (Element);
-            -- OK!
-         exception
-            when ASIS_Inappropriate_Element =>
-               -- Not a true identifier!
-               return False;
-         end;
+      if State.Pragma_Or_Attribute_Level = 0 then
+         return True;
       end if;
 
+      Junk := Corresponding_Name_Definition (Element);
+        -- OK!
       return True;
+   exception
+      when ASIS_Inappropriate_Element =>
+         -- Not a true identifier!
+         return False;
    end Is_True_Identifier;
 
    -----------------------

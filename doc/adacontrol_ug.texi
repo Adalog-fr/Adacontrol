@@ -1673,7 +1673,7 @@ processing by a tool that does not know about fixes).
 @subsubsection ASIS
 This section controls the ASIS parameters passed to AdaControl. The
 content of the input field ``ASIS options'' is used in place of the
-standard (``-CA -FM'') one.
+standard (``@w{-CA} @w{-FM}'') one.
 
 Casual users don't need to change the default ASIS options. For more
 details, @pxref{ASIS options}.
@@ -1881,7 +1881,7 @@ If the ``-s'' option is given (or the unit is a file name with a
 otherwise the body is processed. The ``-p'' option specifies the name
 of a project file (``.gpr'' or ``.adp''), and the ``-d'' option is the
 debug mode, as for AdaControl itself. ASIS options can be passed, like
-for AdaControl, after a ``-@w{}-'' (but -FS is the
+for AdaControl, after a ``-@w{}-'' (but @w{-FS} is the
 default). @xref{ASIS options}.
 
 As a side usage of @code{pfni}, if you are calling a subprogram that
@@ -1971,37 +1971,37 @@ automatically when needed, and kept after each run, so that subsequent
 runs do not have to recreate them.
 
 A context in ASIS-for-Gnat is a set of tree files. Which trees are
-part of the context is defined by the ``-C'' option:
+part of the context is defined by the ``@w{-C}'' option:
 @itemize
 @item
--C1 Only one tree makes up the context. The name of the tree file must
+@w{-C1}: Only one tree makes up the context. The name of the tree file must
 follow the option.
 @item
--CN Several explicit trees make up the context. The name of the tree
+@w{-CN}: Several explicit trees make up the context. The name of the tree
 files must follow the option.
 @item
--CA All available trees make up the context. These are the tree files
+@w{-CA}: All available trees make up the context. These are the tree files
 found in the current directory, and in any directory given with a
-``-T'' option (which works like the ``-I'' option, but for tree files
+``@w{-T}'' option (which works like the ``@w{-I}'' option, but for tree files
 instead of source files).
 @end itemize
 
-The ``-F'' option specifies what to do if the program tries to access
+The ``@w{-F}'' option specifies what to do if the program tries to access
 an Ada unit which is not part of the context:
 @itemize
 @item
--FT Only consider tree files, do not attempt to compile units
+@w{-FT}: Only consider tree files, do not attempt to compile units
 on-the-fly
 @item
--FS Always compile units on-the-fly, ignore existing tree files
+@w{-FS}: Always compile units on-the-fly, ignore existing tree files
 @item
--FM Compile on-the-fly units for which there is no already existing
+@w{-FM}: Compile on-the-fly units for which there is no already existing
 tree file
 @end itemize
-Note that ``-FT'' is the only allowed mode, and @i{must} be specified,
-with the ``-C1'' and ``-CN'' options.
+Note that ``@w{-FT}'' is the only allowed mode, and @i{must} be specified,
+with the ``@w{-C1}'' and ``@w{-CN}'' options.
 
-The default combination used by AdaControl is ``-CA -FM''. A
+The default combination used by AdaControl is ``@w{-CA} @w{-FM}''. A
 consequence of this is that the context is established by first
 loading all available tree files before starting the analysis, even
 those that are not necessary. Since tree files are often big and long
@@ -2101,7 +2101,7 @@ provided the tree file already exists.
 @item
 For each strategy, first run AdaControl with the default options
 (which will create all necessary tree files). Compare execution time
-with the one you get with ``-FT'' and ``-FS''. This will tell you if
+with the one you get with ``@w{-FT}'' and ``@w{-FS}''. This will tell you if
 compiling on-the-fly is more efficient than loading tree files, or not.
 @end itemize
 
@@ -7330,7 +7330,7 @@ type is used in the program. If the <category> is @code{range}, the
 control applies only to signed integer types; if it is @code{mod}, it
 applies only to modular integer types; without <category>, it applies
 to both.  No other <category> is allowed. The rule traverses
-derivations and privacy (The rule applies also to private types whose
+derivations and privacy (the rule applies also to private types whose
 full declaration is an integer type). @xref{Definition of type
 categories}.
 
