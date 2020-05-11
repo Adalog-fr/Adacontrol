@@ -35,7 +35,8 @@ with
 -- Adalog
 with
   Binary_Map,
-  Scope_Manager;
+  Scope_Manager,
+  Thick_Queries;
 
 -- AdaControl
 with
@@ -110,7 +111,7 @@ package body Framework.Symbol_Table is
 
       procedure Store (Element : Asis.Element; Content_Value : Content) is
          use Asis, Asis.Elements, Asis.Expressions;
-         use Framework.Queries, Utilities;
+         use Framework.Queries, Thick_Queries, Utilities;
 
          Key    : constant Unbounded_Wide_String := To_Key_Upper (Element);
          Symbol : Symbol_Entry;
@@ -118,23 +119,7 @@ package body Framework.Symbol_Table is
          if Is_Present (Global_Map, Key) then
             Symbol := Fetch (Global_Map, Key);
          else
-            case Element_Kind (Element) is
-               when A_Defining_Name =>
-                  Symbol.Name := Element;
-               when An_Expression =>
-                  case Expression_Kind (Element) is
-                     when An_Identifier
-                        | An_Operator_Symbol
-                        | An_Enumeration_Literal
-                        | A_Character_Literal
-                          =>
-                        Symbol.Name := Corresponding_Name_Definition (Element);
-                     when others =>
-                        Failure ("Symbol table: not a name (1)", Element);
-                  end case;
-               when others =>
-                  Failure ("Symbol table: not a name (2)", Element);
-            end case;
+            Symbol.Name := First_Defining_Name (Element);
 
             -- The element's declaration scope is the first enclosing element considered a scope
             -- starting from the enclosing element of its own declaration
@@ -154,10 +139,15 @@ package body Framework.Symbol_Table is
                -- Note that A_Parameter_Specification does not include generic formals,
                --      which is appropriate since those are not visible outside the generic
                -- Skip the Parameter_Specification and the enclosing subprogram or entry declaration
-               Symbol.Visibility_Scope := Enclosing_Element (Enclosing_Element (Symbol.Declaration_Scope));
+               Symbol.Visibility_Scope := Enclosing_Element (Symbol.Declaration_Scope);
             else
                Symbol.Visibility_Scope := Symbol.Declaration_Scope;
             end if;
+            if Definition_Kind (Symbol.Visibility_Scope) = A_Protected_Definition then
+               -- Normally, we don't find definitions, except in the weird case of protected types/objects
+               Symbol.Visibility_Scope := Enclosing_Element (Symbol.Visibility_Scope);
+            end if;
+
             loop
                case Element_Kind (Symbol.Visibility_Scope) is
                   when Not_An_Element =>
@@ -172,8 +162,8 @@ package body Framework.Symbol_Table is
                            -- A_Package_Declaration     Not this one! (see below)
                            | A_Task_Type_Declaration
                            | A_Single_Task_Declaration
-                           | A_Protected_Type_Declaration
-                           | A_Single_Protected_Declaration
+                           -- A_Protected_Type_Declaration   Elements of protected elements are visible outside
+                           -- A_Single_Protected_Declaration like for packages
 
                            | A_Procedure_Body_Declaration
                            | A_Function_Body_Declaration
@@ -203,10 +193,15 @@ package body Framework.Symbol_Table is
                            exit;
                         when A_Package_Declaration
                            | A_Generic_Package_Declaration
-                             =>
+                           | A_Protected_Type_Declaration
+                           | A_Single_Protected_Declaration
+                           =>
+                           if In_Private_Part then  -- These are not visible outside
+                              exit;
+                           end if;
                            Symbol.Visibility_Scope := Enclosing_Element (Symbol.Visibility_Scope);
                            if Declaration_Kind (Symbol.Visibility_Scope) = A_Package_Instantiation then
-                              -- The package was obtained by instantiation
+                              -- A package that was obtained by instantiation
                               Symbol.Visibility_Scope := Enclosing_Element (Symbol.Visibility_Scope);
                            end if;
                         when A_Formal_Package_Declaration

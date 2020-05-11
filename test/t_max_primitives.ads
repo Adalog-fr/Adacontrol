@@ -108,7 +108,7 @@ package T_Max_Primitives is
 
    -- Incomplete types
    type IT;
-   type ITT;
+   type ITT;                                             --  max 3, got 5 x2
 
    procedure P1_IT (T : IT) is null;
    procedure P2_IT (T : IT) is null;
@@ -116,7 +116,7 @@ package T_Max_Primitives is
    procedure P4_IT (T : IT) is null;
 
    type IT is null record;                               --  max 3, got 4
-   type ITT is tagged null record;                       --  max 3, got 5 x2
+   type ITT is tagged null record;
 
    procedure P1_ITT (T : ITT) is null;
    procedure P2_ITT (T : ITT) is null;

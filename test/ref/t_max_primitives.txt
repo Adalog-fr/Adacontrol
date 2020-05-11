@@ -3,7 +3,7 @@ t_max_primitives.ads:91:12: Error: MAX_PRIMITIVES: Number of visible primitives 
 t_max_primitives.ads:97:7: Found: Nb_Primitives: Number of total primitives of "T_Max_Primitives.Generic_Package.BigDer" is more than 3 (5)
 t_max_primitives.ads:91:7: Error: MAX_PRIMITIVES: Number of total primitives of "T_Max_Primitives.Generic_Package.Der" is more than 5 (8)
 t_max_primitives.ads:34:9: Error: MAX_PRIMITIVES: Number of visible primitives of "T_Max_Primitives.I2" is more than 3 (4)
-t_max_primitives.ads:119:9: Error: MAX_PRIMITIVES: Number of visible primitives of "T_Max_Primitives.ITT" is more than 3 (5)
+t_max_primitives.ads:111:9: Error: MAX_PRIMITIVES: Number of visible primitives of "T_Max_Primitives.ITT" is more than 3 (5)
 t_max_primitives.ads:63:19: Error: MAX_PRIMITIVES: Number of visible primitives of "T_Max_Primitives.PrT1" is more than 3 (4)
 t_max_primitives.ads:100:9: Error: MAX_PRIMITIVES: Number of visible primitives of "T_Max_Primitives.PT2" is more than 3 (4)
 t_max_primitives.ads:102:9: Error: MAX_PRIMITIVES: Number of visible primitives of "T_Max_Primitives.PT4" is more than 3 (5)
