@@ -29,8 +29,9 @@ with
 
 -- ASIS
 with
-  Asis.Elements,
-  Asis.Expressions;
+  Asis.Declarations,
+  Asis.Definitions,
+  Asis.Elements;
 
 -- Adalog
 with
@@ -110,7 +111,7 @@ package body Framework.Symbol_Table is
       -----------
 
       procedure Store (Element : Asis.Element; Content_Value : Content) is
-         use Asis, Asis.Elements, Asis.Expressions;
+         use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements;
          use Framework.Queries, Thick_Queries, Utilities;
 
          Key    : constant Unbounded_Wide_String := To_Key_Upper (Element);
@@ -160,8 +161,8 @@ package body Framework.Symbol_Table is
                            | An_Expression_Function_Declaration   -- Ada 2012
                            | An_Entry_Declaration
                            -- A_Package_Declaration     Not this one! (see below)
-                           | A_Task_Type_Declaration
-                           | A_Single_Task_Declaration
+                           -- A_Task_Type_Declaration
+                           -- A_Single_Task_Declaration
                            -- A_Protected_Type_Declaration   Elements of protected elements are visible outside
                            -- A_Single_Protected_Declaration like for packages
 
@@ -174,7 +175,7 @@ package body Framework.Symbol_Table is
 
                            | A_Generic_Procedure_Declaration
                            | A_Generic_Function_Declaration
-                           -- A_Generic_Package_Declaration    Same thing here
+                           | A_Generic_Package_Declaration   -- Elements from a generic are not visible outside
 
                            | A_Formal_Procedure_Declaration
                            | A_Formal_Function_Declaration
@@ -191,12 +192,12 @@ package body Framework.Symbol_Table is
                            | A_Package_Instantiation
                              =>
                            exit;
-                        when A_Package_Declaration
-                           | A_Generic_Package_Declaration
-                           | A_Protected_Type_Declaration
-                           | A_Single_Protected_Declaration
-                           =>
-                           if In_Private_Part then  -- These are not visible outside
+                        when A_Package_Declaration =>
+                           if Is_Part_Of (Symbol.Name, Private_Part_Declarative_Items (Symbol.Visibility_Scope)) then
+                              -- Elements from the private part are not visible outside the package
+                              if not Is_Nil (Corresponding_Body (Symbol.Visibility_Scope)) then
+                                 Symbol.Visibility_Scope := Corresponding_Body (Symbol.Visibility_Scope);
+                              end if;
                               exit;
                            end if;
                            Symbol.Visibility_Scope := Enclosing_Element (Symbol.Visibility_Scope);
@@ -204,6 +205,30 @@ package body Framework.Symbol_Table is
                               -- A package that was obtained by instantiation
                               Symbol.Visibility_Scope := Enclosing_Element (Symbol.Visibility_Scope);
                            end if;
+                        when A_Task_Type_Declaration
+                           | A_Protected_Type_Declaration
+                             =>
+                           if Is_Part_Of (Symbol.Name,
+                                          Private_Part_Items (Type_Declaration_View (Symbol.Visibility_Scope)))
+                           then
+                              -- Elements from the private part are not visible outside the package
+                              -- Tasks and protected always have a body
+                              Symbol.Visibility_Scope := Corresponding_Body (Symbol.Visibility_Scope);
+                              exit;
+                           end if;
+                           Symbol.Visibility_Scope := Enclosing_Element (Symbol.Visibility_Scope);
+                        when A_Single_Task_Declaration
+                           | A_Single_Protected_Declaration
+                           =>
+                           if Is_Part_Of (Symbol.Name,
+                                          Private_Part_Items (Object_Declaration_View (Symbol.Visibility_Scope)))
+                           then
+                              -- Elements from the private part are not visible outside the package
+                              -- Tasks and protected always have a body
+                              Symbol.Visibility_Scope := Corresponding_Body (Symbol.Visibility_Scope);
+                              exit;
+                           end if;
+                           Symbol.Visibility_Scope := Enclosing_Element (Symbol.Visibility_Scope);
                         when A_Formal_Package_Declaration
                            | A_Formal_Package_Declaration_With_Box
                              =>
