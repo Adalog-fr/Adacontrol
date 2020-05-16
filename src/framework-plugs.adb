@@ -184,7 +184,7 @@ package body Framework.Plugs is
    procedure Exit_Scope (Element : in Asis.Element) is
    begin
       Rules.Max_Nesting.            Process_Scope_Exit (Element);
-      Rules.No_Operator_Usage.      Process_Scope_Exit;
+      Rules.No_Operator_Usage.      Process_Scope_Exit (Element);
       Rules.Object_Declarations.    Process_Scope_Exit;
       Rules.Reduceable_Scope.       Process_Scope_Exit (Element);
       Rules.Statements.             Process_Scope_Exit (Element);

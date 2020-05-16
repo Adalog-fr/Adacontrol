@@ -192,7 +192,7 @@ package body Rules.No_Operator_Usage is
    begin
       -- Call Process_Scope_Exit to handle types declared in library package specifications
       -- (i.e. we are somehow exiting from scope 0)
-      Process_Scope_Exit;
+      Process_Scope_Exit (Asis.Nil_Element);
    end Finalize;
 
    ------------------
@@ -241,14 +241,13 @@ package body Rules.No_Operator_Usage is
       Rules_Manager.Enter (Rule_Id);
 
       Good_Def := Definition;
-
       -- Get rid of derived types
       if Type_Kind (Good_Def) = A_Derived_Type_Definition then
          Good_Def := Type_Declaration_View (Corresponding_Root_Type (Good_Def));
       end if;
 
       Kind := Type_Kind (Good_Def);
-      if Kind not in A_Signed_Integer_Type_Definition .. A_Modular_Type_Definition then
+      if Kind not in Integer_Kinds then
          return;
       end if;
 
@@ -503,14 +502,28 @@ package body Rules.No_Operator_Usage is
 
    procedure Report_All is new Type_Usage.On_Every_Entity_From_Scope (Report_One);
 
-   procedure Process_Scope_Exit is
-      use Asis;                  --## Rule line off UNNECESSARY_USE_CLAUSE REDUCEABLE_SCOPE ## Required for Gela-ASIS
+   procedure Process_Scope_Exit (Scope : Asis.Declaration) is
+      use Asis, Asis.Declarations, Asis.Elements;
       use Framework.Symbol_Table;
    begin
       if Rule_Used = 0 then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
+
+      if not Is_Nil (Scope) then   -- Nil when finalizing
+         -- Process at scope exit of body if any. Only (non-generic) packages have an optional body
+         if Declaration_Kind (Scope) in A_Procedure_Declaration        | A_Function_Declaration
+                                      | A_Single_Task_Declaration      | A_Task_Type_Declaration
+                                      | A_Single_Protected_Declaration | A_Protected_Type_Declaration
+                                      | A_Generic_Declaration
+         then
+            return;
+         end if;
+         if Declaration_Kind (Scope) = A_Package_Declaration and then not Is_Nil (Corresponding_Body (Scope)) then
+            return;
+         end if;
+      end if;
 
       Report_All (Visibility_Scope);
    end Process_Scope_Exit;

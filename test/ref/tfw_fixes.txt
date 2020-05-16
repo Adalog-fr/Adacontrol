@@ -31,7 +31,6 @@ tfw_fixes.ads:18:19: Replace:18:31
 tfw_fixes.ads:19:13: Error: STYLE: Wrong casing of ""aNd"", should be ""and""
 tfw_fixes.ads:19:13: Replace:19:17
 !"and"
-tfw_fixes.ads:18:4: Error: REDUCEABLE_SCOPE: X is not used
 tfw_fixes.adb:1:1: Found: WITH_CLAUSES: With clause uses multiple names
 tfw_fixes.adb:1:1: Replace:1:58
 !with Ada.Text_IO;
@@ -88,6 +87,8 @@ tfw_fixes.adb:49:10: Found: SIMPLIFIABLE_STATEMENTS: unreachable code after this
 tfw_fixes.adb:50:10: Delete:51:14
 tfw_fixes.adb:53:7: Found: SIMPLIFIABLE_STATEMENTS: while loop is never executed
 tfw_fixes.adb:53:7: Delete:55:15
+tfw_fixes.ads:19:13: Error: REDUCEABLE_SCOPE: "aNd" is not used
+tfw_fixes.ads:18:4: Error: REDUCEABLE_SCOPE: X is not used
 tfw_fixes.adb:6:14: Error: REDUCEABLE_SCOPE: Console_Log is not used
 tfw_fixes.ads:6:5: Error: REDUCEABLE_SCOPE: "use" clause for Xfw_Fixes.Child is not necessary
 tfw_fixes.ads:6:1: Delete:6:20
@@ -109,5 +110,4 @@ tfw_fixes.adb:2:6: Delete:2:19
 tfw_fixes.ads:1:19: Found: WITH_CLAUSES: Unnecessary with clause for "Ada.Strings.Unbounded" (possible use in child units)
 tfw_fixes.ads:2:1: Delete:2:21
 tfw_fixes.ads:1:17: Delete:1:39
-tfw_fixes.ads:19:13: Error: REDUCEABLE_SCOPE: "aNd" is not used
 tfw_fixes.ads:11:14: Error: REDUCEABLE_SCOPE: Declaration of Hello can be moved into package body
