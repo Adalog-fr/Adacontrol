@@ -37,6 +37,7 @@ with
    Asis.Declarations,
    Asis.Definitions,
    Asis.Elements,
+   Asis.Exceptions,
    Asis.Expressions,
    Asis.Statements;
 
@@ -81,9 +82,10 @@ package body Framework.Object_Tracker is
    -- When a path with a condition is entered (if path, case path, while loop statement), a new value is pushed
    -- with the current condition. The value is intersected with the current condition.
    --
-   -- When a variable is assigned (including [in] out parameters), the assigned value is intersected with the
-   -- declaration condition. If this is the first assignment in this path, other assigned values in enclosing
-   -- paths become "unknown", since a path has other parallel paths that may (or not) change the variable.
+   -- When a variable is assigned (including [in] out parameters and initializatin), the assigned value is
+   -- intersected with the declaration condition. If this is the first assignment in this path, other assigned
+   -- values in enclosing paths become "unknown", since a path has other parallel paths that may (or not)
+   -- change the variable.
    --
    -- There is a special issue with loops, since any variable modified in the body of the loop becomes "unknown"
    -- from the start of the loop. This is also true for exception handlers for all tracked variables, or statements
@@ -97,7 +99,8 @@ package body Framework.Object_Tracker is
    -- statements is split in two, Process_Outer_Statement is called before rules plug-ins for the statement,
    -- and Process_Statement is called after.
 
-   -- Descriptor of the possible values of a discrete type
+
+   -- Descriptor of the possible values of a discrete type:
    type Value_Descr is
       record
          Kind             : Content_Kinds;
@@ -108,7 +111,7 @@ package body Framework.Object_Tracker is
          Assigned_Min     : Extended_Biggest_Int;
          Assigned_Max     : Extended_Biggest_Int;
       end record;
-   Untracked_Descr : constant Value_Descr := (Kind   => Untracked, others => 0);
+   Untracked_Descriptor : constant Value_Descr := (Kind   => Untracked, others => 0);
 
    -- For discrete variables:
    type Simple_Variable_Descr is
@@ -140,6 +143,25 @@ package body Framework.Object_Tracker is
    package Type_Table is new Framework.Symbol_Table.Data_Access (Object_Value_Set);
 
    Intrinsically_Unknown_Paths : Element_Queues.Queue;
+
+   ------------------
+   -- Is_Trackable --
+   ------------------
+
+   function Is_Trackable (Var : Asis.Expression) return Boolean is
+      use Asis.Elements, Asis.Expressions;
+   -- An indexed component can be static, but we don't track it
+   -- => no indexing in any part of Var
+   begin
+      case Expression_Kind (Var) is
+         when An_Indexed_Component =>
+            return False;
+         when A_Selected_Component =>
+            return Is_Trackable (Prefix (Var));
+         when others =>
+            return Is_Static_Object (Var);
+      end case;
+   end Is_Trackable;
 
    ------------------------
    -- Discriminant_Index --
@@ -180,12 +202,13 @@ package body Framework.Object_Tracker is
      --    must be updated.
    is
       use Simple_Descr_List, Discriminated_Descr_List;
-      use Asis.Elements;
+      use Asis.Elements, Asis.Expressions;
 
       Simple_Queue        : Simple_Descr_List.Queue;
       Discriminated_Queue : Discriminated_Descr_List.Queue;
 
-      Good_Var            : constant Asis.Element := Ultimate_Name (Var);
+      Good_Var            : Asis.Element := Ultimate_Name (Var);
+      Good_Discr          : Asis.Name    := Discr;
       Value               : Value_Descr;
       Var_Path            : Asis.Element;
       Path_Assigned       : Boolean;
@@ -193,7 +216,15 @@ package body Framework.Object_Tracker is
       Imin                : Extended_Biggest_Int := Min;
       Imax                : Extended_Biggest_Int := Max;
    begin
-      if Is_Nil (Discr) then
+      if Is_Nil (Good_Discr)
+        and then Expression_Kind (Var) = A_Selected_Component
+        and then Declaration_Kind (Corresponding_Name_Declaration (Selector (Var))) = A_Discriminant_Specification
+      then
+         Good_Discr := Selector (Var);
+         Good_Var   := Ultimate_Name (Prefix (Var));
+      end if;
+
+      if Is_Nil (Good_Discr) then
          Simple_Queue := Simple_Object_Table.Fetch (Good_Var,
                                                     Default => Simple_Descr_List.Empty_Queue);
          if Is_Empty (Simple_Queue) then
@@ -217,7 +248,7 @@ package body Framework.Object_Tracker is
          declare
             Element : constant Discriminated_Variable_Descr := Fetch (First (Discriminated_Queue));
          begin
-            Discr_Index   := Discriminant_Index (Element.Discriminants, Discr);
+            Discr_Index   := Discriminant_Index (Element.Discriminants, Good_Discr);
             Value         := Element.Discriminants (Discr_Index).Value;
             Var_Path      := Element.Attached_Path;
             Path_Assigned := Element.Assigned_In_Path and Is_Equal (For_Path, Var_Path);
@@ -263,7 +294,7 @@ package body Framework.Object_Tracker is
             Value.Constraint_Max := Value.Declaration_Max;
       end case;
 
-      if Is_Nil (Discr) then
+      if Is_Nil (Good_Discr) then
          if Is_Equal (For_Path, Var_Path) then
             Replace (First (Simple_Queue), (For_Path, Path_Assigned or Target = Assigned, Value));
          else
@@ -287,7 +318,7 @@ package body Framework.Object_Tracker is
       if Target = Assigned and not Path_Assigned then
          -- First assignment to this variable in this path => assignments in all enclosing paths become unknown
          -- We have updated the queue above, therefore First (Simple_Queue/Discriminated_Queue) is the current path
-         if Is_Nil (Discr) then
+         if Is_Nil (Good_Discr) then
             declare
                Curs        : Simple_Descr_List.Cursor := Next (First (Simple_Queue));
                Current_Var : Simple_Variable_Descr;
@@ -307,17 +338,10 @@ package body Framework.Object_Tracker is
          else
             declare
                Curs        : Discriminated_Descr_List.Cursor := Next (First (Discriminated_Queue));
-               Current_Var : Discriminated_Variable_Descr  := Fetch (Curs);
-               -- Get the first element to dimension Table, all tables have the same size
-               -- First (Table_Queue) is the current path
+               Current_Var : Discriminated_Variable_Descr    := Fetch (Curs);
+               -- Get the first element to dimension Current_Var.Discriminants, all tables have the same size
             begin
-               Current_Var.Assigned_In_Path := True;
-               Replace (Curs, Current_Var);
-
-               Curs := Next (Curs);
-               while Has_Element (Curs) loop
-                  Current_Var := Fetch (Curs);
-
+               loop
                   declare
                      Current_Discr_Val : Value_Descr renames Current_Var.Discriminants (Discr_Index).Value;
                   begin
@@ -327,15 +351,16 @@ package body Framework.Object_Tracker is
                      Current_Discr_Val.Constraint_Max := Current_Discr_Val.Declaration_Max;
                   end;
 
-                  Current_Var.Assigned_In_Path := True;
                   Replace (Curs, Current_Var);
                   Curs := Next (Curs);
+                  exit when not Has_Element (Curs);
+                  Current_Var := Fetch (Curs);
                end loop;
             end;
          end if;
       end if;
 
-      if Is_Nil (Discr) then
+      if Is_Nil (Good_Discr) then
          Simple_Object_Table.Store (Good_Var, Simple_Queue);
       else
          Discriminated_Object_Table.Store (Good_Var, Discriminated_Queue);
@@ -364,6 +389,7 @@ package body Framework.Object_Tracker is
             if Operator_Kind (Op) not in Relational_Operators then  -- Including Not_An_Operator
                return;
             end if;
+
             Params := Actual_Expressions (Cond);
             if Is_Static_Object (Params (1)) then
                Var  := Params (1);
@@ -373,6 +399,9 @@ package body Framework.Object_Tracker is
                Expr := Params (1);
             else
                -- No simple variable in sight
+               return;
+            end if;
+            if not Is_Trackable (Var) then
                return;
             end if;
 
@@ -391,7 +420,8 @@ package body Framework.Object_Tracker is
                      end if;
                   when An_Identifier =>
                      if Declaration_Kind (Corresponding_Name_Declaration (Var))
-                        not in A_Variable_Declaration | A_Constant_Declaration | A_Loop_Parameter_Specification
+                       not in A_Variable_Declaration | A_Constant_Declaration | A_Parameter_Specification
+                            | A_Loop_Parameter_Specification
                      then
                         return;
                      end if;
@@ -436,7 +466,7 @@ package body Framework.Object_Tracker is
             end case;
          when An_In_Membership_Test =>
             Var := Membership_Test_Expression (Cond);
-            if not Is_Static_Object (Var) then
+            if not Is_Trackable (Var) then
                return;
             end if;
 
@@ -455,7 +485,8 @@ package body Framework.Object_Tracker is
                      end if;
                   when An_Identifier =>
                      if Declaration_Kind (Corresponding_Name_Declaration (Var))
-                        not in A_Variable_Declaration | A_Constant_Declaration | A_Loop_Parameter_Specification
+                        not in A_Variable_Declaration | A_Constant_Declaration | A_Parameter_Specification
+                             | A_Loop_Parameter_Specification
                      then
                         return;
                      end if;
@@ -610,12 +641,32 @@ package body Framework.Object_Tracker is
       Current_Unit         : Asis.Declaration;
       Good_Path            : Asis.Element := Path;
       Is_Discriminated_Var : Boolean;
-   begin
+
+      procedure Make_Discriminants_Unknown (Of_Var : Asis.Expression) is
+      -- make the discriminants unknown
+      -- TBSL: keep the discriminants if the variable is constrained
+         use Discriminated_Descr_List;
+         LHS_Queue : constant Queue := Discriminated_Object_Table.Fetch (Of_Var);
+         LHS       : constant Discriminated_Variable_Descr := Fetch (First (LHS_Queue));
+      begin
+         for D : Discriminant_Descr of LHS.Discriminants loop
+            Update_Variable (Good_Path, Good_Var, D.Discrim_Name,
+                             Min    => Not_Static,
+                             Max    => Not_Static,
+                             Target => Assigned);
+         end loop;
+      end Make_Discriminants_Unknown;
+
+   begin   -- Process_Assignment
       if Expression_Kind (Var) in An_Identifier | A_Selected_Component then
          Good_Var := Ultimate_Name (Var);
          if Is_Nil (Good_Var)  -- Name includes a dereference
-           or else Declaration_Kind (Corresponding_Name_Declaration (Good_Var)) = A_Component_Declaration
+           or else Declaration_Kind (Corresponding_Name_Declaration (Good_Var))
+                   in A_Component_Declaration | A_Parameter_Specification | A_Constant_Declaration
          then
+            -- We don't track regular components, and we know nothing about the value of a formal parameter
+            -- Normally, Process_Assignment should not be called on constants, but this can happen for
+            -- constants given as actual parameters to a dispatching or attribute procedure call.
             return;
          end if;
 
@@ -664,13 +715,14 @@ package body Framework.Object_Tracker is
                      RHS       : constant Discriminated_Variable_Descr := Fetch (First (RHS_Queue));
                   begin
                      if Is_Equal (LHS.Attached_Path, RHS.Attached_Path) then
-                        -- Just check the first one, all discriminants have the same path.
                         Replace (First (LHS_Queue), RHS);
                      else
                         Prepend (LHS_Queue, RHS);
                      end if;
-                        Discriminated_Object_Table.Store (Good_Var, LHS_Queue);
+                     Discriminated_Object_Table.Store (Good_Var, LHS_Queue);
                   end;
+               else
+                  Make_Discriminants_Unknown (Good_Var);
                end if;
             when A_Record_Aggregate =>
                declare
@@ -692,20 +744,7 @@ package body Framework.Object_Tracker is
                   end loop;
                end;
             when others =>
-               -- make the discriminants unknown
-               -- TBSL: keep the discriminants if the variable is constrained
-               declare
-                  use Discriminated_Descr_List;
-                  LHS_Queue : constant Queue := Discriminated_Object_Table.Fetch (Good_Var);
-                  LHS       : constant Discriminated_Variable_Descr := Fetch (First (LHS_Queue));
-               begin
-                  for D : Discriminant_Descr of LHS.Discriminants loop
-                     Update_Variable (Good_Path, Good_Var, D.Discrim_Name,
-                                      Min    => Not_Static,
-                                      Max    => Not_Static,
-                                      Target => Assigned);
-                  end loop;
-               end;
+               Make_Discriminants_Unknown (Good_Var);
          end case;
 
       else   -- Not a discriminated variable
@@ -721,11 +760,36 @@ package body Framework.Object_Tracker is
    -- Exported elements
    --------------------------------------------------------------------------------
 
+   ----------------------
+   -- Expression_Value --
+   ----------------------
+
+   function Expression_Value (Expr : Asis.Expression; RM_Static : Boolean := False) return Object_Value_Set is
+      Def : constant Asis.Expression      := Corresponding_Expression_Type_Definition (Expr);
+      Val : constant Extended_Biggest_Int := Discrete_Static_Expression_Value(Expr, RM_Static => RM_Static);
+   begin
+      case Type_Category (Def, Follow_Derived => True) is
+         when An_Enumeration_Type =>
+            return (Kind => Enumerated, Imin => Val, Imax => Val);
+         when A_Signed_Integer_Type =>
+            return (Kind => Integer, Imin => Val, Imax => Val);
+         when A_Modular_Type =>
+            return (Kind => Modular, Imin => Val, Imax => Val);
+         when An_Access_Type =>
+            return (Kind => Pointer, Imin => Val, Imax => Val);
+         when others =>
+            return Unknown_Value (Untracked);
+      end case;
+   end Expression_Value;
+
    ------------------
    -- Object_Value --
    ------------------
 
-   function Object_Value (Var : Asis.Element) return Object_Value_Set is
+   function Object_Value (Var   : Asis.Element;
+                          Discr : Asis.Name := Nil_Element -- Nil_Element if no discriminant
+                         ) return Object_Value_Set
+   is
    -- Var is a variable name, or a selected name whose prefix is a variable and selector a discriminant
    -- Otherwise, returns Unknown_Value (Untracked)
       use Asis.Elements, Asis.Expressions;
@@ -733,6 +797,7 @@ package body Framework.Object_Tracker is
 
       Good_Decl       : Asis.Declaration;
       Good_Var        : Asis.Expression;
+      Good_Discr      : Asis.Name;
       Descriptor      : Value_Descr;
       Path_Assigned   : Boolean;
       Var_Path        : Asis.Element;
@@ -775,7 +840,11 @@ package body Framework.Object_Tracker is
          else  Extended_Biggest_Int'Max (Left, Right));
 
    begin  -- Object_Value
-      if Expression_Kind (Var) = A_Selected_Component then
+      if not Is_Nil (Discr) then
+         Is_Discriminant := True;
+         Good_Var        := Ultimate_Name (Var);
+         Good_Discr      := Discr;
+      elsif Expression_Kind (Var) = A_Selected_Component then
          if Declaration_Kind (Corresponding_Name_Declaration (Selector (Var))) /= A_Discriminant_Specification then
             -- Selected_Component, not discriminant => not tracked
             return Unknown_Value (Untracked);
@@ -783,6 +852,13 @@ package body Framework.Object_Tracker is
 
          Is_Discriminant := True;
          Good_Var        := Ultimate_Name (Prefix (Var));
+         Good_Discr      := Selector (Var);
+      else
+         Is_Discriminant := False;
+      end if;
+
+      -- TBSL: if the variable/discriminant is not tracked, return at least the constraint from the subtype
+      if Is_Discriminant then
          declare
             Var_Queue : constant Discriminated_Descr_List.Queue := Discriminated_Object_Table.Fetch
                                                                     (Good_Var,
@@ -796,12 +872,12 @@ package body Framework.Object_Tracker is
                Descr_Table : constant Discriminated_Variable_Descr := Fetch (First (Var_Queue));
             begin
                Descriptor    := Descr_Table.Discriminants (Discriminant_Index
-                                                           (Descr_Table.Discriminants, Selector (Var))).Value;
+                                                           (Descr_Table.Discriminants, Good_Discr)).Value;
                Path_Assigned := Descr_Table.Assigned_In_Path;
                Var_Path      := Descr_Table.Attached_Path;
             end;
          end;
-      else  -- Not a Selected_Component => Variable identifier
+      else  -- No discriminant => Variable identifier
          Is_Discriminant := False;
          Good_Var        := Ultimate_Name (Var);
          declare
@@ -824,6 +900,7 @@ package body Framework.Object_Tracker is
 
       Good_Decl := Corresponding_Name_Declaration (Good_Var);
       if Declaration_Kind (Good_Decl) not in A_Constant_Declaration | A_Loop_Parameter_Specification
+        and then Mode_Kind (Good_Decl) not in An_In_Mode | A_Default_In_Mode
         and then not Is_Equal (Enclosing_Program_Unit (Good_Decl), Enclosing_Program_Unit (Var))
       then
          -- A variable accessed from a different unit than where the variable is declared
@@ -843,6 +920,9 @@ package body Framework.Object_Tracker is
          Forced_Unknown := False;
       elsif Declaration_Kind (Good_Decl) in A_Constant_Declaration | A_Loop_Parameter_Specification then
          -- Not a variable anyway
+         Forced_Unknown := False;
+      elsif Mode_Kind (Good_Decl) in An_In_Mode | A_Default_In_Mode then
+         -- An "in" parameter
          Forced_Unknown := False;
       elsif Path_Assigned
         and then Is_Equal (Var_Path, Fetch (First (Intrinsically_Unknown_Paths)))
@@ -968,12 +1048,9 @@ package body Framework.Object_Tracker is
                      end if;
                      Good_Var := Ultimate_Name (Good_Var);
                   when others =>
-                     -- indexed variable, dereferences...
+                     -- including Not_An_Expression (Nil_Element from dereference), indexed variable
                      return;
                end case;
-               if Is_Nil (Good_Var) then -- Name includes a dereference
-                  return;
-               end if;
 
                Untrack_Variable (Good_Var);
             end loop;
@@ -1004,7 +1081,6 @@ package body Framework.Object_Tracker is
    -- Process_Object_Declaration --
    --------------------------------
 
-   -- TBSL: formal parameters (?)
    procedure Process_Object_Declaration (Decl : in Asis.Declaration) is
       use Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
 
@@ -1028,7 +1104,7 @@ package body Framework.Object_Tracker is
                Descriptor.Kind := Pointer;
             when others =>
                -- Not an elementary type, not tracked
-               return Untracked_Descr;
+               return Untracked_Descriptor;
          end case;
 
          case Descriptor.Kind is
@@ -1044,7 +1120,11 @@ package body Framework.Object_Tracker is
                      Descriptor.Declaration_Min := Range_Descriptor.Imin;
                      Descriptor.Declaration_Max := Range_Descriptor.Imax;
                   end if;
-               elsif Is_Nil (Subtype_Constraint (Obj_Def)) then
+               elsif Definition_Kind (Obj_Def) in A_Subtype_Indication
+                                                | A_Discrete_Subtype_Definition
+                                                | A_Discrete_Range
+                 and then Is_Nil (Subtype_Constraint (Obj_Def))
+               then
                   -- Get the bounds from the type
                   Range_Descriptor := Type_Table.Fetch (Subtype_Simple_Name (Obj_Def), Default => (Kind => Untracked));
                   if Range_Descriptor.Kind = Untracked then
@@ -1087,6 +1167,9 @@ package body Framework.Object_Tracker is
                   end if;
                elsif Trait_Kind (Obj_Def) = A_Null_Exclusion_Trait then
                   Descriptor.Declaration_Min := 1;
+               elsif Type_Kind (Obj_Def) = An_Access_Type_Definition then
+                  -- Named access type, no null exclusion
+                  Descriptor.Declaration_Min := 0;
                elsif Definition_Kind (Obj_Def) = An_Access_Definition then
                   -- Anonymous access type, no null exclusion
                   Descriptor.Declaration_Min := 0;
@@ -1123,7 +1206,9 @@ package body Framework.Object_Tracker is
          return Descriptor;
       end Build_Descriptor;
 
-      Def : Asis.Definition;
+      Def          : Asis.Definition;   -- TBSL Clean-up usage of Def
+      Subtype_Name : Asis.Expression;
+      Is_Parameter : Boolean;
    begin  -- Process_Object_Declaration
       case Declaration_Kind (Enclosing_Element (Enclosing_Program_Unit (Decl))) is
          when A_Package_Declaration | A_Generic_Package_Declaration | A_Package_Body_Declaration =>
@@ -1138,13 +1223,28 @@ package body Framework.Object_Tracker is
          return;
       end if;
 
-      Def := Object_Declaration_View (Decl);
-      if Definition_Kind (Def) not in A_Subtype_Indication | An_Access_Definition then
+      Def          := Object_Declaration_View (Decl);
+      Is_Parameter := Declaration_Kind (Decl) = A_Parameter_Specification;
+      if Is_Parameter then
+         if Declaration_Kind (Enclosing_Element (Decl))
+            not in A_Procedure_Body_Declaration | A_Function_Body_Declaration
+         then
+            -- Nothing to track in specifications.
+            return;
+         end if;
+         if Element_Kind (Def) = An_Expression then
+         -- Case of formal parameters: Object_Declaration_View returns a name, not a definition
+         -- (except for the case of access parameters, sigh...)
+            Def := Type_Declaration_View (Corresponding_Name_Declaration (Simple_Name (Strip_Attributes (Def))));
+         end if;
+      end if;
+
+      if Definition_Kind (Def) not in A_Type_Definition | A_Subtype_Indication | An_Access_Definition then
          -- Anonymous type => not discrete, no discriminant, but we still accept anonymous access types
          return;
       end if;
 
-      case Type_Category (Decl) is
+      case Type_Category (Decl, Follow_Derived => True) is
          when Discrete_Types | An_Access_Type =>
             for Name : Asis.Name of Names (Decl) loop
                Force_New_Evaluation;
@@ -1164,9 +1264,24 @@ package body Framework.Object_Tracker is
             -- Due to an ASIS bug, AdaControl crashes on discriminants of a task type
             -- TBSL: ignore until this is fixed
             return;
+         when A_Fixed_Point_Type
+            | A_Floating_Point_Type
+            | An_Array_Type
+            =>
+            -- We don't track these
+            return;
          when others =>
             null;
       end case;
+
+      -- Only discriminated types after this point
+
+      if Is_Parameter then
+         -- Case of formal parameters: Object_Declaration_View returns a name, not a definition
+         Subtype_Name := Object_Declaration_View (Decl);
+      else
+         Subtype_Name := Subtype_Simple_Name (Def);
+      end if;
 
       -- Not an elementary type, may be tracked if type has discriminants
       declare
@@ -1175,11 +1290,16 @@ package body Framework.Object_Tracker is
                                                                             (Corresponding_Name_Declaration
                                                                              (Simple_Name
                                                                               (Strip_Attributes
-                                                                               (Subtype_Simple_Name (Def))))));
-         Object_Constraint : constant Asis.Constraint := Subtype_Constraint (Object_Declaration_View (Decl));
-         Discr_Count       : Asis.ASIS_Natural := 0;
+                                                                               (Subtype_Name)))));
+         Object_Constraint   : constant Asis.Constraint := (if Is_Parameter
+                                                            then (if Definition_Kind (Def) = A_Type_Definition
+                                                                  then Nil_Element
+                                                                  else Subtype_Constraint (Def))
+                                                            else Subtype_Constraint (Object_Declaration_View (Decl)));
+         Discr_Count         : Asis.ASIS_Natural := 0;
+         Is_Formal_Parameter : constant Boolean := Declaration_Kind (Decl) = A_Parameter_Specification ;
       begin
-         if Is_Nil (Type_Discr_Part) then
+         if Is_Nil (Type_Discr_Part) or else Definition_Kind (Type_Discr_Part) = An_Unknown_Discriminant_Part then
             return;
          end if;
 
@@ -1205,8 +1325,11 @@ package body Framework.Object_Tracker is
                         -- Constraint from the type declaration
                         Var_Descr.Discriminants (Discr_Inx) := (First_Defining_Name (Discr_Name),
                                                                 Build_Descriptor
-                                                                  (Object_Declaration_View   (Discr_Decl),
-                                                                   Initialization_Expression (Discr_Decl)));
+                                                                  (Object_Declaration_View (Discr_Decl),
+                                                                   (if Is_Formal_Parameter
+                                                                    then Nil_Element
+                                                                    else Initialization_Expression (Discr_Decl)
+                                                                   )));
                      else
                         -- Constraint from the object declaration
                         declare
@@ -1226,12 +1349,16 @@ package body Framework.Object_Tracker is
 
                Prepend (Descr_Queue, Var_Descr);
                Discriminated_Object_Table.Store (Var_Name, Descr_Queue);
-               if not Is_Nil (Init_Expr) then
+               if not Is_Formal_Parameter and not Is_Nil (Init_Expr) then
+                  -- Don't consider initialization expression of formal parameters
                   Process_Assignment (Enclosing_Element (Decl), Var_Name, Init_Expr);
                end if;
             end;
          end loop;
       end;
+   exception
+      when Asis.Exceptions.ASIS_Failed =>   -- Safeguard for ASIS bugs
+         Utilities.Trace ("ASIS FAILED on", Decl);  --## Rule line off No_Trace
    end Process_Object_Declaration;
 
 
@@ -1248,34 +1375,35 @@ package body Framework.Object_Tracker is
          when An_If_Path | An_Elsif_Path =>
             Update_Condition (Condition_Expression (Path));
          when A_Case_Path =>
-            Var := Simple_Name (Case_Expression (Enclosing_Element (Path)));
+            Var := Case_Expression (Enclosing_Element (Path));
             while Expression_Kind (Var) in A_Type_Conversion | A_Qualified_Expression loop
                -- Don't underestimate people who qualify a type conversion of a type conversion...
                Var := Converted_Or_Qualified_Expression (Var);
             end loop;
 
-            -- An indexed component can be static, but we don't track it
-            if Expression_Kind (Var) /= An_Indexed_Component and then Is_Static_Object (Var) then
-               declare
-                  Choices     : constant Asis.Element_List := Case_Path_Alternative_Choices (Path);
-                  Bounds_List :          Extended_Biggest_Int_List (1 .. 2);
-                  Val         :          Extended_Biggest_Int;
-               begin
-                  -- We handle only simple ranges or value
-                  if Choices'Length = 1 then
-                     if Element_Kind (Choices (1)) = An_Expression then
-                        Val := Discrete_Static_Expression_Value (Choices (1));
-                        Update_Variable (Path, Var, Min => Val, Max => Val, Target => Constraint);
-                     elsif Definition_Kind (Choices (1)) = A_Constraint then
-                        Bounds_List := Discrete_Constraining_Values (Choices (1));
-                        Update_Variable (Path, Var,
-                                         Min    => Bounds_List (1),
-                                         Max    => Bounds_List (2),
-                                         Target => Constraint);
-                     end if;
-                  end if;
-               end;
+            if not Is_Trackable (Var) then
+               return;
             end if;
+
+            declare
+               Choices     : constant Asis.Element_List := Case_Path_Alternative_Choices (Path);
+               Bounds_List :          Extended_Biggest_Int_List (1 .. 2);
+               Val         :          Extended_Biggest_Int;
+            begin
+               -- We handle only simple ranges or value
+               if Choices'Length = 1 then
+                  if Element_Kind (Choices (1)) = An_Expression then
+                     Val := Discrete_Static_Expression_Value (Choices (1));
+                     Update_Variable (Path, Var, Min => Val, Max => Val, Target => Constraint);
+                  elsif Definition_Kind (Choices (1)) = A_Constraint then
+                     Bounds_List := Discrete_Constraining_Values (Choices (1));
+                     Update_Variable (Path, Var,
+                                      Min    => Bounds_List (1),
+                                      Max    => Bounds_List (2),
+                                      Target => Constraint);
+                  end if;
+               end if;
+            end;
          when others =>
             null;
       end case;
@@ -1367,16 +1495,25 @@ package body Framework.Object_Tracker is
             Process_For_Loop;
          when A_Procedure_Call_Statement | An_Entry_Call_Statement =>
             -- All variables corresponding to [in] out parameters become Unknown
-            if Is_Dispatching_Call (Stmt) or Expression_Kind (Called_Name (Stmt)) = An_Attribute_Reference then
-               -- TBSL: we cannot get the formal name of a dispatching operation or attribute. False positive?
-               return;
-            end if;
+            -- Special cases where we cannot determine the mode of parameters:
+            -- - Attributes.
+            --   There is only one attribute with an out parameter, S'Read
+            --   The other parameter is an access to stream, it doesn't harm much (possible false negative)
+            --   to consider that it also becomes unknown => Process all parameters
+            -- - Dipatching calls
+            --   A bit more annoying, but it is safer to assume that all (variable) parameters become unknown
 
             declare
-               Actuals : constant Asis.Parameter_Specification_List := Call_Statement_Parameters (Stmt);
+               No_Mode_Check : constant Boolean := Expression_Kind (Called_Name (Stmt)) = An_Attribute_Reference
+                                                   or else Is_Dispatching_Call (Stmt);
+               Actuals       : constant Asis.Parameter_Specification_List := Call_Statement_Parameters (Stmt);
+               -- No need to use a normalized associatin for actuals, since [in] out parameters are always
+               -- provided explicitely
             begin
                for Inx_Param in Actuals'Range loop
-                  if Mode_Kind (Enclosing_Element (Formal_Name (Stmt, Inx_Param))) in An_Out_Mode | An_In_Out_Mode
+                  if No_Mode_Check
+                    or else Mode_Kind (Enclosing_Element (Formal_Name (Stmt, Inx_Param))) in An_Out_Mode
+                                                                                           | An_In_Out_Mode
                   then
                      Process_Assignment (Path => Enclosing_Element (Stmt),
                                          Var  => Actual_Parameter (Actuals (Inx_Param)),

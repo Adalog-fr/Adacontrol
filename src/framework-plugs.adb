@@ -55,6 +55,7 @@ with
   Rules.Improper_Initialization,
   Rules.Instantiations,
   Rules.Insufficient_Parameters,
+  Rules.Known_Exceptions,
   Rules.Local_Access,
   Rules.Local_Hiding,
   Rules.Max_Blank_Lines,
@@ -801,11 +802,18 @@ package body Framework.Plugs is
                   Rules.Simplifiable_Expressions. Process_Conversion (Element);
 
                when An_Indexed_Component =>
-                  Rules.Non_Static. Process_Index_Expression (Element);
-                  Rules.Statements. Process_Index_Expression (Element);
+                  Rules.Known_Exceptions. Process_Index_Expression (Element);
+                  Rules.Non_Static.       Process_Index_Expression (Element);
+                  Rules.Statements.       Process_Index_Expression (Element);
+
+               when A_Selected_Component =>
+                  Rules.Known_Exceptions. Process_Selected_Component (Element);
 
                when An_If_Expression =>
                   Rules.Simplifiable_Expressions.Process_If_Expression (Element);
+
+               when An_Explicit_Dereference =>
+                  Rules.Known_Exceptions.Process_Dereference (Element);
 
                when others =>
                   null;

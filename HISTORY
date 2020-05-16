@@ -11,6 +11,10 @@ Possibility to define any custom output format
 Add data flow analysis, to extend cases that are
    statically determinable, improves several rules.
 
+New rule:
+---------
+Known_Exceptions
+
 Changes to existing rules:
 --------------------------
 Abnormal_Function_Returrn

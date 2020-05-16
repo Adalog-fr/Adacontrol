@@ -74,9 +74,14 @@ package Framework.Object_Tracker is
                       (Kind => Pointer,    Imin | Imax => Thick_Queries.Not_Static),
                       (Kind => Untracked));
 
+   function Expression_Value (Expr : Asis.Expression; RM_Static : Boolean := False) return Object_Value_Set;
+   -- Evaluates Expr, and return the value in Imin and Imax
+   -- Kind is set according to Expr
 
-   function Object_Value (Var : Asis.Element) return Object_Value_Set;
+   function Object_Value (Var : Asis.Element; Discr : Asis.Name := Asis.Nil_Element) return Object_Value_Set;
    -- Provides the range of possible values of Var at the current place, or Unknown.
+   -- If Descr is not Nil_Element, returns the value of the corresponding discriminant of Var
+   -- Alternatively, Var may be a selected component whose selector is a discriminant
    --
    -- Appropriate Element_Kinds:
    --   An_Expression
@@ -100,7 +105,7 @@ package Framework.Object_Tracker is
    procedure Process_Type_Declaration (Decl : in Asis.Declaration);
 
    procedure Process_Object_Declaration (Decl : in Asis.Declaration);
-   -- To be called for each object (constant or variable, but not formal parameter TBSL) declaration,
+   -- To be called for each object (constant, variable, loop parameter, or formal parameter) declaration,
 
    procedure Process_Instantiation (Inst : Asis.Declaration);
 

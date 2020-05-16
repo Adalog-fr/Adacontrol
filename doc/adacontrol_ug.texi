@@ -2318,7 +2318,7 @@ Standard.Integer'Image               -- The 'Image function on Integer
 all 'Image                           -- All 'Image functions
 @end example
 
-@node  Report messages, , Parameters, Controls
+@node  Report messages, Statistics, Parameters, Controls
 @subsection Report messages
 A report message (except for the final report of ``count'') comprises
 the following elements:
@@ -2954,6 +2954,7 @@ static, we use the term @i{RM_Static}.
 * Improper_Initialization::
 * Instantiations::
 * Insufficient_Parameters::
+* Known_Exceptions::
 * Local_Access::
 * Local_Hiding::
 * Max_Blank_Lines::
@@ -6310,7 +6311,7 @@ renamings of @code{Ada.Unchecked_Conversion} and
 to specify explicitely both forms if you want to make sure that the
 corresponding generics are not instantiated.
 
-@node  Insufficient_Parameters, Local_Access, Instantiations, Rules reference
+@node  Insufficient_Parameters, Known_Exceptions, Instantiations, Rules reference
 @section Insufficient_Parameters
 This rule controls calls to subprograms and entries where the values
 of parameters does not provide sufficient information to the reader to
@@ -6356,7 +6357,42 @@ parameters according to the number of parameters with the rule
 Note also that this rules applies only to calls, while
 @code{positional_associations} applies to all forms of associations.
 
-@node Local_Access, Local_Hiding, Insufficient_Parameters, Rules reference
+@node Known_Exceptions, Local_Access, Insufficient_Parameters, Rules reference
+@section Known_Exceptions
+This rule controls a number of cases where it can be determined that a
+construct is certain to raise an exception.
+
+@subsection Syntax
+@example
+<control_kind> known_exceptions [(<subrule> @{,<subrule>@})];
+<subrule>   ::= access | discriminant | index
+@end example
+
+@subsection Action
+The parameters are subrule keywords:
+@itemize
+@item
+``access'': controls dereferences (explicit and implicit) where the
+access value is statically known to be @code{@b{null}}.
+@item
+``discriminant'': controls access to record components that depend on a
+discriminant, and where the governing discriminant is statically known
+to have an incompatible value.
+@item
+``index'': controls indexings where the index value is statically known
+to be out of range.
+@end itemize
+Without parameters, all kinds of known exceptions are
+controlled.
+
+This rule can be given at most once for each subrule.
+
+@subsection Tip
+The error message indicates the failing value (and the failing discriminant name for the
+``discriminant'' subrule). Note that if the value is from an enumerated type (including character types),
+the value given is the integer position value (i.e. the @code{'Pos}).
+
+@node Local_Access, Local_Hiding, Known_Exceptions, Rules reference
 @section Local_Access
 This rule controls the taking of access values (through the  @code{'Access},
  @code{'Unchecked_Access}, or the  GNAT specific  @code{'Unrestricted_Access}

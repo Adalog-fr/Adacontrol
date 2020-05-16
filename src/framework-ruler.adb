@@ -821,6 +821,7 @@ package body Framework.Ruler is
 
                when A_Constant_Declaration
                   | A_Variable_Declaration
+                  | A_Parameter_Specification
                   =>
                   Framework.Plugs.         Pre_Procedure (Element);
                   Framework.Specific_Plugs.Pre_Procedure (Element);
