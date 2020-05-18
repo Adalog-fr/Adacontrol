@@ -144,6 +144,10 @@ package body Framework.Object_Tracker is
 
    Intrinsically_Unknown_Paths : Element_Queues.Queue;
 
+   --------------------------------------------------------------------------------
+   -- Internal utilities
+   --------------------------------------------------------------------------------
+
    ------------------
    -- Is_Trackable --
    ------------------
@@ -632,136 +636,6 @@ package body Framework.Object_Tracker is
       end if;
    end Untrack_Variable;
 
-   ------------------------
-   -- Process_Assignment --
-   ------------------------
-
-   procedure Process_Assignment (Path : Asis.Element; Var : Asis.Element; Expr : Asis.Expression) is
-   -- Appropriate Element_Kinds of Var:
-   --   - An_Expression
-   --   - A_Defining_Name
-   -- Note: Var cannot be a reference to a discriminant (even through renamings), since discriminants
-   --       are not allowed as LHS of assignments.
-      use Asis.Declarations, Asis.Elements, Asis.Expressions;
-      Good_Var             : Asis.Expression;
-      Current_Unit         : Asis.Declaration;
-      Good_Path            : Asis.Element := Path;
-      Is_Discriminated_Var : Boolean;
-
-      procedure Make_Discriminants_Unknown (Of_Var : Asis.Expression) is
-      -- make the discriminants unknown
-      -- TBSL: keep the discriminants if the variable is constrained
-         use Discriminated_Descr_List;
-         LHS_Queue : constant Queue := Discriminated_Object_Table.Fetch (Of_Var);
-         LHS       : constant Discriminated_Variable_Descr := Fetch (First (LHS_Queue));
-      begin
-         for D : Discriminant_Descr of LHS.Discriminants loop
-            Update_Variable (Good_Path, Good_Var, D.Discrim_Name,
-                             Min    => Not_Static,
-                             Max    => Not_Static,
-                             Target => Assigned);
-         end loop;
-      end Make_Discriminants_Unknown;
-
-   begin   -- Process_Assignment
-      if Expression_Kind (Var) in An_Identifier | A_Selected_Component then
-         Good_Var := Ultimate_Name (Var);
-         if Is_Nil (Good_Var)  -- Name includes a dereference
-           or else Declaration_Kind (Corresponding_Name_Declaration (Good_Var))
-                   in A_Component_Declaration | A_Parameter_Specification | A_Constant_Declaration
-         then
-            -- We don't track regular components, and we know nothing about the value of a formal parameter
-            -- Normally, Process_Assignment should not be called on constants, but this can happen for
-            -- constants given as actual parameters to a dispatching or attribute procedure call.
-            return;
-         end if;
-
-         Current_Unit := Path;
-         if Element_Kind (Current_Unit) in A_Statement | A_Path | An_Exception_Handler then
-            Current_Unit := Enclosing_Program_Unit (Path);
-         else
-            -- It is already a program unit
-            Current_Unit := Names (Current_Unit) (1);
-         end if;
-         if not Is_Equal (Enclosing_Program_Unit (Corresponding_Name_Declaration (Good_Var)), Current_Unit) then
-            -- Modified from nested unit => Give up
-            Untrack_Variable (Good_Var);
-            return;
-         end if;
-      elsif Element_Kind (Var) = A_Defining_Name then
-         Good_Var := Ultimate_Name (Var);
-      else
-         return;   -- indexed variable, dereference, function call...
-      end if;
-
-      if Simple_Object_Table.Is_Present (Good_Var) then
-         Is_Discriminated_Var := False;
-      elsif Discriminated_Object_Table.Is_Present (Good_Var) then
-         Is_Discriminated_Var := True;
-      else  -- not tracked
-         return;
-      end if;
-
-      -- Blocks have no effect on tracking, attach the update to the innermost existing path
-      while Statement_Kind (Good_Path) = A_Block_Statement loop
-         Good_Path := Enclosing_Element (Good_Path);
-      end loop;
-
-      if Is_Discriminated_Var then
-         -- Simulate an assignment to every discriminant
-         case Expression_Kind (Expr) is
-            when An_Identifier | A_Selected_Component =>
-               if Discriminated_Object_Table.Is_Present (Ultimate_Name (Expr)) then
-                  -- Variable_1 := Variable_2;
-                  declare
-                     use Discriminated_Descr_List;
-                     LHS_Queue :          Queue := Discriminated_Object_Table.Fetch (Good_Var);
-                     RHS_Queue : constant Queue := Discriminated_Object_Table.Fetch (Ultimate_Name (Expr));
-                     LHS       : constant Discriminated_Variable_Descr := Fetch (First (LHS_Queue));
-                     RHS       : constant Discriminated_Variable_Descr := Fetch (First (RHS_Queue));
-                  begin
-                     if Is_Equal (LHS.Attached_Path, RHS.Attached_Path) then
-                        Replace (First (LHS_Queue), RHS);
-                     else
-                        Prepend (LHS_Queue, RHS);
-                     end if;
-                     Discriminated_Object_Table.Store (Good_Var, LHS_Queue);
-                  end;
-               else
-                  Make_Discriminants_Unknown (Good_Var);
-               end if;
-            when A_Record_Aggregate =>
-               declare
-                  use Discriminated_Descr_List;
-                  LHS_Queue  : constant Queue                        := Discriminated_Object_Table.Fetch (Good_Var);
-                  LHS        : constant Discriminated_Variable_Descr := Fetch (First (LHS_Queue));
-                  Rec_Assocs : constant Asis.Association_List := Record_Component_Associations (Expr,
-                                                                                                Normalized => True);
-               begin
-                  for D in LHS.Discriminants'Range loop
-                     -- With a normalized association, discriminants are the first components Rec_Assocs,
-                     -- and in the same order as LHS
-                     Update_Variable (Good_Path, Good_Var, LHS.Discriminants (D).Discrim_Name,
-                                      Min    => Discrete_Static_Expression_Value (Component_Expression (Rec_Assocs (D)),
-                                                                                  Minimum),
-                                      Max    => Discrete_Static_Expression_Value (Component_Expression (Rec_Assocs (D)),
-                                                                                  Maximum),
-                                      Target => Assigned);
-                  end loop;
-               end;
-            when others =>
-               Make_Discriminants_Unknown (Good_Var);
-         end case;
-
-      else   -- Not a discriminated variable
-         Update_Variable (Good_Path, Good_Var,
-                          Min    => Discrete_Static_Expression_Value (Expr, Minimum),
-                          Max    => Discrete_Static_Expression_Value (Expr, Maximum),
-                          Target => Assigned);
-      end if;
-   end Process_Assignment;
-
-
    --------------------------------------------------------------------------------
    -- Exported elements
    --------------------------------------------------------------------------------
@@ -1018,6 +892,135 @@ package body Framework.Object_Tracker is
    --------------------------------------------------------------------------------
    -- Ruler plugs
    --------------------------------------------------------------------------------
+
+   ------------------------
+   -- Process_Assignment --
+   ------------------------
+
+   procedure Process_Assignment (Path : Asis.Element; Var : Asis.Element; Expr : Asis.Expression) is
+   -- Appropriate Element_Kinds of Var:
+   --   - An_Expression
+   --   - A_Defining_Name
+   -- Note: Var cannot be a reference to a discriminant (even through renamings), since discriminants
+   --       are not allowed as LHS of assignments.
+      use Asis.Declarations, Asis.Elements, Asis.Expressions;
+      Good_Var             : Asis.Expression;
+      Current_Unit         : Asis.Declaration;
+      Good_Path            : Asis.Element := Path;
+      Is_Discriminated_Var : Boolean;
+
+      procedure Make_Discriminants_Unknown (Of_Var : Asis.Expression) is
+      -- make the discriminants unknown
+      -- TBSL: keep the discriminants if the variable is constrained
+         use Discriminated_Descr_List;
+         LHS_Queue : constant Queue := Discriminated_Object_Table.Fetch (Of_Var);
+         LHS       : constant Discriminated_Variable_Descr := Fetch (First (LHS_Queue));
+      begin
+         for D : Discriminant_Descr of LHS.Discriminants loop
+            Update_Variable (Good_Path, Good_Var, D.Discrim_Name,
+                             Min    => Not_Static,
+                             Max    => Not_Static,
+                             Target => Assigned);
+         end loop;
+      end Make_Discriminants_Unknown;
+
+   begin   -- Process_Assignment
+      if Expression_Kind (Var) in An_Identifier | A_Selected_Component then
+         Good_Var := Ultimate_Name (Var);
+         if Is_Nil (Good_Var)  -- Name includes a dereference
+           or else Declaration_Kind (Corresponding_Name_Declaration (Good_Var))
+         in A_Component_Declaration | A_Parameter_Specification | A_Constant_Declaration
+         then
+            -- We don't track regular components, and we know nothing about the value of a formal parameter
+            -- Normally, Process_Assignment should not be called on constants, but this can happen for
+            -- constants given as actual parameters to a dispatching or attribute procedure call.
+            return;
+         end if;
+
+         Current_Unit := Path;
+         if Element_Kind (Current_Unit) in A_Statement | A_Path | An_Exception_Handler then
+            Current_Unit := Enclosing_Program_Unit (Path);
+         else
+            -- It is already a program unit
+            Current_Unit := Names (Current_Unit) (1);
+         end if;
+         if not Is_Equal (Enclosing_Program_Unit (Corresponding_Name_Declaration (Good_Var)), Current_Unit) then
+            -- Modified from nested unit => Give up
+            Untrack_Variable (Good_Var);
+            return;
+         end if;
+      elsif Element_Kind (Var) = A_Defining_Name then
+         Good_Var := Ultimate_Name (Var);
+      else
+         return;   -- indexed variable, dereference, function call...
+      end if;
+
+      if Simple_Object_Table.Is_Present (Good_Var) then
+         Is_Discriminated_Var := False;
+      elsif Discriminated_Object_Table.Is_Present (Good_Var) then
+         Is_Discriminated_Var := True;
+      else  -- not tracked
+         return;
+      end if;
+
+      -- Blocks have no effect on tracking, attach the update to the innermost existing path
+      while Statement_Kind (Good_Path) = A_Block_Statement loop
+         Good_Path := Enclosing_Element (Good_Path);
+      end loop;
+
+      if Is_Discriminated_Var then
+         -- Simulate an assignment to every discriminant
+         case Expression_Kind (Expr) is
+            when An_Identifier | A_Selected_Component =>
+               if Discriminated_Object_Table.Is_Present (Ultimate_Name (Expr)) then
+                  -- Variable_1 := Variable_2;
+                  declare
+                     use Discriminated_Descr_List;
+                     LHS_Queue :          Queue := Discriminated_Object_Table.Fetch (Good_Var);
+                     RHS_Queue : constant Queue := Discriminated_Object_Table.Fetch (Ultimate_Name (Expr));
+                     LHS       : constant Discriminated_Variable_Descr := Fetch (First (LHS_Queue));
+                     RHS       : constant Discriminated_Variable_Descr := Fetch (First (RHS_Queue));
+                  begin
+                     if Is_Equal (LHS.Attached_Path, RHS.Attached_Path) then
+                        Replace (First (LHS_Queue), RHS);
+                     else
+                        Prepend (LHS_Queue, RHS);
+                     end if;
+                     Discriminated_Object_Table.Store (Good_Var, LHS_Queue);
+                  end;
+               else
+                  Make_Discriminants_Unknown (Good_Var);
+               end if;
+            when A_Record_Aggregate =>
+               declare
+                  use Discriminated_Descr_List;
+                  LHS_Queue  : constant Queue                        := Discriminated_Object_Table.Fetch (Good_Var);
+                  LHS        : constant Discriminated_Variable_Descr := Fetch (First (LHS_Queue));
+                  Rec_Assocs : constant Asis.Association_List := Record_Component_Associations (Expr,
+                                                                                                Normalized => True);
+               begin
+                  for D in LHS.Discriminants'Range loop
+                     -- With a normalized association, discriminants are the first components Rec_Assocs,
+                     -- and in the same order as LHS
+                     Update_Variable (Good_Path, Good_Var, LHS.Discriminants (D).Discrim_Name,
+                                      Min    => Discrete_Static_Expression_Value (Component_Expression (Rec_Assocs (D)),
+                                        Minimum),
+                                      Max    => Discrete_Static_Expression_Value (Component_Expression (Rec_Assocs (D)),
+                                        Maximum),
+                                      Target => Assigned);
+                  end loop;
+               end;
+            when others =>
+               Make_Discriminants_Unknown (Good_Var);
+         end case;
+
+      else   -- Not a discriminated variable
+         Update_Variable (Good_Path, Good_Var,
+                          Min    => Discrete_Static_Expression_Value (Expr, Minimum),
+                          Max    => Discrete_Static_Expression_Value (Expr, Maximum),
+                          Target => Assigned);
+      end if;
+   end Process_Assignment;
 
    ---------------------
    -- Process_Handler --
