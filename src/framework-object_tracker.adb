@@ -554,7 +554,7 @@ package body Framework.Object_Tracker is
    -- Clear_Path --
    ----------------
 
-   procedure Clear_Path (Path : Asis.Element) is
+   procedure Clear_Path (Path : Asis.Element; Except_Constants : Boolean := False) is
    -- Exiting a path.
    -- Delete this path from all variables that mention it.
       use Symbol_Table;
@@ -562,12 +562,15 @@ package body Framework.Object_Tracker is
       procedure Clean_One_Simple_Variable (Entity      : in     Asis.Defining_Name;
                                            Value_Queue : in out Simple_Descr_List.Queue)
       is
-         pragma Unreferenced (Entity);
          use Asis.Elements;
          use Simple_Descr_List;
 
          Curs : constant Cursor := First (Value_Queue);
       begin
+         if Except_Constants and then Declaration_Kind (Enclosing_Element (Entity)) = A_Constant_Declaration then
+            return;
+         end if;
+
          -- Curs may be empty if the variable has already been cleaned due to a labeled statement
          if Has_Element (Curs) and then Is_Equal (Path, Fetch (Curs).Attached_Path) then
             -- The variable state has been modified in the current path, remove the path
@@ -580,12 +583,15 @@ package body Framework.Object_Tracker is
       procedure Clean_One_Discriminated_Variable (Entity      : in     Asis.Defining_Name;
                                                   Value_Queue : in out Discriminated_Descr_List.Queue)
       is
-         pragma Unreferenced (Entity);
          use Asis.Elements;
          use Discriminated_Descr_List;
 
          Curs : constant Cursor := First (Value_Queue);
       begin
+         if Except_Constants and then Declaration_Kind (Enclosing_Element (Entity)) = A_Constant_Declaration then
+            return;
+         end if;
+
          -- Curs may be empty if the variable has already been cleaned due to a labeled statement
          if Has_Element (Curs) and then Is_Equal (Path, Fetch (Curs).Attached_Path) then
             -- The variable has been modified in the current path, remove the path
@@ -1068,7 +1074,8 @@ package body Framework.Object_Tracker is
       if Label_Names (Stmt) /= Nil_Element_List then
          -- Statement has label(s): all bets are off
          Invalidate_Path (Enclosing_Element (Stmt));
-         Clear_Path      (Enclosing_Element (Stmt));  -- Forget all we know about this path
+         Clear_Path      (Enclosing_Element (Stmt), Except_Constants => True);
+         -- Forget all we know about this path... except constants, of course
          return;
       end if;
 
