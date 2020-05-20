@@ -104,7 +104,7 @@ begin
    B := I = 1 or (I > 2 or  I = 3);  -- OK (removing parentheses changes associativity)
    B := I = 1 or (I = 2 and I = 3);  -- OK
    B := not (B);                     -- Should Trigger
-   B := not (B and B);               -- OK
+   B := not (B1 and B2);             -- OK
    B := (not B) and B;               -- Should Trigger
 
    -- Short circuits
@@ -112,10 +112,10 @@ begin
    B := I = 1 or else (I = 2 and then I = 3);   -- OK
    B := I = 1 and then (I = 2 and then I = 3);  -- Should Trigger
    B := I = 1 and then (I = 2);                 -- Should Trigger
-   B := I = 1 and then (B or B);                -- OK
+   B := I = 1 and then (B1 or B2);              -- OK
    B := (I = 1) and then B;                     -- Should Trigger
    B := I = 1 and then (B);                     -- Should Trigger
-   B := I = 1 and then ("or" (B, B));           -- Should Trigger
+   B := I = 1 and then ("or" (B1, B2));         -- Should Trigger
 
    -- Aggregates
    S1 := (('a'), 'b', others => (' '));                     -- Should Trigger x2
@@ -134,7 +134,7 @@ begin
    B := (I in 1 .. 10) =  (J not in 1 .. 10);    -- OK
    B := (B) in False .. False;                   -- Should Trigger
    B := (I+1) in 1 .. 10;                        -- Should Trigger
-   B := (B or B) in False .. False;              -- OK
+   B := (B1 or B2) in False .. False;            -- OK
    B := (B in False .. False) in False .. False; -- OK
    B := B or (B in False .. False);              -- Should Trigger
 end Test_Parentheses;

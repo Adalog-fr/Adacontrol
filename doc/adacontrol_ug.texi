@@ -919,7 +919,7 @@ statistics, and may speed-up the analysis.
 
 If an identifier ending in ``_Long'' or ``_Short'' is used, a ``set
 Long_File_Name on'' (respectively ``set Long_File_Name off'') is
-performed in addition (i.e., the format of file names is set). 
+performed in addition (i.e., the format of file names is set).
 For more details, see @ref{Set command}.
 
 By default, the output is in ``Gnat'' format, unless an output file
@@ -2644,7 +2644,7 @@ set Format               <format_name> | "<format_string>";
                       CSVX   | CSVX_Short   | CSVX_Long   |
                       Source | Source_short | Source_Long |
                       None
-set Format_Header     "<format string>";                      
+set Format_Header     "<format string>";
 set Ignore            On | Off | Inverted;
 set Max_Errors        [min|max] [<value>];
 set Max_Messages      [min|max] [<value>];
@@ -3073,7 +3073,7 @@ This rule checks properties of actuals provided to calls or instantiations.
 @example
 <control_kind> actual_parameters (<subrule>, <place>, <formal>
                                   @{, <actual>@});
-<subrule>::= default_used | default_not_used | default_positional | 
+<subrule>::= default_used | default_not_used | default_positional |
              entity
 <place>  ::= <entity> | calls | instantiations
 <formal> ::= <formal name> | all
@@ -3132,11 +3132,11 @@ check actual_parameters (default_used, P, X);
 -- Check calls to P where the default is not used for parameter Y:
 check actual_parameters (default_not_used, P, Y);
 
--- Check all calls where positional notation is used 
+-- Check all calls where positional notation is used
 -- for any defaulted parameter:
 search actual_parameters (default_positional, calls, all);
 
--- Check that variable V in package Pack is not used 
+-- Check that variable V in package Pack is not used
 -- as a parameter Item to some Put:
 check actual_parameters (entity, all Put, Item, Pack.V);
 
@@ -4828,7 +4828,7 @@ Ex:
 @example
 -- error if more than 5 parents:
 check derivations (max_parents, 5);
- 
+
 -- warning if more than 3 parents
 search derivations (max_parents, 3);
 @end example
@@ -4898,7 +4898,7 @@ check derivations (indicator);
 
 check  derivations (indicator, tagged, declaration);
 search derivations (indicator, tagged, body_forbidden);
--- Error if no indicator on a subprogram declaration 
+-- Error if no indicator on a subprogram declaration
 --       for a tagged type
 -- Warning if indicator also given on the corresponding body
 
@@ -7569,7 +7569,7 @@ declarations.
 <control_kind> object_declarations (min_integer_span, <min_spec>
                                                    @{, <min_spec>@});
 <control_kind> object_declarations (type, <type_spec> @{, <type_spec>@});
-<control_Kind> object_declarations (not_required_type, <type_spec> 
+<control_Kind> object_declarations (not_required_type, <type_spec>
                                                    @{, <type_spec>@});
 <control_kind> object_declarations (volatile_no_address);
 <control_kind> object_declarations (address_not_volatile);
@@ -8774,8 +8774,9 @@ This rule controls expressions that can be simplified in various ways.
 @subsection Syntax
 @example
 <control_kind> simplifiable_expressions [(<subrule> @{, <subrule>@})];
-<subrule> ::= conversion  | if_not       |logical     | logical_false |
-              logical_not | logical_true | membership | parentheses   |
+<subrule> ::= conversion    | if_not      | logical           |
+              logical_false | logical_not | logical_redundant |
+              logical_true  | membership  | parentheses       |
               range
 @end example
 
@@ -8799,11 +8800,15 @@ thus less error-prone) by interverting the @code{@b{if}} and
 @code{<expr> = True} (or @code{/=}), and ``logical_false'' does the
 same for comparisons with @code{false}.
 @item
+``logical_redundant'': controls ``@code{@b{and}}'', ``@code{@b{or}}'',
+``@code{@b{and then}}'', and ``@code{@b{or else}}'' operations where the
+left and right parts are identical.
+@item
 ``logical_not'': controls @code{@b{not}} operators whose argument is a
 comparison (which could be inverted).
 @item
  ``logical'': is the same as specifying ``logical_true'',
-``logical_false'' and ``logical_not''.
+``logical_false'', ``logical_not'', and ``logical_redundant''.
 @item
 ``membership'': controls multiple comparisons of a same variable that
 could be changed to the new (Ada2012) membership test with multiple
@@ -8841,6 +8846,9 @@ The following subrules generate fixes:
 @item
 ``Conversions'': The unnecessary conversion (or qualification) is removed.
 @item
+``Logical_Redundant'': The logical operation and the right expression
+are removed.
+@item
 ``Membership'': The expression is transformed to a single
 ``@code{@b{in}}'' or ``@code{@b{not in}}'' membership test.
 @item
@@ -8874,6 +8882,13 @@ operators of identical priority levels.
 Conversion of universal value is never necessary, however there are
 cases where overloading resolution may require the conversion to be
 replaced by a qualification, rather than being simply removed.
+
+Logical redundant operations may result from cut-and-paste errors, and are
+often hard to spot. Typically:
+@example
+   @b{if} A < Limit1 @b{or} A < Limit1 @b{then} ...
+@end example
+where the right ``Limit1'' should have been changed to ``Limit2''.
 
 @node Simplifiable_Statements, Statements, Simplifiable_Expressions, Rules reference
 @section Simplifiable_Statements
@@ -8940,7 +8955,7 @@ corresponding array, often resulting in simpler code. For example:
 @example
 @b{declare}
    S : @b{constant} String := Function_Returning_String;
-@b{begin}      
+@b{begin}
    @b{for} I @b{in} S'range @b{loop}
       --  Do something with S(I)
    @b{end} @b{loop};
@@ -8972,8 +8987,8 @@ For example (where S is some String),
    S (I+1) := S(I);
 @b{end} @b{loop};
 @b{for} I @b{in} S'Range @b{loop}
-   S (I) := ' '; 
-@b{end} @b{loop};   
+   S (I) := ' ';
+@b{end} @b{loop};
 @end example
 can be changed to:
 @example
@@ -11975,7 +11990,7 @@ check Simplifiable_Statements (if_not);
 @subsection Output format
 Counts reports are now printed in the same output as Stats reports.
 
-The Format variable now accepts two kinds of values, Identifier (as in 
+The Format variable now accepts two kinds of values, Identifier (as in
 previous versions), and string values. See @ref{Output format}
 for more details.
 

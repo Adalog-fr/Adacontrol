@@ -7,48 +7,60 @@ procedure Test_Logical is
       return True;
    end Y;
 
-   A : Boolean := Y = False;               -- Should trigger
-   B : constant Boolean := Y = False;      -- Should trigger
+   A : Boolean := Y = False;                    -- Not Expr
+   B : constant Boolean := Y = False;           -- Not Expr
 
-   procedure Z (P : in Boolean := Y = False) is -- Should trigger
+   procedure Z (P : in Boolean := Y = False) is -- Not Expr
    begin
       A := B;
    end Z;
 
    type T is mod 5;
    I : T;
+   C : constant T := 2;
 
 begin
 
-   if X = False and then Y = (True) then  -- Should trigger (three times)
+   if X = False and then Y = (True) then        -- Not Expr, Just Expr, Parentheses
       Z;
-   elsif X = False then                   -- Should trigger
-      X := Y = False;                     -- Should trigger
-   elsif X /= False then                  -- Should trigger
+   elsif X = False then                         -- Not Expr
+      X := Y = False;                           -- Not Expr
+   elsif X /= False then                        -- Just Expr
       null;
-   elsif X = True then                    -- Should trigger
+   elsif X = True then                          -- Just Expr
       null;
-   elsif X /= True then                   -- Should trigger
+   elsif X /= True then                         -- Not Expr
       null;
-   elsif False = X then                   -- Should trigger
-      X := Y = False;                     -- Should trigger
-   elsif False /= X then                  -- Should trigger
+   elsif False = X then                         -- Not Expr
+      X := Y = False;                           -- Not Expr
+   elsif False /= X then                        -- Just Expr
       null;
-   elsif True = X then                    -- Should trigger
+   elsif True = X then                          -- Just Expr
       null;
-   elsif True /= X then                   -- Should trigger
+   elsif True /= X then                         -- Not Expr
       null;
    end if;
 
-   while Y = False and X = False loop     -- Should trigger (twice)
+   while Y = False and X = False loop           -- Not Expr (twice)
       A := B;
    end loop;
 
-   if not (I = 3) then                    -- Should trigger
+   if not (I = 3) then                          -- Not Expr
       null;
    end if;
    I := not I;
    I := not (I and 2);
 
-end Test_Logical;
+   if I < 1 or I < C - 1 then                   -- Redundant
+      null;
+   elsif I > C and ">" (I, C) then              -- Redundant
+      null;
+   end if;
 
+   if I <= 1 or else I <= C - 1 then            -- Redundant
+      null;
+   elsif I > C and then ">" (I, C) then         -- Redundant
+      null;
+   end if;
+
+end Test_Logical;

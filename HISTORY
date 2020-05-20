@@ -27,6 +27,9 @@ Non_Static
 Comments
    Add subrule Unnamed_End_Record
 
+Simplifiable_Expressions:
+   Add subrule logical_redundant
+   
 Simplifiable_Statements:
    Add subrule true_if.
    Improve subrule dead.

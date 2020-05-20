@@ -85,8 +85,8 @@ package body Rules.Simplifiable_Expressions is
 
 
    -- All "K_Logical_*" must stay together, and K_Logical must stay last
-   type Keywords is (K_Conversion,    K_If_Not,      K_Membership,   K_Parentheses, K_Range,
-                     K_Logical_False, K_Logical_Not, K_Logical_True, K_Logical);
+   type Keywords is (K_Conversion,    K_If_Not,      K_Membership,   K_Parentheses,       K_Range,
+                     K_Logical_False, K_Logical_Not, K_Logical_True, K_Logical_Redundant, K_Logical);
    subtype Subrules is Keywords range Keywords'First .. Keywords'Pred (K_Logical);
 
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Keywords, "K_");
@@ -119,6 +119,7 @@ package body Rules.Simplifiable_Expressions is
       User_Message  ("  - T'FIRST .. T'LAST that can be replaced by T'RANGE or T.");
       User_Message  ("  - <expression> = (/=) True/False");
       User_Message  ("  - not <comparison>");
+      User_Message  ("  - A or/and/or else/and then B, where A and B are the same expression");
       User_Message;
       Help_On_Flags (Header => "Parameter(s):", Footer => "(optional, default=all)");
    end Help;
@@ -149,6 +150,7 @@ package body Rules.Simplifiable_Expressions is
                Add_Check (K_Logical_True);
                Add_Check (K_Logical_False);
                Add_Check (K_Logical_Not);
+               Add_Check (K_Logical_Redundant);
             else
                Add_Check (Key);
             end if;
@@ -162,6 +164,7 @@ package body Rules.Simplifiable_Expressions is
          Add_Check (K_Logical_True);
          Add_Check (K_Logical_False);
          Add_Check (K_Logical_Not);
+         Add_Check (K_Logical_Redundant);
       end if;
       Rule_Used  := True;
    end Add_Control;
@@ -380,6 +383,47 @@ package body Rules.Simplifiable_Expressions is
       end case;
    end Check_Membership;
 
+   ----------------------------------
+   -- Check_Operator_For_Redundant --
+   ----------------------------------
+
+   procedure Check_Operator_For_Redundant (Expr, Left, Right : Asis.Expression) is
+      use Framework.Locations, Framework.Reports, Thick_Queries;
+
+      Reported : Boolean := False;
+   begin
+      if Are_Equivalent_Expressions (Left, Right) then
+         if Ctl_Contexts (Check) (K_Logical_Redundant).Used then
+            Report (Rule_Id,
+                    To_Wide_String (Ctl_Contexts (Check) (K_Logical_Redundant).Label),
+                    Check,
+                    Get_Location (Right),
+                    "Expression equivalent to left member of operator");
+            Reported := True;
+         elsif Ctl_Contexts (Search) (K_Logical_Redundant).Used then
+            Report (Rule_Id,
+                    To_Wide_String (Ctl_Contexts (Search) (K_Logical_Redundant).Label),
+                    Search,
+                    Get_Location (Right),
+                    "Expression equivalent to left member of operator");
+            Reported := True;
+         end if;
+         if Reported then
+            Fixes.Replace (Expr, Left);
+         end if;
+
+         -- Always report count
+         if Ctl_Contexts (Count) (K_Logical_Redundant).Used then
+            Report (Rule_Id,
+                    To_Wide_String (Ctl_Contexts (Count) (K_Logical_Redundant).Label),
+                    Count,
+                    Get_Location (Expr),
+                    "");
+         end if;
+      end if;
+   end Check_Operator_For_Redundant;
+
+
    ------------------
    -- Process_Call --
    ------------------
@@ -443,6 +487,58 @@ package body Rules.Simplifiable_Expressions is
             return Expr;
          end if;
       end Get_Kind;
+
+      procedure Check_Operator_For_Membership (Op : Asis.Operator_Kinds) is
+         Pivot_Var   : Asis.Expression := Nil_Element;
+         use Asis.Text, Utilities;
+      begin
+         -- Is this call part of a bigger, simplifiable, expression?
+         if Is_Part_Of (Call, Top_Membership_Expr) then
+            return;
+         end if;
+
+         Top_Membership_Expr := Call;
+         Top_Membership_Kind := Op;
+         Membership_Values   := Null_Unbounded_Wide_String;
+         Check_Membership (Call, Pivot_Var);
+
+         if Ctl_Contexts (Check) (K_Membership).Used then
+            Report (Rule_Id,
+                    To_Wide_String (Ctl_Contexts (Check) (K_Membership).Label),
+                    Check,
+                    Get_Location (Call),
+                    "Multiple tests on " & Trim_All (Element_Image (Pivot_Var))
+                    & " can be replaced by "
+                    & (if Top_Membership_Kind = An_And_Operator then """not " else """")
+                    & "in"" operator");
+         elsif Ctl_Contexts (Search) (K_Membership).Used then
+            Report (Rule_Id,
+                    To_Wide_String (Ctl_Contexts (Search) (K_Membership).Label),
+                    Search,
+                    Get_Location (Call),
+                    "Multiple tests on " & Trim_All (Element_Image (Pivot_Var))
+                    & " can be replaced by "
+                    & (if Top_Membership_Kind = An_And_Operator then """not " else """")
+                    & "in"" operator");
+         end if;
+         Fixes.Replace (Top_Membership_Expr,
+                        Trim_All (Element_Image (Pivot_Var))
+                        & (if Top_Membership_Kind = An_And_Operator then " not" else "") & " in "
+                        & To_Wide_String (Membership_Values));
+
+         -- Always report count
+         if Ctl_Contexts (Count) (K_Membership).Used then
+            Report (Rule_Id,
+                    To_Wide_String (Ctl_Contexts (Count) (K_Membership).Label),
+                    Count,
+                    Get_Location (Call),
+                    "");
+         end if;
+
+      exception
+         when Not_Appropriate_For_Membership =>
+            Top_Membership_Expr := Nil_Element;
+      end Check_Operator_For_Membership;
 
    begin  -- Process_Call
       if not Rule_Used then
@@ -550,58 +646,14 @@ package body Rules.Simplifiable_Expressions is
                end;
 
             when An_And_Operator | An_Or_Operator => -- Note that "and then" and "or else" are not replaceable
+               Check_Operator_For_Membership (Op);
                declare
-                  Pivot_Var   : Asis.Expression := Nil_Element;
-                  use Asis.Text, Utilities;
+                  Param_List : constant Asis.Association_List := Function_Call_Parameters (Call);
                begin
-                  -- Is this call part of a bigger, simplifiable, expression?
-                  if Is_Part_Of (Call, Top_Membership_Expr) then
-                     return;
-                  end if;
-
-                  Top_Membership_Expr := Call;
-                  Top_Membership_Kind := Op;
-                  Membership_Values   := Null_Unbounded_Wide_String;
-                  Check_Membership (Call, Pivot_Var);
-
-                  if Ctl_Contexts (Check) (K_Membership).Used then
-                     Report (Rule_Id,
-                             To_Wide_String (Ctl_Contexts (Check) (K_Membership).Label),
-                             Check,
-                             Get_Location (Call),
-                             "Multiple tests on " & Trim_All(Element_Image (Pivot_Var))
-                             & " can be replaced by "
-                             & (if Top_Membership_Kind = An_And_Operator then """not " else """")
-                             & "in"" operator");
-                  elsif Ctl_Contexts (Search) (K_Membership).Used then
-                     Report (Rule_Id,
-                             To_Wide_String (Ctl_Contexts (Search) (K_Membership).Label),
-                             Search,
-                             Get_Location (Call),
-                             "Multiple tests on " & Trim_All (Element_Image (Pivot_Var))
-                             & " can be replaced by "
-                             & (if Top_Membership_Kind = An_And_Operator then """not " else """")
-                             & "in"" operator");
-                  end if;
-                  Fixes.Replace (Top_Membership_Expr,
-                                 Trim_All (Element_Image (Pivot_Var))
-                                 & (if Top_Membership_Kind = An_And_Operator then " not" else "") & " in "
-                                 & To_Wide_String (Membership_Values));
-
-                  -- Always report count
-                  if Ctl_Contexts (Count) (K_Membership).Used then
-                     Report (Rule_Id,
-                             To_Wide_String (Ctl_Contexts (Count) (K_Membership).Label),
-                             Count,
-                             Get_Location (Call),
-                             "");
-                  end if;
-
-               exception
-                  when Not_Appropriate_For_Membership =>
-                     Top_Membership_Expr := Nil_Element;
+                  Check_Operator_For_Redundant (Call,
+                                                Actual_Parameter (Param_List (1)),
+                                                Actual_Parameter (Param_List (2)));
                end;
-
             when others =>
                null;
          end case;
@@ -982,18 +1034,17 @@ package body Rules.Simplifiable_Expressions is
             Reported := True;
          end if;
 
-         if Ctl_Contexts (Count)(K_Parentheses).Used then
+         if Reported then
+            Fixes.Delete (Start_Loc, Start_Loc + 1);
+            Fixes.Delete (End_Loc,   End_Loc   + 1);
+         end if;
+
+         if Ctl_Contexts (Count) (K_Parentheses).Used then
             Report (Rule_Id,
                     To_Wide_String (Ctl_Contexts (Count)(K_Parentheses).Label),
                     Count,
                     Start_Loc,
                     Message);
-            Reported := True;
-         end if;
-
-         if Reported then
-            Fixes.Delete (Start_Loc, Start_Loc + 1);
-            Fixes.Delete (End_Loc,   End_Loc   + 1);
          end if;
       end Do_Report;
 
@@ -1362,6 +1413,23 @@ package body Rules.Simplifiable_Expressions is
 
       end;
    end Process_If_Expression;
+
+   ---------------------------
+   -- Process_Short_Circuit --
+   ---------------------------
+
+   procedure Process_Short_Circuit (Expr : in Asis.Expression) is
+      use Asis.Expressions;
+   begin
+      if not Rule_Used then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      Check_Operator_For_Redundant (Expr,
+                                    Short_Circuit_Operation_Left_Expression  (Expr),
+                                    Short_Circuit_Operation_Right_Expression (Expr));
+   end Process_Short_Circuit;
 
 begin  -- Rules.Simplifiable_expressions
    Framework.Rules_Manager.Register (Rule_Id,

@@ -785,6 +785,11 @@ package body Framework.Plugs is
                   Rules.Side_Effect_Parameters.   Process_Call_Or_Instantiation (Element);
                   Rules.Simplifiable_Expressions. Process_Call                  (Element);
 
+               when An_And_Then_Short_Circuit
+                  | An_Or_Else_Short_Circuit
+                  =>
+                  Rules.Simplifiable_Expressions.Process_Short_Circuit (Element);
+
                when A_Parenthesized_Expression =>
                   Rules.Simplifiable_Expressions. Process_Parenthesized (Element);
 

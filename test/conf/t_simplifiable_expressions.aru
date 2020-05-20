@@ -4,5 +4,6 @@ False:         search simplifiable_expressions (Logical_False);
                check  simplifiable_expressions (parentheses);
                search simplifiable_expressions (conversion);
                search simplifiable_expressions (Logical_not);
+               check  simplifiable_expressions (Logical_Redundant);
                check  simplifiable_expressions (Membership);
                search simplifiable_expressions (if_not);

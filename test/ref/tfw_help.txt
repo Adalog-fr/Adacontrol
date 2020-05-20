@@ -736,9 +736,11 @@ Control occurrence of various forms of expressions that could be made simpler:
   - T'FIRST .. T'LAST that can be replaced by T'RANGE or T.
   - <expression> = (/=) True/False
   - not <comparison>
+  - A or/and/or else/and then B, where A and B are the same expression
 
-Parameter(s): conversion | if_not        | membership  | parentheses  |
-              range      | logical_false | logical_not | logical_true |
+Parameter(s): conversion  | if_not       | membership        |
+              parentheses | range        | logical_false     |
+              logical_not | logical_true | logical_redundant |
               logical
               (optional, default=all)
 ----
@@ -1098,9 +1100,11 @@ Control occurrence of various forms of expressions that could be made simpler:
   - T'FIRST .. T'LAST that can be replaced by T'RANGE or T.
   - <expression> = (/=) True/False
   - not <comparison>
+  - A or/and/or else/and then B, where A and B are the same expression
 
-Parameter(s): conversion | if_not        | membership  | parentheses  |
-              range      | logical_false | logical_not | logical_true |
+Parameter(s): conversion  | if_not       | membership        |
+              parentheses | range        | logical_false     |
+              logical_not | logical_true | logical_redundant |
               logical
               (optional, default=all)
 ----
