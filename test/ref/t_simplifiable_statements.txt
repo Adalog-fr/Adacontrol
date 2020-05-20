@@ -4,32 +4,46 @@ t_simplifiable_statements-test_block.adb:6:14: Delete:7:7
 t_simplifiable_statements-test_block.adb:9:4: Error: SIMPLIFIABLE_STATEMENTS: unnecessary block statement
 t_simplifiable_statements-test_block.adb:9:4: Delete:11:6
 t_simplifiable_statements-test_block.adb:11:14: Delete:13:4
-t_simplifiable_statements-test_dead.adb:17:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
-t_simplifiable_statements-test_dead.adb:17:4: Delete:18:11
-t_simplifiable_statements-test_dead.adb:21:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
-t_simplifiable_statements-test_dead.adb:22:7: Delete:22:13
-t_simplifiable_statements-test_dead.adb:24:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
-t_simplifiable_statements-test_dead.adb:24:4: Delete:26:14
-t_simplifiable_statements-test_dead.adb:27:4: Replace:27:6
+t_simplifiable_statements-test_dead.adb:21:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+t_simplifiable_statements-test_dead.adb:21:4: Delete:22:11
+t_simplifiable_statements-test_dead.adb:25:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:26:7: Delete:26:13
+t_simplifiable_statements-test_dead.adb:28:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+t_simplifiable_statements-test_dead.adb:28:4: Delete:30:14
+t_simplifiable_statements-test_dead.adb:31:4: Replace:31:6
 !
-t_simplifiable_statements-test_dead.adb:34:7: Error: SIMPLIFIABLE_STATEMENTS: choices cover no value
-t_simplifiable_statements-test_dead.adb:34:7: Delete:35:16
-t_simplifiable_statements-test_dead.adb:36:7: Error: SIMPLIFIABLE_STATEMENTS: choices cover no value
-t_simplifiable_statements-test_dead.adb:36:7: Delete:37:16
-t_simplifiable_statements-test_dead.adb:53:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
-t_simplifiable_statements-test_dead.adb:53:4: Delete:55:10
-t_simplifiable_statements-test_dead.adb:71:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
-t_simplifiable_statements-test_dead.adb:72:7: Delete:75:11
-t_simplifiable_statements-test_dead.adb:73:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
-t_simplifiable_statements-test_dead.adb:74:7: Delete:75:11
-t_simplifiable_statements-test_dead.adb:77:4: Error: SIMPLIFIABLE_STATEMENTS: while loop is never executed
-t_simplifiable_statements-test_dead.adb:77:4: Delete:79:12
-t_simplifiable_statements-test_dead.adb:81:4: Error: SIMPLIFIABLE_STATEMENTS: for loop is never executed
+t_simplifiable_statements-test_dead.adb:38:7: Error: SIMPLIFIABLE_STATEMENTS: choices cover no value
+t_simplifiable_statements-test_dead.adb:38:7: Delete:39:16
+t_simplifiable_statements-test_dead.adb:40:7: Error: SIMPLIFIABLE_STATEMENTS: choices cover no value
+t_simplifiable_statements-test_dead.adb:40:7: Delete:41:16
+t_simplifiable_statements-test_dead.adb:57:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+t_simplifiable_statements-test_dead.adb:57:4: Delete:59:10
+t_simplifiable_statements-test_dead.adb:75:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:76:7: Delete:79:11
+t_simplifiable_statements-test_dead.adb:77:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:78:7: Delete:79:11
+t_simplifiable_statements-test_dead.adb:81:4: Error: SIMPLIFIABLE_STATEMENTS: while loop is never executed
 t_simplifiable_statements-test_dead.adb:81:4: Delete:83:12
-t_simplifiable_statements-test_dead.adb:92:4: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
-t_simplifiable_statements-test_dead.adb:93:4: Delete:94:10
-t_simplifiable_statements-test_dead.adb:93:4: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
-t_simplifiable_statements-test_dead.adb:94:4: Delete:94:10
+t_simplifiable_statements-test_dead.adb:85:4: Error: SIMPLIFIABLE_STATEMENTS: for loop is never executed
+t_simplifiable_statements-test_dead.adb:85:4: Delete:87:12
+t_simplifiable_statements-test_dead.adb:96:4: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:97:4: Delete:98:10
+t_simplifiable_statements-test_dead.adb:97:4: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:98:4: Delete:98:10
+t_simplifiable_statements-test_dead.adb:104:4: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_dead.adb:102:7
+t_simplifiable_statements-test_dead.adb:104:4: Delete:105:11
+t_simplifiable_statements-test_dead.adb:108:4: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_dead.adb:106:10
+t_simplifiable_statements-test_dead.adb:108:4: Delete:109:11
+t_simplifiable_statements-test_dead.adb:110:4: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_dead.adb:106:10
+t_simplifiable_statements-test_dead.adb:110:4: Delete:111:11
+t_simplifiable_statements-test_dead.adb:116:4: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_dead.adb:114:7
+t_simplifiable_statements-test_dead.adb:116:4: Delete:117:11
+t_simplifiable_statements-test_dead.adb:118:4: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_dead.adb:114:7
+t_simplifiable_statements-test_dead.adb:118:4: Delete:119:11
+t_simplifiable_statements-test_dead.adb:130:4: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_dead.adb:124:7
+t_simplifiable_statements-test_dead.adb:130:4: Delete:131:11
+t_simplifiable_statements-test_dead.adb:132:4: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_dead.adb:128:10
+t_simplifiable_statements-test_dead.adb:132:4: Delete:133:11
 t_simplifiable_statements-test_for_for_slice.adb:9:4: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
 t_simplifiable_statements-test_for_for_slice.adb:14:4: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
 t_simplifiable_statements-test_for_for_slice.adb:19:4: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
@@ -58,6 +72,7 @@ t_simplifiable_statements-test_if_for_case.adb:90:4: Error: SIMPLIFIABLE_STATEME
 t_simplifiable_statements-test_if_for_case.adb:90:4: Replace:96:10
 !null;
 t_simplifiable_statements-test_if_for_case.adb:92:4: Error: SIMPLIFIABLE_STATEMENTS: alternative to a statically True path
+t_simplifiable_statements-test_if_for_case.adb:92:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
 t_simplifiable_statements-test_if_for_case.adb:94:4: Error: SIMPLIFIABLE_STATEMENTS: alternative to a statically True path
 t_simplifiable_statements-test_if_not.adb:7:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
 t_simplifiable_statements-test_if_not.adb:7:4: Delete:8:11
@@ -72,7 +87,11 @@ t_simplifiable_statements-test_if_not.adb:25:4: Delete:26:11
 t_simplifiable_statements-test_if_not.adb:33:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
 t_simplifiable_statements-test_if_not.adb:33:4: Delete:34:11
 t_simplifiable_statements-test_if_not.adb:29:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+t_simplifiable_statements-test_if_not.adb:31:4: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_if_not.adb:29:7
+t_simplifiable_statements-test_if_not.adb:31:4: Delete:32:11
 t_simplifiable_statements-test_if_not.adb:37:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+t_simplifiable_statements-test_if_not.adb:39:4: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_if_not.adb:37:7
+t_simplifiable_statements-test_if_not.adb:39:4: Delete:40:11
 t_simplifiable_statements-test_loop.adb:5:4: Error: SIMPLIFIABLE_STATEMENTS: while loop has True condition
 t_simplifiable_statements-test_loop.adb:5:4: Delete:5:14
 t_simplifiable_statements-test_loop.adb:8:4: Error: SIMPLIFIABLE_STATEMENTS: while loop has True condition
@@ -175,35 +194,49 @@ t_simplifiable_statements-test_block.adb:6:14: Delete:7:7
 t_simplifiable_statements-test_block.adb:9:4: Error: SIMPLIFIABLE_STATEMENTS: unnecessary block statement
 t_simplifiable_statements-test_block.adb:9:4: Delete:11:6
 t_simplifiable_statements-test_block.adb:11:14: Delete:13:4
-t_simplifiable_statements-test_dead.adb:17:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
-t_simplifiable_statements-test_dead.adb:17:4: Delete:18:11
-t_simplifiable_statements-test_dead.adb:21:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
-t_simplifiable_statements-test_dead.adb:22:7: Delete:22:13
-t_simplifiable_statements-test_dead.adb:24:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
-t_simplifiable_statements-test_dead.adb:24:4: Delete:26:14
-t_simplifiable_statements-test_dead.adb:27:4: Replace:27:6
+t_simplifiable_statements-test_dead.adb:21:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+t_simplifiable_statements-test_dead.adb:21:4: Delete:22:11
+t_simplifiable_statements-test_dead.adb:25:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:26:7: Delete:26:13
+t_simplifiable_statements-test_dead.adb:28:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+t_simplifiable_statements-test_dead.adb:28:4: Delete:30:14
+t_simplifiable_statements-test_dead.adb:31:4: Replace:31:6
 !
-t_simplifiable_statements-test_dead.adb:32:7: Error: SIMPLIFIABLE_STATEMENTS: choices cover no value
-t_simplifiable_statements-test_dead.adb:32:7: Delete:33:14
-t_simplifiable_statements-test_dead.adb:34:7: Error: SIMPLIFIABLE_STATEMENTS: choices cover no value
-t_simplifiable_statements-test_dead.adb:34:7: Delete:35:16
 t_simplifiable_statements-test_dead.adb:36:7: Error: SIMPLIFIABLE_STATEMENTS: choices cover no value
-t_simplifiable_statements-test_dead.adb:36:7: Delete:37:16
-t_simplifiable_statements-test_dead.adb:45:7: Error: SIMPLIFIABLE_STATEMENTS: choices cover no value of case expression
-t_simplifiable_statements-test_dead.adb:53:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
-t_simplifiable_statements-test_dead.adb:53:4: Delete:55:10
-t_simplifiable_statements-test_dead.adb:71:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
-t_simplifiable_statements-test_dead.adb:72:7: Delete:75:11
-t_simplifiable_statements-test_dead.adb:73:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
-t_simplifiable_statements-test_dead.adb:74:7: Delete:75:11
-t_simplifiable_statements-test_dead.adb:77:4: Error: SIMPLIFIABLE_STATEMENTS: while loop is never executed
-t_simplifiable_statements-test_dead.adb:77:4: Delete:79:12
-t_simplifiable_statements-test_dead.adb:81:4: Error: SIMPLIFIABLE_STATEMENTS: for loop is never executed
+t_simplifiable_statements-test_dead.adb:36:7: Delete:37:14
+t_simplifiable_statements-test_dead.adb:38:7: Error: SIMPLIFIABLE_STATEMENTS: choices cover no value
+t_simplifiable_statements-test_dead.adb:38:7: Delete:39:16
+t_simplifiable_statements-test_dead.adb:40:7: Error: SIMPLIFIABLE_STATEMENTS: choices cover no value
+t_simplifiable_statements-test_dead.adb:40:7: Delete:41:16
+t_simplifiable_statements-test_dead.adb:49:7: Error: SIMPLIFIABLE_STATEMENTS: choices cover no value of case expression
+t_simplifiable_statements-test_dead.adb:57:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+t_simplifiable_statements-test_dead.adb:57:4: Delete:59:10
+t_simplifiable_statements-test_dead.adb:75:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:76:7: Delete:79:11
+t_simplifiable_statements-test_dead.adb:77:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:78:7: Delete:79:11
+t_simplifiable_statements-test_dead.adb:81:4: Error: SIMPLIFIABLE_STATEMENTS: while loop is never executed
 t_simplifiable_statements-test_dead.adb:81:4: Delete:83:12
-t_simplifiable_statements-test_dead.adb:92:4: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
-t_simplifiable_statements-test_dead.adb:93:4: Delete:94:10
-t_simplifiable_statements-test_dead.adb:93:4: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
-t_simplifiable_statements-test_dead.adb:94:4: Delete:94:10
+t_simplifiable_statements-test_dead.adb:85:4: Error: SIMPLIFIABLE_STATEMENTS: for loop is never executed
+t_simplifiable_statements-test_dead.adb:85:4: Delete:87:12
+t_simplifiable_statements-test_dead.adb:96:4: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:97:4: Delete:98:10
+t_simplifiable_statements-test_dead.adb:97:4: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
+t_simplifiable_statements-test_dead.adb:98:4: Delete:98:10
+t_simplifiable_statements-test_dead.adb:104:4: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_dead.adb:102:7
+t_simplifiable_statements-test_dead.adb:104:4: Delete:105:11
+t_simplifiable_statements-test_dead.adb:108:4: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_dead.adb:106:10
+t_simplifiable_statements-test_dead.adb:108:4: Delete:109:11
+t_simplifiable_statements-test_dead.adb:110:4: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_dead.adb:106:10
+t_simplifiable_statements-test_dead.adb:110:4: Delete:111:11
+t_simplifiable_statements-test_dead.adb:116:4: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_dead.adb:114:7
+t_simplifiable_statements-test_dead.adb:116:4: Delete:117:11
+t_simplifiable_statements-test_dead.adb:118:4: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_dead.adb:114:7
+t_simplifiable_statements-test_dead.adb:118:4: Delete:119:11
+t_simplifiable_statements-test_dead.adb:130:4: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_dead.adb:124:7
+t_simplifiable_statements-test_dead.adb:130:4: Delete:131:11
+t_simplifiable_statements-test_dead.adb:132:4: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_dead.adb:128:10
+t_simplifiable_statements-test_dead.adb:132:4: Delete:133:11
 t_simplifiable_statements-test_for_for_slice.adb:9:4: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
 t_simplifiable_statements-test_for_for_slice.adb:9:4: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
 t_simplifiable_statements-test_for_for_slice.adb:14:4: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
@@ -238,6 +271,7 @@ t_simplifiable_statements-test_if_for_case.adb:90:4: Error: SIMPLIFIABLE_STATEME
 t_simplifiable_statements-test_if_for_case.adb:90:4: Replace:96:10
 !null;
 t_simplifiable_statements-test_if_for_case.adb:92:4: Error: SIMPLIFIABLE_STATEMENTS: alternative to a statically True path
+t_simplifiable_statements-test_if_for_case.adb:92:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
 t_simplifiable_statements-test_if_for_case.adb:94:4: Error: SIMPLIFIABLE_STATEMENTS: alternative to a statically True path
 t_simplifiable_statements-test_if_not.adb:7:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
 t_simplifiable_statements-test_if_not.adb:7:4: Delete:8:11
@@ -252,7 +286,11 @@ t_simplifiable_statements-test_if_not.adb:25:4: Delete:26:11
 t_simplifiable_statements-test_if_not.adb:33:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
 t_simplifiable_statements-test_if_not.adb:33:4: Delete:34:11
 t_simplifiable_statements-test_if_not.adb:29:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+t_simplifiable_statements-test_if_not.adb:31:4: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_if_not.adb:29:7
+t_simplifiable_statements-test_if_not.adb:31:4: Delete:32:11
 t_simplifiable_statements-test_if_not.adb:37:4: Error: SIMPLIFIABLE_STATEMENTS: If statement could be replaced by case statement
+t_simplifiable_statements-test_if_not.adb:39:4: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_if_not.adb:37:7
+t_simplifiable_statements-test_if_not.adb:39:4: Delete:40:11
 t_simplifiable_statements-test_loop.adb:5:4: Error: SIMPLIFIABLE_STATEMENTS: while loop has True condition
 t_simplifiable_statements-test_loop.adb:5:4: Delete:5:14
 t_simplifiable_statements-test_loop.adb:8:4: Error: SIMPLIFIABLE_STATEMENTS: while loop has True condition

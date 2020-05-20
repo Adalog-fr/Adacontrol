@@ -495,6 +495,8 @@ package body Rules.Simplifiable_Statements is
          -- Called with Dead and/or True_If
          use Utilities;
 
+         Conds           : Asis.Expression_List (Paths'Range) := (Condition_Expression (Paths (Paths'First)),
+                                                                  others => <>);
          First_Path_Cond : constant Wide_String := Static_Expression_Value_Image (Condition_Expression
                                                                                   (Paths (Paths'First)));
          Already_Fixed   : Boolean := False;
@@ -508,10 +510,10 @@ package body Rules.Simplifiable_Statements is
                        Usage (Stmt_Dead),
                        Get_Location (Paths (1)),
                        "condition is always false");
-            if Paths'Length = 1 then -- no else or elsif
-               Fixes.Delete (Stmt);
-            else
-               case Path_Kind (Paths (2)) is
+               if Paths'Length = 1 then -- no else or elsif
+                  Fixes.Delete (Stmt);
+               else
+                  case Path_Kind (Paths (2)) is
                      when An_Elsif_Path =>
                         Fixes.Delete (Paths (1));
                         Fixes.Replace (Get_Location (Paths (2)), Length => 3, By => ""); -- 3 characters: "els"
@@ -544,7 +546,7 @@ package body Rules.Simplifiable_Statements is
          -- but give error messages nonetheless
          for Path_Inx in Asis_Natural range Paths'First + 1 .. Paths'Last loop
             if Path_Kind (Paths (Path_Inx)) = An_Else_Path then
-               if All_Paths_Dead then
+               if All_Paths_Dead and Rule_Used (Stmt_Dead) then
                   Report (Rule_Id,
                           Usage (Stmt_Dead),
                           Get_Location (Paths (Path_Inx)),
@@ -553,36 +555,58 @@ package body Rules.Simplifiable_Statements is
                exit;
             end if;
 
+            Conds (Path_Inx) := Condition_Expression (Paths (Path_Inx));
             declare
                Path_Cond : constant Wide_String (1 .. 1) := Choose (Static_Expression_Value_Image
                                                                     (Condition_Expression (Paths (Path_Inx))),
                                                                     " ");  -- can be only "0", "1", or " "
             begin
-               if All_Paths_Dead then
-                  Report (Rule_Id,
-                          Usage (Stmt_Dead),
-                          Get_Location (Paths (Path_Inx)),
-                          "alternative to a statically True path");
-               elsif Path_Cond = "0" then  -- "0" => False
-                  Report (Rule_Id,
-                          Usage (Stmt_Dead),
-                          Get_Location (Paths (Path_Inx)),
-                          "condition is always false");
-                  if not Already_Fixed then
-                     Fixes.Delete (Paths (Path_Inx));
+               if Rule_Used (Stmt_Dead) then
+                  if All_Paths_Dead then
+                     Report (Rule_Id,
+                             Usage (Stmt_Dead),
+                             Get_Location (Paths (Path_Inx)),
+                             "alternative to a statically True path");
+                  elsif Path_Cond = "0" then  -- "0" => False
+                     Report (Rule_Id,
+                             Usage (Stmt_Dead),
+                             Get_Location (Paths (Path_Inx)),
+                             "condition is always false");
+                     if not Already_Fixed then
+                        Fixes.Delete (Paths (Path_Inx));
+                     end if;
+                  elsif Path_Cond /= "1" then  -- "1" => True
+                     -- Check for structurally equivalent paths, makes no sense when the condition is statically
+                     -- True or False
+                     for Expr : Asis.Expression of Conds (Conds'First .. Path_Inx - 1) loop
+                        if Are_Equivalent_Expressions (Conds (Path_Inx), Expr) then
+                           Report (Rule_Id,
+                                   Usage (Stmt_Dead),
+                                   Get_Location (Paths (Path_Inx)),
+                                   "condition is equivalent to the one at " & Image (Get_Location (Expr)));
+                           if not Already_Fixed then
+                              Fixes.Delete (Paths (Path_Inx));
+                           end if;
+                           exit;  -- No need to check further
+                        end if;
+                     end loop;
                   end if;
-               elsif Path_Cond = "1" then  -- "1" => True
-                  Report (Rule_Id,
-                          Usage (Stmt_True_If),
-                          Get_Location (Paths (Path_Inx)),
-                          "condition is always true");
-                  if not Already_Fixed then
-                     -- Replace this path and all remaining ones with an else path
-                     Fixes.Replace (Original   => Paths (Path_Inx .. Paths'Last),
-                                    By         => Sequence_Of_Statements (Paths (Path_Inx)),
-                                    Add_Before => "else ");
-                     All_Paths_Dead := True;
-                     Already_Fixed  := True;
+               end if;
+
+               if Rule_Used (Stmt_True_If) then
+                  if Path_Cond = "1" then  -- "1" => True
+                     Report (Rule_Id,
+                             Usage (Stmt_True_If),
+                             Get_Location (Paths (Path_Inx)),
+                             "condition is always true");
+                     if not Already_Fixed then
+                        -- Replace this path and all remaining ones with an else path
+                        Fixes.Replace (Original   => Paths (Path_Inx .. Paths'Last),
+                                       By         => Sequence_Of_Statements (Paths (Path_Inx)),
+                                       Add_Before => "else ");
+                        All_Paths_Dead := True;
+                        Already_Fixed  := True;
+                     end if;
                   end if;
                end if;
             end;

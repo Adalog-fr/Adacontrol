@@ -24,15 +24,13 @@ begin
 
    if B /= False then          -- Replaceable by case
       null;
-   elsif B /= False then
-      null;
+   
    
    end if;
 
    if B /= False then          -- Replaceable by case
       null;
-   elsif B /= False then
-      null;
+   
    end if;
 
    if not B then

@@ -31,6 +31,7 @@ Simplifiable_Statements:
    Add subrule true_if.
    Improve subrule dead.
    Add rule variable Acceptable_Dead_Case
+   Add control of redundant paths (dead)
    
 Statements:
    Add subrules hard_bounds_array_for_loop, multi_for_of_loop, 

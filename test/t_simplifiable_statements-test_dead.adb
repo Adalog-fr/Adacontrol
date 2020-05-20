@@ -1,9 +1,13 @@
 with Ada.Exceptions; use Ada.Exceptions;
 separate (T_Simplifiable_Statements)
 procedure Test_Dead is
-   I : Integer;
-   C : constant Integer := 1;
-   Lim : Integer := C;
+   I    : Integer;
+   RenI : Integer renames I;
+   J    : Integer;
+   RenJ : Integer renames J;
+   C    : constant Integer := 1;
+   Lim  : Integer := C;
+
    subtype ST1 is Integer range 5 .. 4;
    subtype ST2 is Integer range 2 * Lim .. 5 * Lim; -- 2..5
 
@@ -93,5 +97,40 @@ begin
    return;                                         -- Unreachable
    I := 0;
    <<L3>>                                          -- no more unreachable from here
-   return;
+
+   -- Check equivalent branches
+   if I = 1 then                                  -- (1)
+      null;
+   elsif I = C then                               -- Equivalent to (1)
+      null;
+   elsif I + J - 2 = 0 then                       -- (2)
+      null;
+   elsif I + J - (C + 1) = 0 then                 -- Equivalent to (2)
+      null;
+   elsif RenI + RenJ - 2 = 0 then                 -- Equivalent to (2)
+      null;
+   end if;
+
+   if I + 2 > J + 3 then                          -- (3)
+      null;
+   elsif "+" (I, 2) > J + 3 then                  --  Equivalent to (3)
+      null;
+   elsif "+" (Right => 2, Left => I) > J + 3 then --  Equivalent to (3)
+      null;
+   elsif "+" (Right => I, Left => 2) > J + 3 then
+      null;
+   end if;
+
+   if Integer'Pos (I) > Integer'Pos (1) then      --  (4)
+      null;
+   elsif Positive'Pos (I) > Integer'Pos (J) then
+      null;
+   elsif I'Image /= J'Image then                  --  (5)
+      null;
+   elsif Integer'Pos (I) > 1 then                 --  Equivalent to (4)
+      null;
+   elsif I'Image /= J'Image then                  --  Equivalent to (5)
+      null;
+   end if;
+
 end Test_Dead;

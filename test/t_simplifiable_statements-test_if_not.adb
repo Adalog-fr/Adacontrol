@@ -28,7 +28,7 @@ begin
 
    if B /= False then          -- Replaceable by case
       null;
-   elsif B /= False then
+   elsif B /= False then       -- Equivalent condition
       null;
    else                        -- empty else path
       null;
@@ -36,7 +36,7 @@ begin
 
    if B /= False then          -- Replaceable by case
       null;
-   elsif B /= False then
+   elsif B /= False then       -- Equivalent condition
       null;
    end if;
 

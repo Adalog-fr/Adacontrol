@@ -8905,17 +8905,30 @@ cases);
 declarations, and no exception handlers.
 @item
 ``dead'': controls dead code, i.e. statements that are statically
-known to be never executed. This includes statements that follow a
-@code{@b{return}}, @code{@b{requeue}}, or @code{@b{goto}} statement,
+known to be never executed. This includes:
+@itemize @bullet
+@item
+statements that follow a @code{@b{return}}, @code{@b{requeue}}, or @code{@b{goto}} statement,
 or an @code{@b{exit}} statement that is either unconditional or whose
-condition is statically known to be true. It includes also
+condition is statically known to be true;
+@item
 @code{@b{while}} statements and @code{@b{if}} statements (including
-@code{@b{elsif}} paths) whose condition is statically false,
+@code{@b{elsif}} paths) whose condition is statically false;
+@item
 @code{@b{else}} and @code{@b{elsif}} paths that follow an
 @code{@b{if}} statement (or @code{@b{elsif}} path) whose condition is
-known to be true, branches of @code{@b{case}} statements whose choices
-are all statically null ranges, and @code{@b{for}} loops whose range
-is statically empty. For @code{@b{case}} statements, it is possible to
+known to be true;
+@item
+@code{@b{elsif}} paths whose condition is identical
+to the one of a preceding @code{@b{if}} or @code{@b{elsif}} path;
+@item
+branches of @code{@b{case}} statements whose choices are all
+statically null ranges;
+@item
+@code{@b{for}} loops whose range is
+statically empty.
+@end itemize
+For @code{@b{case}} statements, it is possible to
 not control branches that contain only @code{@b{null}} or
 @code{@b{raise}} statements, see variable ``acceptable_dead_case''
 below.
