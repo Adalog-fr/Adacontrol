@@ -500,7 +500,7 @@ package body Rules.Simplifiable_Expressions is
          Top_Membership_Expr := Call;
          Top_Membership_Kind := Op;
          Membership_Values   := Null_Unbounded_Wide_String;
-         Check_Membership (Call, Pivot_Var);
+         Check_Membership (Call, Pivot_Var); -- raises Not_Appropriate_For_Membership if unsuccesful
 
          if Ctl_Contexts (Check) (K_Membership).Used then
             Report (Rule_Id,

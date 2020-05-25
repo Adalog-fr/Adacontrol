@@ -347,18 +347,10 @@ package body Rules.Max_Primitives is
       procedure Action (Entity : Asis.Defining_Name; Content_Value : in out ASIS_Natural) is
          use Asis.Elements, Asis.Set_Get;
 
-         ------------
-         -- Is_Set --
-         ------------
-
          function Is_Set (Control : Control_Kinds; Filter : Primitives_Filter) return Boolean is
          begin
             return Maximum (Control, Visibility, Filter) /= Asis.ASIS_Natural'Last;
          end Is_Set;
-
-         ---------------
-         -- Do_Report --
-         ---------------
 
          procedure Do_Report (Ctl_Kind : Control_Kinds; Filter : Primitives_Filter; Is_From_Instance : Boolean := False)
          is

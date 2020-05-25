@@ -480,7 +480,7 @@ package body Framework.Reports is
    begin
       -- Is a defined output format
       if Sep_Pos = 0 then
-         Sep_Pos    := Value'Last + 1;
+         Sep_Pos := Value'Last + 1;
       elsif To_Upper (Value (Sep_Pos .. Value'Last)) = "_SHORT" then
          Set_Variable ("LONG_FILE_NAME", "Off");
       elsif To_Upper (Value (Sep_Pos .. Value'Last)) = "_LONG" then
