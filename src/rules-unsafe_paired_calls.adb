@@ -49,7 +49,9 @@ package body Rules.Unsafe_Paired_Calls is
    -- Algorithm:
    --
    -- Analysis starts from (any) procedure or entry call.
-   -- First identify if the call is an opening call, a closing call, or anything else (exit immediately if the latter).
+   -- First identify if the call is an opening call, a closing call, or anything else
+   -- (exit immediately if the latter).
+   --
    -- For opening calls, check:
    --    - That the call is the first statement in a sequence
    --    - That there is no call for the same lock in an enclosing scope (opening calls are kept in a scoped store)
@@ -58,13 +60,14 @@ package body Rules.Unsafe_Paired_Calls is
    --    - That every handler includes exactly one closing call
    -- For closing calls check:
    --    - That the call is the last statemement in a sequence, except for possible return, exit and null,
-   --    - Or that the call is followed by a return, exit, or goto statement (whether the statement transfers control
-   --      out of the scope of an opening call will be checked when traversing this statement)
+   --    - Or that the call is followed by a return, exit, or goto statement (whether the statement transfers
+   --      control out of the scope of an opening call will be checked when traversing this statement)
    --    - That the current (or exited) sequence of statements starts with a matching opening call
    --
-   -- In addition, for every return, exit, or goto statement that transfers control outside of the scope of an opening
-   -- call:
-   --    - Check that the previous statement is a closing call (the match with the opening call has already been tested)
+   -- In addition, for every return, exit, or goto statement that transfers control outside of the scope of an
+   -- opening call:
+   --    - Check that the previous statement is a closing call (the match with the opening call has already been
+   --      tested)
    --    - Check that only one opening call scope is left
    --
    -- Note that the correspondance must be checked for both opening and closing calls, for the case where an opening
@@ -250,7 +253,7 @@ package body Rules.Unsafe_Paired_Calls is
    ---------------------------
 
    procedure Update_Lock_Parameter (Lock_Call : in Asis.Element; Lock_Context : in out SP_Context) is
-   -- Initially, a SP_Context has Entity_Specification for its Lock field.
+   -- Initially, a SP_Context has Entity_Specification for its Lock.Kind field.
    -- We must delay analyzing the lock until we have a way of getting to the corresponding
    -- element, i.e. the first time we have a call to the procedure.
    -- This procedure updates the Lock field of Lock_Context according to the provided Lock_Call
@@ -491,7 +494,7 @@ package body Rules.Unsafe_Paired_Calls is
             -- Check that there is no call to same lock in enclosing scopes
             -- Note that this check is done (and this SP later added) when we encounter
             -- a *call*, i.e. after the declarative part of the enclosing unit.
-            -- Therefore, this will *not* prevent having P/V pairs in enclosed subprograms,
+            -- Therefore, this will *not* prevent having P/V pairs in nested subprograms,
             -- even if the outer one also has P/V pairs, as it should be.
             Active_Procs.Reset (Scope_Manager.All_Scopes);
             while Active_Procs.Data_Available loop
@@ -581,7 +584,7 @@ package body Rules.Unsafe_Paired_Calls is
 
          function Next_Nonnull_Statement (Stmt : Asis.Statement) return Asis.Statement is
          -- Returns the statement following Stmt, skipping any null statements.
-         -- Returns Nil_Element is Stmt is last in its sequence, or followed only by null statements
+         -- Returns Nil_Element if Stmt is last in its sequence, or followed only by null statements
             Sequence : constant Asis.Statement_List := Thick_Queries.Statements (Enclosing_Element (Stmt));
             Inx : Asis.List_Index := Sequence'First;
          begin
@@ -614,7 +617,7 @@ package body Rules.Unsafe_Paired_Calls is
          end loop;
 
          -- Find matching opening call
-         if Element_Kind (Enclosing) = An_Exception_Handler then
+         if Element_Kind (Enclosing) = An_Exception_Handler then  -- TBSL duplicated?
             -- Since the handler is a nested scope
             Active_Procs.Reset (All_Scopes);
          else

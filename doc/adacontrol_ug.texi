@@ -10462,6 +10462,9 @@ reference that designates the ``lock'' object, passed as an
 which must be discrete or access, and the rule will control that all
 matching pairs of calls refer statically to the same value (for
 discrete types) or to the same constant  (for access types).
+
+Since this rule is safety related, staticness is
+``RM_Static''. @xref{Rules reference}.
 @end itemize
 
 As usual, the whole syntax for entities is allowed for
