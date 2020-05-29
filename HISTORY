@@ -11,6 +11,8 @@ Possibility to define any custom output format
 Add data flow analysis, to extend cases that are
    statically determinable, improves several rules.
 
+Support for the new ASIS tree generator
+
 New rule:
 ---------
 Known_Exceptions

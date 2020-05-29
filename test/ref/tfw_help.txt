@@ -1016,6 +1016,7 @@ Special modes:
    -h <rule>... prints specific rule(s) help (<rule> can be a regexp)
    -h all       prints all rules help
    -h commands  prints commands help
+   -h generator prints path to the ASIS tree generator program
    -h license   prints license information
    -h list      prints all rules names (GPS format)
    -h options   prints command-line options help

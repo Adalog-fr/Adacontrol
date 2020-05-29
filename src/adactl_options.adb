@@ -129,6 +129,7 @@ package body Adactl_Options is
       User_Message ("   -h <rule>... prints specific rule(s) help (<rule> can be a regexp)");
       User_Message ("   -h all       prints all rules help");
       User_Message ("   -h commands  prints commands help");
+      User_Message ("   -h generator prints path to the ASIS tree generator program");
       User_Message ("   -h license   prints license information");
       User_Message ("   -h list      prints all rules names (GPS format)");
       User_Message ("   -h options   prints command-line options help");

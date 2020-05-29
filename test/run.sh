@@ -54,6 +54,7 @@ if [ -z $EXECUTABLE ] ; then
     echo "No AdaControl executable found"
     exit
 fi
+PRECOMP="`$EXECUTABLE -h generator 2>&1 | tr -d [:cntrl:] | tr \\\\\\\\ /` -c -gnatct"
 
 # Check if Ada95 is supported
 echo "procedure junk is begin null; end;" >junk.adb
@@ -165,7 +166,7 @@ if [ $SPEEDUP = 0 ] ; then
     sed -i "/with ASIS/s/with ASIS.*$//" res/${test_case}.txt
 
     # This one requires precompilation, or some trees will be missing
-    $GCC -c -gnatct xfw_inhibit.adb tfw_inhibit_?.ad[sb]
+    $PRECOMP xfw_inhibit.adb tfw_inhibit_?.ad[sb]
     test_case=tfw_inhibit
     nb_fw=$((nb_fw+1))
     ${ADACTL} -w -f conf/${test_case}.aru ${test_case}_*.ad[sb] \

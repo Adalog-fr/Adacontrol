@@ -86,14 +86,15 @@ package body Framework.Language.Commands is
       User_Message ("Commands:");
       User_Message ("   Clear all|<rule name> ;");
       User_Message ("   Go;");
-      User_Message ("   Help all|commands|license|list|options|rules|version|<rule name> {,...};");
+      User_Message ("   Help all|commands|generator|license|list|options|rules|version" &
+                        "|variables {""<pattern>""}|<rule name> {,...} ;");
       User_Message ("   Inhibit <rule name> (<unit>{,<unit>});");
       User_Message ("   Message ""<message>"" [pause];");
       User_Message ("   Quit;");
       User_Message ("   Rule_file_off ""<pattern>"" all | <rule name> {,<rule name>}");
       User_Message ("   Set check_key|search_key ""<key>""");
       User_Message ("   Set format gnat|gnat_long|gnat_short|csv|csv_long|csv_short|csvx|csvx_long|csvx_short" &
-        "|source|source_long|source_short|none;");
+                        "|source|source_long|source_short|none;");
       User_Message ("   Set output <output file>;");
       User_Message ("   Set statistics <level: 0 .." & Stats_Levels'Wide_Image (Stats_Levels'Last) & ">;");
       User_Message ("   Set trace <trace file>;");
@@ -289,7 +290,7 @@ package body Framework.Language.Commands is
    procedure Help_Command (On : in Wide_String) is
       use Ada.Strings, Ada.Strings.Wide_Fixed;
       use Asis.Implementation;
-      use Adactl_Options, Framework.Rules_Manager;
+      use Adactl_Options, Implementation_Options, Framework.Rules_Manager;
 
       Upper_On : constant Wide_String := To_Upper (On);
    begin
@@ -298,6 +299,9 @@ package body Framework.Language.Commands is
 
       elsif Upper_On = "COMMANDS" then
          Help_On_Commands;
+
+      elsif Upper_On = "GENERATOR" then
+         User_Message (Tree_Generator);
 
       elsif Upper_On = "LICENSE" then
          User_Message (Copyright_1);
