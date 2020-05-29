@@ -736,6 +736,9 @@ package body Framework.Object_Tracker is
       else
          Is_Discriminant := False;
       end if;
+      if Is_Nil (Good_Var) then -- Renaming of dereference for example
+         return Unknown_Value (Untracked);
+      end if;
 
       -- TBSL: if the variable/discriminant is not tracked, return at least the constraint from the subtype
       if Is_Discriminant then
