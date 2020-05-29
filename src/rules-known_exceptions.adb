@@ -47,6 +47,7 @@ with
   Framework.Object_Tracker,
   Framework.Rules_Manager,
   Framework.Reports;
+pragma Elaborate (Framework.Language);
 
 package body Rules.Known_Exceptions is
    use Framework, Framework.Control_Manager;
