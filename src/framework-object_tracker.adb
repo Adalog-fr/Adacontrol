@@ -735,6 +735,7 @@ package body Framework.Object_Tracker is
          Good_Discr      := Selector (Var);
       else
          Is_Discriminant := False;
+         Good_Var        := Ultimate_Name (Var);
       end if;
       if Is_Nil (Good_Var) then -- Renaming of dereference for example
          return Unknown_Value (Untracked);
@@ -761,8 +762,6 @@ package body Framework.Object_Tracker is
             end;
          end;
       else  -- No discriminant => Variable identifier
-         Is_Discriminant := False;
-         Good_Var        := Ultimate_Name (Var);
          declare
             Var_Queue : constant Simple_Descr_List.Queue := Simple_Object_Table.Fetch
                                                              (Good_Var, Default => Simple_Descr_List.Empty_Queue);

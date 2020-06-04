@@ -136,7 +136,7 @@ package body Rules.Known_Exceptions is
       use Asis, Asis.Elements, Asis.Expressions;
       use Framework.Locations, Framework.Reports, Thick_Queries;
    begin
-      if not Rule_Used (SR_Index) then
+      if not Rule_Used (SR_Access) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
@@ -287,7 +287,15 @@ package body Rules.Known_Exceptions is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      Current_Branch := Corresponding_Name_Declaration (Selector (Expr)); -- TBH: not yet a variant
+      begin
+         Current_Branch := Corresponding_Name_Declaration (Selector (Expr)); -- TBH: not yet a variant
+      exception
+         when Asis.Exceptions.ASIS_Inappropriate_Element =>
+            -- Raised by Corresponding_Name_Declaration of predefined "special" identifiers, like the
+            -- ones that are part of pragmas.
+            -- Anyway, these have no value and are not tracked.
+            return;
+      end;
       if Declaration_Kind (Current_Branch) /= A_Component_Declaration then
          return;
       end if;
@@ -355,13 +363,6 @@ package body Rules.Known_Exceptions is
          end;
          Current_Branch := Enclosing_Element (Enclosing_Element (Current_Branch));
       end loop;
-
-   exception
-      when Asis.Exceptions.ASIS_Inappropriate_Element =>
-         -- Raised by Corresponding_Name_Declaration of predefined "special" identifiers, like the
-         -- ones that are part of pragmas.
-         -- Anyway, these have no value and are not tracked.
-         return;
    end Process_Selected_Component;
 
 
