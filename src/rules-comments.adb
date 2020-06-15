@@ -189,7 +189,7 @@ package body Rules.Comments is
 
             if Pos_Bounds (Ctl_Kind) /= Unlimited_Bounds then
                Parameter_Error (Rule_Id,
-                                "subrule ""Position"" already specified for " & Ctl_Kind'Wide_Image);
+                                "subrule ""Position"" already specified for " & Control_Kinds'Wide_Image(Ctl_Kind));
             end if;
 
             Pos_Bounds (Ctl_Kind) := Get_Bounds_Parameters (Rule_Id, Bound_Min => 1, Allow_Single => True);
@@ -265,7 +265,8 @@ package body Rules.Comments is
          when Unnamed_End_Record =>
             if Unnamed_End_Record_Contexts (Ctl_Kind).Used then
                Parameter_Error (Rule_Id,
-                                "Subrule ""Unnamed_End_Record"" already specified for" & Ctl_Kind'Wide_Image);
+                                "Subrule ""Unnamed_End_Record"" already specified for"
+                                & Control_Kinds'Wide_Image (Ctl_Kind));
             end if;
 
             Unnamed_End_Record_Contexts (Ctl_Kind) := (Basic.New_Context (Ctl_Kind, Ctl_Label) with

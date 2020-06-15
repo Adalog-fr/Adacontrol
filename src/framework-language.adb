@@ -459,6 +459,7 @@ package body Framework.Language is
 
                               Next_Token;
                               Close_Command;
+
                            else   -- Not file options, regular variables
                               Next_Token;
 

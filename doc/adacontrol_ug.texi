@@ -1020,7 +1020,7 @@ equivalent to the command ``@code{set ignore INVERTED;}''.
 @subsection Verbose and debug mode
 In the default mode, AdaControl displays only messages from triggered
 controls. It is possible to get more information with the verbose
-option (``-v''). In this mode, AdaControl displays a a progress
+option (``-v''). In this mode, AdaControl displays a progress
 indicator  and unit names as they are processed, and its global
 execution time when it finishes. Note that the progress indicator
 includes an indication of the run number if there are more than one
