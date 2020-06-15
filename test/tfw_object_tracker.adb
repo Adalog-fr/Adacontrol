@@ -515,6 +515,58 @@ begin
       end if;
    end Access_Discriminants;
 
+   -- Check Unknown bounds, obtained from type
+   declare
+      type Int is range 1 .. 10;
+      type Rec (D : Int) is null record;
+
+      function F return Int is
+      begin
+         return 5;
+      end F;
+      V1 : Int := 2;
+      V2 : Int := 2;
+      V3 : Integer;  -- Predefined type
+      D1 : Rec := (D => 5);
+      D2 : Rec := (D => F);
+
+      type Reca (D : access Integer) is null record;
+      Da : Reca (new Integer'(1));
+      Db : Reca (new Integer'(1));
+
+      procedure P is
+      begin
+         V2 := 3;
+         D2 := (D => 1);
+         Da := Da;
+      end P;
+   begin
+      if V1 = 2 then            -- True
+         null;
+      end if;
+      if V2 = 2 then            -- Unknown
+         null;
+      end if;
+      if V2 in 1 .. 10 then     -- True
+         null;
+      end if;
+      if V3 > Integer'Last then -- False
+         null;
+      end if;
+      if D1.D in 1 .. 10 then   -- True
+         null;
+      end if;
+      if D2.D in 1 .. 10 then   -- True
+         null;
+      end if;
+      if Da.D = null then       -- unknown
+         null;
+      end if;
+      if Db.D = null then       -- True
+         null;
+      end if;
+   end;
+
    I := 10; -- This assignment to (possibly) fool the exception handler
 exception
       -- check handlers

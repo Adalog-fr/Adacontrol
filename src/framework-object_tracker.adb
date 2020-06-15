@@ -185,6 +185,55 @@ package body Framework.Object_Tracker is
    end Discriminant_Index;
 
    ---------------------
+   -- Build_Value_Set --
+   ---------------------
+
+   Not_Supported_Type : exception;
+
+   function Build_Value_Set (Def : Asis.Definition) return Object_Value_Set is
+      use Asis.Declarations, Asis.Elements, Asis.Expressions;
+      Kind : Asis.Type_Kinds;
+      Decl : Asis.Declaration;
+   begin
+      if Definition_Kind (Def) = A_Subtype_Indication then
+         Decl := Corresponding_Name_Declaration (Strip_Attributes (Subtype_Simple_Name (Def)));
+         if Declaration_Kind (Decl) = An_Incomplete_Type_Declaration then
+            -- Subtype of an incomplete type... Anyway, we know nothing about this
+            raise Not_Supported_Type;
+         end if;
+         Kind := Type_Kind (Type_Declaration_View (Corresponding_First_Subtype (Decl)));
+      else
+         Kind := Type_Kind (Def);
+      end if;
+      case Kind is
+         when Discrete_Type_Kinds =>
+            declare
+               Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (Def, RM_Static => False);
+               -- Bounds'Length = 0 in some crazy cases, like T'base...
+               Imin   : constant Extended_Biggest_Int := (if Bounds'Length = 0 then Not_Static else Bounds (1));
+               Imax   : constant Extended_Biggest_Int := (if Bounds'Length = 0 then Not_Static else Bounds (2));
+            begin
+               case Discrete_Type_Kinds'(Kind) is
+                  when An_Enumeration_Type_Definition =>
+                     return (Enumerated, Imin, Imax);
+                  when A_Signed_Integer_Type_Definition =>
+                     return (Integer, Imin, Imax);
+                  when A_Modular_Type_Definition =>
+                     return (Modular, Imin, Imax);
+               end case;
+            end;
+         when An_Access_Type_Definition =>
+            if Trait_Kind (Def) = A_Null_Exclusion_Trait then
+               return (Pointer, 1, Biggest_Int'Last);
+            else
+               return (Pointer, 0, Biggest_Int'Last);
+            end if;
+         when others =>
+            raise Not_Supported_Type;
+      end case;
+   end Build_Value_Set;
+
+   ---------------------
    -- Update_Variable --
    ---------------------
 
@@ -741,16 +790,22 @@ package body Framework.Object_Tracker is
          return Unknown_Value (Untracked);
       end if;
 
-      -- TBSL: if the variable/discriminant is not tracked, return at least the constraint from the subtype
       if Is_Discriminant then
          declare
+            use Asis.Declarations;
             Var_Queue : constant Discriminated_Descr_List.Queue := Discriminated_Object_Table.Fetch
                                                                     (Good_Var,
                                                                      Default => Discriminated_Descr_List.Empty_Queue);
+            Def : Asis.Definition;
          begin
             if Is_Empty (Var_Queue) then
-               -- Untracked variable
-               return Unknown_Value (Untracked);
+               -- Untracked variable, return at least the constraint from the subtype of the discriminant
+               Def := Object_Declaration_View (Corresponding_Name_Declaration (Good_Discr));
+               if Element_Kind (Def) = An_Expression then  -- a (sub)type name
+                  return Type_Table.Fetch (Def, Default => Unknown_Value (Untracked));
+               else
+                  return Unknown_Value (Untracked);
+               end if;
             end if;
             declare
                Descr_Table : constant Discriminated_Variable_Descr := Fetch (First (Var_Queue));
@@ -761,15 +816,22 @@ package body Framework.Object_Tracker is
                Var_Path      := Descr_Table.Attached_Path;
             end;
          end;
+
       else  -- No discriminant => Variable identifier
          declare
             Var_Queue : constant Simple_Descr_List.Queue := Simple_Object_Table.Fetch
                                                              (Good_Var, Default => Simple_Descr_List.Empty_Queue);
          begin
             if Is_Empty (Var_Queue) then
-               -- Untracked variable
-               return Unknown_Value (Untracked);
+               -- Untracked variable, get the bounds from the variable declaration
+               begin
+                  return Build_Value_Set (Thick_Queries.Corresponding_Expression_Type_Definition (Good_Var));
+               exception
+                  when Not_Supported_Type =>
+                     return Unknown_Value (Untracked);
+               end;
             end if;
+
             declare
                Var_Descr : constant Simple_Variable_Descr := Fetch (First (Var_Queue));
             begin
@@ -931,7 +993,7 @@ package body Framework.Object_Tracker is
          Good_Var := Ultimate_Name (Var);
          if Is_Nil (Good_Var)  -- Name includes a dereference
            or else Declaration_Kind (Corresponding_Name_Declaration (Good_Var))
-         in A_Component_Declaration | A_Parameter_Specification | A_Constant_Declaration
+                   in A_Component_Declaration | A_Parameter_Specification | A_Constant_Declaration
          then
             -- We don't track regular components, and we know nothing about the value of a formal parameter
             -- Normally, Process_Assignment should not be called on constants, but this can happen for
@@ -1104,6 +1166,7 @@ package body Framework.Object_Tracker is
          Range_Descriptor : Object_Value_Set;
          Initial_Value    : Extended_Biggest_Int;
          Bounds           : Extended_Biggest_Int_List (1 .. 2);
+         Obj_Type_Name    : Asis.Expression;
       begin
          case Type_Category (Obj_Def) is
             when An_Enumeration_Type =>
@@ -1122,10 +1185,20 @@ package body Framework.Object_Tracker is
          case Descriptor.Kind is
             when Discrete_Content_Kinds =>
                if Element_Kind (Obj_Def) = An_Expression then -- a subtype name
-                  Range_Descriptor := Type_Table.Fetch (Simple_Name (Obj_Def), Default => (Kind => Untracked));
+                  Obj_Type_Name := Simple_Name (Obj_Def);
+                  if Expression_Kind (Obj_Type_Name) = An_Attribute_Reference then
+                     -- Cannot be 'Class, therefore it's 'Base - and no way to get its bounds
+                     Range_Descriptor := Unknown_Value (Untracked);
+                  else
+                     Range_Descriptor := Type_Table.Fetch (Obj_Type_Name, Default => (Kind => Untracked));
+                     if Range_Descriptor.Kind = Untracked then
+                        -- Some predefined type, where the declaration has not been analyzed
+                        Process_Type_Declaration (Corresponding_Name_Declaration (Obj_Type_Name));
+                        Range_Descriptor := Type_Table.Fetch (Obj_Type_Name, Default => (Kind => Untracked));
+                     end if;
+                  end if;
                   if Range_Descriptor.Kind = Untracked then
-                     -- Some predefined type, where the declaration has not been analyzed
-                     -- TBSL force analysis of type here
+                     -- Really unknown
                      Descriptor.Declaration_Min := Biggest_Int'First;
                      Descriptor.Declaration_Max := Biggest_Int'Last;
                   else
@@ -1138,10 +1211,20 @@ package body Framework.Object_Tracker is
                  and then Is_Nil (Subtype_Constraint (Obj_Def))
                then
                   -- Get the bounds from the type
-                  Range_Descriptor := Type_Table.Fetch (Subtype_Simple_Name (Obj_Def), Default => (Kind => Untracked));
+                  Obj_Type_Name := Subtype_Simple_Name (Obj_Def);
+                  if Expression_Kind (Obj_Type_Name) = An_Attribute_Reference then
+                     -- Cannot be 'Class, therefore it's 'Base - and no way to get its bounds
+                     Range_Descriptor := Unknown_Value (Untracked);
+                  else
+                     Range_Descriptor := Type_Table.Fetch (Obj_Type_Name, Default => (Kind => Untracked));
+                     if Range_Descriptor.Kind = Untracked then
+                        -- Some predefined type, where the declaration has not been analyzed
+                        Process_Type_Declaration (Corresponding_Name_Declaration (Obj_Type_Name));
+                        Range_Descriptor := Type_Table.Fetch (Obj_Type_Name, Default => (Kind => Untracked));
+                     end if;
+                  end if;
                   if Range_Descriptor.Kind = Untracked then
-                     -- Some predefined type, where the declaration has not been analyzed
-                     -- TBSL force analysis of type here
+                     -- Really unknown
                      Descriptor.Declaration_Min := Biggest_Int'First;
                      Descriptor.Declaration_Max := Biggest_Int'Last;
                   else
@@ -1167,11 +1250,18 @@ package body Framework.Object_Tracker is
 
             when Pointer =>
                if Element_Kind (Obj_Def) = An_Expression then -- a subtype name
-                  Range_Descriptor := Type_Table.Fetch (Simple_Name (Obj_Def), Default => (Kind => Untracked));
+                  Obj_Type_Name := Strip_Attributes (Simple_Name (Obj_Def));
+                  -- The only possible attribute is 'Base, which is the same as the type for an access type
+
+                  Range_Descriptor := Type_Table.Fetch (Obj_Type_Name, Default => (Kind => Untracked));
                   if Range_Descriptor.Kind = Untracked then
-                     -- Some predefined type, where the declaration has not been analyzed
-                     -- TBSL force analysis of type here
-                     Descriptor.Declaration_Min := 0;  -- No predefined type has null exclusion
+                     -- The type declaration has not been analyzed (predefined, or defined in a non-analyzed unit)
+                     Process_Type_Declaration (Corresponding_Name_Declaration (Obj_Type_Name));
+                     Range_Descriptor := Type_Table.Fetch (Obj_Type_Name, Default => (Kind => Untracked));
+                  end if;
+                  if Range_Descriptor.Kind = Untracked then
+                     -- Really unaccessible
+                     Descriptor.Declaration_Min := 0;
                      Descriptor.Declaration_Max := Biggest_Int'Last;
                   else
                      Descriptor.Declaration_Min := Range_Descriptor.Imin;
@@ -1599,47 +1689,16 @@ package body Framework.Object_Tracker is
 
    procedure Process_Type_Declaration (Decl : in Asis.Declaration) is
       use Asis.Declarations, Asis.Elements;
-
-      subtype Discrete_Type_Kinds is Asis.Type_Kinds range An_Enumeration_Type_Definition .. A_Modular_Type_Definition;
-      Descr         : Object_Value_Set;
-      Ultimate_Type : constant Asis.Declaration := Ultimate_Type_Declaration (Decl);
-      Kind          : Asis.Type_Kinds;
    begin
-      if Is_Nil (Ultimate_Type) then
+      if Is_Nil (Ultimate_Type_Declaration (Decl)) then
          -- Some crazy cases, like a subtype of a type declared in a limited-withed package...
          -- Give up, we know nothing about the type
          return;
       end if;
-
-      Kind := Type_Kind (Type_Declaration_View (Ultimate_Type));
-      case Kind is
-         when Discrete_Type_Kinds =>
-            declare
-               Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (Decl, RM_Static => False);
-               -- Bounds'Length = 0 in some crazy cases, like T'base...
-               Imin   : constant Extended_Biggest_Int := (if Bounds'Length = 0 then Not_Static else Bounds (1));
-               Imax   : constant Extended_Biggest_Int := (if Bounds'Length = 0 then Not_Static else Bounds (2));
-            begin
-               case Discrete_Type_Kinds'(Kind) is
-                  when An_Enumeration_Type_Definition =>
-                     Descr := (Enumerated, Imin, Imax);
-                  when A_Signed_Integer_Type_Definition =>
-                     Descr := (Integer, Imin, Imax);
-                  when A_Modular_Type_Definition =>
-                     Descr := (Modular, Imin, Imax);
-               end case;
-            end;
-         when An_Access_Type_Definition =>
-            if Trait_Kind (Type_Declaration_View (Decl)) = A_Null_Exclusion_Trait then
-               Descr := (Pointer, 1, Biggest_Int'Last);
-            else
-               Descr := (Pointer, 0, Biggest_Int'Last);
-            end if;
-         when others =>
-            return;
-      end case;
-
-      Type_Table.Store (Names (Decl) (1), Descr);
+      Type_Table.Store (Names (Decl) (1), Build_Value_Set (Type_Declaration_View (Decl)));
+   exception
+      when Not_Supported_Type =>
+         return;
    end Process_Type_Declaration;
 
 begin  -- Framework.Object_Tracker
