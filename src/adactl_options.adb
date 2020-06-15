@@ -44,6 +44,7 @@ with
 
 -- Adactl
 with
+  Framework.Language,
   Framework.Reports;
 
 package body Adactl_Options is
@@ -281,6 +282,18 @@ package body Adactl_Options is
          end if;
       end Flag_To_Command;
 
+      procedure Execute_Command (Option : Character; Param : Wide_String; Inverted : Boolean := False) is
+         use Framework.Language;
+      begin
+         if Is_Present (Option) or else Project.Tool_Switch_Present ("adacontrol", '-' & Option) then
+            if Inverted then
+               Execute ("set " & Param & " off;");
+            else
+               Execute ("set " & Param & " on;");
+            end if;
+         end if;
+      end Execute_Command;
+
       procedure Value_To_Command (Option : Character;
                                   Param    : Wide_String;
                                   Required : Boolean := True;
@@ -417,7 +430,9 @@ package body Adactl_Options is
       Value_To_Command ('S', "set statistics");
       Value_To_Command ('t', "set trace");
       Flag_To_Command  ('T', "timing");
-      Flag_To_Command  ('v', "verbose");
+
+      -- Verbose must be set before we start analyzing
+      Execute_Command  ('v', "verbose");
 
       -- add commands from file
       if Is_Present (Option => 'f') then
