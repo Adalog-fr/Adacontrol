@@ -32,10 +32,12 @@ with
   Asis.Declarations,
   Asis.Definitions,
   Asis.Elements,
-  Asis.Expressions;
+  Asis.Expressions,
+  Asis.Limited_Views;
 
 -- Adalog
 with
+  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -348,7 +350,7 @@ package body Rules.Type_Usage is
 
    procedure Process_Attribute (Attribute : Asis.Expression) is
       use Framework.Control_Manager, Framework.Locations, Thick_Queries, Utilities;
-      use Asis, Asis.Elements, Asis.Expressions;
+      use Asis, Asis.Elements, Asis.Expressions, Asis.Limited_Views;
    begin
       if not Rule_Used (Sr_Attribute) then
          return;
@@ -358,8 +360,11 @@ package body Rules.Type_Usage is
          Iterator  : Context_Iterator := Attribute_Iterator.Create;
          Attr_Name : constant Wide_String := ''' & To_Upper (Attribute_Name_Image (Attribute));
          Cat_Name  : constant Wide_String := Image (Type_Category (Prefix (Attribute), Follow_Derived => True));
-         Pfx_Name  : constant Asis.Expression := Simple_Name (Strip_Attributes (Attribute));
+         Pfx_Name  : Asis.Expression      := Simple_Name (Strip_Attributes (Attribute));
       begin
+         if Is_From_Limited_View (Pfx_Name) then
+            Pfx_Name := A4G_Bugs.Get_Nonlimited_View (Pfx_Name);
+         end if;
          if Expression_Kind (Pfx_Name) /= An_Identifier
            or else Declaration_Kind (Corresponding_Name_Declaration (Pfx_Name))
                    not in An_Ordinary_Type_Declaration .. A_Subtype_Declaration

@@ -39,6 +39,7 @@ with
   Asis.Elements,
   Asis.Exceptions,
   Asis.Expressions,
+  Asis.Limited_Views,
   Asis.Statements;
 
 -- Adalog
@@ -545,6 +546,7 @@ package body Rules.Naming_Convention is
                        Object_Category : in Categories   := Cat_Any;
                        Object_Type     : in Asis.Element := Asis.Nil_Element)
       is
+         use Asis.Limited_Views;
          use Scope_Manager;
 
          Is_Program_Unit         : constant Boolean := Is_Equal (Decl, Current_Scope);
@@ -554,6 +556,9 @@ package body Rules.Naming_Convention is
          Good_Cat                : Categories := Object_Category;
          Global_Applicable_Found : Boolean := False;
          Last_Position           : Iterator_Position;
+         Good_Object_Type        : constant Asis.Element := (if Is_From_Limited_View (Object_Type)
+                                                             then A4G_BUgs.Get_Nonlimited_View (Object_Type)
+                                                             else Object_Type);
 
          procedure Check_One_Key (Key : in Keys) is
             use Visibility_Utilities, Framework.Locations, Framework.Reports;
@@ -628,27 +633,33 @@ package body Rules.Naming_Convention is
          begin   -- Check_One_Key
 
             -- Check with type
-            case Element_Kind (Object_Type) is
+            case Element_Kind (Good_Object_Type) is
                when A_Definition =>
-                  if Definition_Kind (Object_Type) = A_Subtype_Indication then
+                  if Definition_Kind (Good_Object_Type) = A_Subtype_Indication then
                      Type_Def_Name :=  Corresponding_Name_Definition (Simple_Name
                                                                       (Strip_Attributes
-                                                                       (Subtype_Simple_Name (Object_Type))));
+                                                                         (Subtype_Simple_Name (Good_Object_Type))));
+                     if Is_From_Limited_View (Type_Def_Name) then
+                        Type_Def_Name := A4G_Bugs.Get_Nonlimited_View (Type_Def_Name);
+                     end if;
                      OK_For_Type := True;
                   else
                      -- Other Definition_Kinds are for anonymous types, cannot match an entity_specification
                      OK_For_Type := False;
                   end if;
                when A_Defining_Name =>
-                  Type_Def_Name := Object_Type;
+                  Type_Def_Name := Good_Object_Type;
                   OK_For_Type   := True;
                when An_Expression =>  -- Should be an identifier
-                  Type_Def_Name := Corresponding_Name_Definition (Simple_Name (Strip_Attributes (Object_Type)));
+                  Type_Def_Name := Corresponding_Name_Definition (Simple_Name (Strip_Attributes (Good_Object_Type)));
+                  if Is_From_Limited_View (Type_Def_Name) then
+                     Type_Def_Name := A4G_Bugs.Get_Nonlimited_View (Type_Def_Name);
+                  end if;
                   OK_For_Type   := True;
                when Not_An_Element =>
                   OK_For_Type := False;
                when others =>
-                  Failure ("Check_One_Key : bad Object_Type", Object_Type);
+                  Failure ("Check_One_Key : bad Object_Type", Good_Object_Type);
             end case;
 
             if OK_For_Type  then
@@ -742,8 +753,8 @@ package body Rules.Naming_Convention is
                          Scope_Global => Is_Global,
                          Scope_Unit   => Is_Compilation_Unit);
 
-         if Good_Cat = Cat_Any and not Is_Nil (Object_Type) then
-            Good_Cat := Matching_Category  (Object_Type,
+         if Good_Cat = Cat_Any and not Is_Nil (Good_Object_Type) then
+            Good_Cat := Matching_Category  (Good_Object_Type,
                                             From_Cats => Categories_Utilities.Modifier_Set'
                                                           (Cat_New | Cat_Extension => False,
                                                            others                  => True),
