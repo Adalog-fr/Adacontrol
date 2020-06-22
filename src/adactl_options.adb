@@ -395,6 +395,15 @@ package body Adactl_Options is
       -- Options that are translated into the command language
       --
 
+      -- Special case for Debug_Option: we must initialize the flag directly here, because it
+      -- is needed by the ASIS initialization string. Note that this means that the presence or
+      -- absence of the bug box (-nbb option) depends only on the command line, and not on subsequent
+      -- "set debug on/off"
+      -- Must also be set first, in case we want to debug Options_Commands, f.e.
+      -- Verbose must also be set before we start analyzing
+      Execute_Command  ('d', "debug");
+      Execute_Command  ('v', "verbose");
+
       -- Defaults from the ADACTLINI environment variable
       if Exists ("ADACTLINI") then
          Append (Options_Commands, To_Wide_String (Value ("ADACTLINI")));
@@ -405,12 +414,6 @@ package body Adactl_Options is
             Append (Options_Commands, ';');
          end if;
       end if;
-
-      -- Special case for Debug_Option: we must initialize the flag directly here, because it
-      -- is needed by the ASIS initialization string. Note that this means that the presence or
-      -- absence of the bug box (-nbb option) depends only on the command line, and not on subsequent
-      -- "set debug on/off"
-      Utilities.Debug_Option := Is_Present ('d');
 
       -- Command line parameters come first, since they define the default behaviour
       -- for commands given in the file (-f) and -l options
@@ -430,9 +433,6 @@ package body Adactl_Options is
       Value_To_Command ('S', "set statistics");
       Value_To_Command ('t', "set trace");
       Flag_To_Command  ('T', "timing");
-
-      -- Verbose must be set before we start analyzing
-      Execute_Command  ('v', "verbose");
 
       -- add commands from file
       if Is_Present (Option => 'f') then
