@@ -726,7 +726,7 @@ package body Framework.Object_Tracker is
 
       Good_Decl       : Asis.Declaration;
       Good_Var        : Asis.Expression;
-      Good_Discr      : Asis.Name;
+      Good_Discr      : Asis.Defining_Name;
       Descriptor      : Value_Descr;
       Path_Assigned   : Boolean;
       Var_Path        : Asis.Element;
@@ -772,7 +772,11 @@ package body Framework.Object_Tracker is
       if not Is_Nil (Discr) then
          Is_Discriminant := True;
          Good_Var        := Ultimate_Name (Var);
-         Good_Discr      := Discr;
+         if Element_Kind (Discr) = A_Defining_Name then
+            Good_Discr := Discr;
+         else
+            Good_Discr := Corresponding_Name_Definition (Good_Discr);
+         end if;
       elsif Expression_Kind (Var) = A_Selected_Component then
          if Declaration_Kind (Corresponding_Name_Declaration (Selector (Var))) /= A_Discriminant_Specification then
             -- Selected_Component, not discriminant => not tracked
@@ -781,7 +785,7 @@ package body Framework.Object_Tracker is
 
          Is_Discriminant := True;
          Good_Var        := Ultimate_Name (Prefix (Var));
-         Good_Discr      := Selector (Var);
+         Good_Discr      := Corresponding_Name_Definition (Selector (Var));
       else
          Is_Discriminant := False;
          Good_Var        := Ultimate_Name (Var);
@@ -800,7 +804,7 @@ package body Framework.Object_Tracker is
          begin
             if Is_Empty (Var_Queue) then
                -- Untracked variable, return at least the constraint from the subtype of the discriminant
-               Def := Object_Declaration_View (Corresponding_Name_Declaration (Good_Discr));
+               Def := Object_Declaration_View (Enclosing_Element (Good_Discr));
                if Element_Kind (Def) = An_Expression then  -- a (sub)type name
                   return Type_Table.Fetch (Def, Default => Unknown_Value (Untracked));
                else
