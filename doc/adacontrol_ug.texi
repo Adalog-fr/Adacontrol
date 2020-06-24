@@ -345,13 +345,29 @@ to remove some rules from AdaControl to increase its
 speed. @xref{Customizing AdaControl}.
 
 @menu
+* Prerequisites::
 * Building and installing AdaControl from source::
 * Installing an executable distribution::
 * Installing support for AdaGide::
 * Installing support for GNATdashboard integration::
 @end menu
 
-@node  Building and installing AdaControl from source, Installing an executable distribution, Installation, Installation
+@node Prerequisites, Building and installing AdaControl from source, Installation, Installation
+@section Prerequisites
+AdaControl is supported only in conjunction with the Gnat
+compiler. For versions up to GnatPro 20.2 and GnatCE 2019, you just
+need the compiler installed.
+
+Starting from GnatPro 21.0, you'll need to install AdaCore's ASISTools
+package. This package is installed by default in Gnat's root
+directory. If you choose to install it in a different location, you
+need to set the environment variable @code{ASISGCC} to the path to the
+@code{asis-gcc} executable which is part of the ASISTools
+installation. It is normally of the form
+@code{<install-directory>/asis-gnsa/libexec/bin/asis-gcc}. Alternatively,
+you can pass the ASIS option @code{--GCC=} to AdaControl; @xref{ASIS options}.
+
+@node  Building and installing AdaControl from source, Installing an executable distribution, Prerequisites, Installation
 @section Building and installing AdaControl from source
 This section is only for the source distribution of AdaControl. If you
 downloaded an executable distribution (and are using the latest
@@ -1073,19 +1089,27 @@ adactl -x -f my_rules.aru proc.adb
 Everything that appears on the command line after ``-@w{}-'' will be
 treated as an ASIS option, as described in the ASIS user manual.
 
-Casual users don't need to care about ASIS options, except in one
-case: if you are running AdaControl from the command line (not from
-GPS), and if the units that you are processing reference other units
-whose source is not in the same directory, AdaControl needs to know
-how to access these units (as GNAT would). This can be done either by
-using a project file with the ``-p'' option (see @ref{Project
-files}), by putting the appropriate directories into the
-ADA_INCLUDE_PATH environment variable, or by passing ``-I'' options to
-ASIS.
+Casual users don't need to care about ASIS options, except in two
+cases:
+@itemize @bullet
+@item
+if you are using GnatPro 21.0 and above and GnatTools is not installed
+in the default location. You can pass the path to @code{asis-gcc} as
+``-@w{}-GCC=<path to asis-gcc>''.
+@item
+if you are running AdaControl from the command line (not from
+GPS/GnatStudio), you are not using a project file (``-p'' option, see
+@ref{Project files}), and if the units that you are processing
+reference other units whose source is not in the same directory;
+AdaControl needs to know how to access these units (as GNAT
+would). This can be done either by putting the appropriate directories
+into the ADA_INCLUDE_PATH environment variable, or by passing ``-I''
+options to ASIS.
 
 It is possible to pass one or several ``-I'' options to ASIS, to
 provide other directories where sources can be found. The syntax is
 the same as the ``-I'' option for GNAT.
+@end itemize
 
 Other ASIS options, like the ``-Cx'' and/or ``-Fx'' options, can be
 specified. Most users can ignore this feature; however, specifying
@@ -2118,6 +2142,11 @@ system} (under Windows, you can click on ``Report problem'' in the
 AdaControl Start menu). Please include the exact control and the unit
 that caused the problem, as well as the captured output of the program
 (with ``-dx'' option).
+
+@subsection gnat1: invalid switch: -gnatt
+This happens if you are running GnatPro 21.0 and above, and either
+you have not installed the ASISTools package, or have it installed in a
+non-standard location. @xref{Prerequisites}.
 
 @subsection AdaControl stuck in infinite loop
 If AdaControl seems to be frozen, first make sure that it is not
