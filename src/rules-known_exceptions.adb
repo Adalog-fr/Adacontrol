@@ -307,9 +307,9 @@ package body Rules.Known_Exceptions is
          declare
             Possible_Values : constant Asis.Element_List := Variant_Choices (Current_Branch);
             Discr_Value     : constant Object_Value_Set  := Discriminant_Value (Prefix (Expr),
-                                                                                          Discriminant_Direct_Name
-                                                                                           (Enclosing_Element
-                                                                                            (Current_Branch)));
+                                                                                Discriminant_Direct_Name
+                                                                                 (Enclosing_Element
+                                                                                  (Current_Branch)));
             Bounds          : Extended_Biggest_Int_List (1 .. 2);
             Possibly_Inside : Boolean := False;
          begin

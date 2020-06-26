@@ -1,3 +1,5 @@
+-- Objective: test proper behaviour of object tracker
+
 procedure Tfw_Object_Tracker is
    C_One : constant Integer := 1;
    I     : Integer          := 0;
@@ -559,10 +561,10 @@ begin
       if D2.D in 1 .. 10 then   -- True
          null;
       end if;
-      if Da.D = null then       -- unknown
+      if Da.D = null then       -- Unknown
          null;
       end if;
-      if Db.D = null then       -- True
+      if Db.D = null then       -- False
          null;
       end if;
    end;

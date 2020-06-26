@@ -557,7 +557,7 @@ package body Rules.Naming_Convention is
          Global_Applicable_Found : Boolean := False;
          Last_Position           : Iterator_Position;
          Good_Object_Type        : constant Asis.Element := (if Is_From_Limited_View (Object_Type)
-                                                             then A4G_BUgs.Get_Nonlimited_View (Object_Type)
+                                                             then A4G_Bugs.Get_Nonlimited_View (Object_Type)
                                                              else Object_Type);
 
          procedure Check_One_Key (Key : in Keys) is
