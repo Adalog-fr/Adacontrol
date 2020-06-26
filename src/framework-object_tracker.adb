@@ -1316,13 +1316,6 @@ package body Framework.Object_Tracker is
       Subtype_Name : Asis.Expression;
       Is_Parameter : Boolean;
    begin  -- Process_Object_Declaration
-      case Declaration_Kind (Enclosing_Element (Enclosing_Program_Unit (Decl))) is
-         when A_Package_Declaration | A_Generic_Package_Declaration | A_Package_Body_Declaration =>
-            return;
-         when others =>
-            null;
-      end case;
-
       if Corresponding_Aspects (Decl, "VOLATILE") /= Nil_Element_List
         or else Corresponding_Pragma_Set (Decl) (A_Volatile_Pragma)
       then -- Variable is volatile
