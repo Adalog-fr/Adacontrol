@@ -196,7 +196,7 @@ package body Framework.Object_Tracker is
       Decl : Asis.Declaration;
    begin
       if Definition_Kind (Def) = A_Subtype_Indication then
-         Decl := Corresponding_Name_Declaration (Strip_Attributes (Subtype_Simple_Name (Def)));
+         Decl := Corresponding_Name_Declaration (Simple_Name (Strip_Attributes (Subtype_Simple_Name (Def))));
          if Declaration_Kind (Decl) = An_Incomplete_Type_Declaration then
             -- Subtype of an incomplete type... Anyway, we know nothing about this
             raise Not_Supported_Type;
@@ -1334,7 +1334,9 @@ package body Framework.Object_Tracker is
          if Element_Kind (Def) = An_Expression then
          -- Case of formal parameters: Object_Declaration_View returns a name, not a definition
          -- (except for the case of access parameters, sigh...)
-            Def := Type_Declaration_View (Corresponding_Name_Declaration (Simple_Name (Strip_Attributes (Def))));
+            Def := Type_Declaration_View (Corresponding_Full_Type_Declaration
+                                          (Corresponding_Name_Declaration
+                                           (Simple_Name (Strip_Attributes (Def)))));
          end if;
       end if;
 
@@ -1386,10 +1388,11 @@ package body Framework.Object_Tracker is
       declare
          -- We can ignore 'Class and 'Base below, since it doesn't change the discriminants
          Type_Discr_Part   : constant Asis.Definition := Discriminant_Part (Corresponding_First_Subtype
-                                                                            (Corresponding_Name_Declaration
-                                                                             (Simple_Name
-                                                                              (Strip_Attributes
-                                                                               (Subtype_Name)))));
+                                                                            (Corresponding_Full_Type_Declaration
+                                                                             (Corresponding_Name_Declaration
+                                                                              (Simple_Name
+                                                                               (Strip_Attributes
+                                                                                (Subtype_Name))))));
          Object_Constraint   : constant Asis.Constraint := (if Is_Parameter
                                                             then (if Definition_Kind (Def) = A_Type_Definition
                                                                   then Nil_Element

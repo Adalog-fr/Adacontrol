@@ -312,7 +312,7 @@ package body Rules.Return_Type is
          Do_Report (K_Class_Wide, Usage (K_Class_Wide), "function returns class-wide type");
          Good_Res := Simple_Name (Prefix (Good_Expr));
 
-         Result_Type_Declaration := Corresponding_Name_Declaration (Good_Res);
+         Result_Type_Declaration := Corresponding_First_Subtype (Corresponding_Name_Declaration (Good_Res));
          if Is_Limited (Result_Type_Declaration) then
             Do_Report (K_Limited_Class_Wide, Usage (K_Limited_Class_Wide), "function returns limited class-wide type");
          end if;
@@ -382,8 +382,9 @@ package body Rules.Return_Type is
             if Context = No_Matching_Context then
                declare
                   First_Context : constant Root_Context'Class := Matching_Context
-                    (Into => Searched_Return_Types,
-                     Name => Names (Corresponding_First_Subtype (Result_Type_Declaration)) (1));
+                                                                  (Into => Searched_Return_Types,
+                                                                   Name => Names (Corresponding_First_Subtype
+                                                                                  (Result_Type_Declaration)) (1));
                begin
                   if First_Context /= No_Matching_Context then
                      Do_Report (K_Type, First_Context,
