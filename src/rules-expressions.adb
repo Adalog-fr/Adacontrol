@@ -1053,7 +1053,11 @@ package body Rules.Expressions is
                   -- we must protect against predefined "*" and "/" on fixed points, since the result has no
                   -- well defined type.
                   -- This should be the only case where Source_Type_Def is Nil.
-                  if not Is_Nil (Source_Type_Def) then
+                  -- Not applicable either if the source is of an anonymous type (Definition not in a (sub)type
+                  if not Is_Nil (Source_Type_Def)
+                    and then Declaration_Kind (Enclosing_Element (Source_Type_Def))
+                             in A_Type_Declaration | A_Subtype_Declaration
+                  then
                      Source_Descr := Corresponding_Derivation_Description (Enclosing_Element (Source_Type_Def));
                      Target_Descr := Corresponding_Derivation_Description
                                       (Enclosing_Element
