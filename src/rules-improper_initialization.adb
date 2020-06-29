@@ -613,7 +613,7 @@ package body Rules.Improper_Initialization is
                   Uncheckable (Rule_Id,
                                False_Positive,
                                Get_Location (Name),
-                               "Entity is not statically determinable");
+                               "Entity is not statically determinable (dereference)");
                   return;
 
                when others =>

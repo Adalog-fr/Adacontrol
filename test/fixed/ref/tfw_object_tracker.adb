@@ -1,3 +1,5 @@
+-- Objective: test proper behaviour of object tracker
+
 procedure Tfw_Object_Tracker is
    C_One : constant Integer := 1;
    I     : Integer          := 0;

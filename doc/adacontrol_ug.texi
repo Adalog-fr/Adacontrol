@@ -11916,7 +11916,7 @@ The @code{Format},  @code{Format_Header}, @code{Count_Format}, and
 defines how messages and count reports are formated (like the format
 of the @code{printf} subprogram of the C language). These variables
 can be set normally with the ``@code{set}'' command. @xref{Set
-command}. In these strings, Some special character sequences are
+command}. In these strings, some special character sequences are
 substituted with various pieces of information; any other character or
 unrecognized sequence is output as is.
 

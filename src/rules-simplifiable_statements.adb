@@ -502,8 +502,8 @@ package body Rules.Simplifiable_Statements is
          Already_Fixed   : Boolean := False;
          All_Paths_Dead  : Boolean := False; -- after a statically True if/elsif
       begin
-         -- Special case for "if" path: if followed by "elsif", change it to "if". If followed by "else", replace
-         -- by the content of the "else" path. And if none of these, remove the whole if statement
+         -- Special case for fixing "if" path: if followed by "elsif", change it to "if". If followed by "else",
+         -- replace by the content of the "else" path. And if none of these, remove the whole if statement
          if First_Path_Cond = "0" then  -- "0" => False
             if Rule_Used (Stmt_Dead) then
                Report (Rule_Id,

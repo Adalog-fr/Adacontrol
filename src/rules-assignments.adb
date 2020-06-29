@@ -1290,7 +1290,7 @@ package body Rules.Assignments is
          Parent_Key   : Unbounded_Wide_String;
          Parent_Descr : LHS_Descriptor;
 
-         -- Adaptor function for identifiers (rather than subtypes)
+         -- Adaptor function for expressions (rather than subtypes)
          function Is_Class_Wide (E : Asis.Element) return Boolean is
             Simple_E : constant Asis.Expression := Simple_Name (E);
             Decl     : Asis.Declaration;

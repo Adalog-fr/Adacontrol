@@ -215,7 +215,6 @@ package body Rules.Known_Exceptions is
          Parent_Decl : Asis.Declaration;
          Discr_Name  : Asis.Defining_Name;
          Discr_Value : Asis.Expression := Nil_Element;
-         Var         : Asis.Expression;
          Def         : Asis.Definition;
       begin
          if Expression_Kind (Parent) in A_Function_Call | An_Indexed_Component then
@@ -244,6 +243,7 @@ package body Rules.Known_Exceptions is
          end if;
 
          -- Find the constraint of the parent
+
          Def := Subtype_Constraint (Constraining_Definition (Parent_Decl));
          if Is_Nil (Def) then
             -- No constraint => The discriminant is mutable, no idea what it is

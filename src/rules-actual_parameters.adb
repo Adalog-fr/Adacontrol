@@ -400,7 +400,7 @@ package body Rules.Actual_Parameters is
          end if;
 
          if Usage (SR_Default_Not_Used).Active then
-             if not Is_Defaulted then
+            if not Is_Defaulted then
                Report (Rule_Id,
                        Usage (SR_Default_Not_Used),
                        Get_Location (Call_Inst),
