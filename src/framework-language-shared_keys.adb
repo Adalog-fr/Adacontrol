@@ -29,7 +29,12 @@ with
   Asis.Declarations,
   Asis.Definitions,
   Asis.Elements,
-  Asis.Expressions;
+  Asis.Expressions,
+  Asis.Limited_Views;
+
+-- Adalog
+with
+  A4G_Bugs;
 
 -- Adacontrol
 with
@@ -461,11 +466,11 @@ package body Framework.Language.Shared_Keys is
    -------------------------------
 
    function Corresponding_Aspects_Set (Elem : Asis.Element) return Aspects_Set is
-      use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
+      use Asis, Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions, Asis.Limited_Views;
       use Thick_Queries, Utilities;
 
-      Decl         : Asis.Declaration;
-      Result       : Aspects_Set := (others => Absent);
+      Decl   : Asis.Declaration;
+      Result : Aspects_Set := (others => Absent);
    begin
       case Element_Kind (Elem) is
          when A_Declaration =>
@@ -477,6 +482,9 @@ package body Framework.Language.Shared_Keys is
          when others =>
             Failure ("Corresponding_Aspects_Set: incorrect elem", Elem);
       end case;
+      if Is_From_Limited_View (Decl) then
+         Decl := A4G_Bugs.Get_Nonlimited_View (Decl);
+      end if;
 
       for R : Asis.Representation_Clause of Corresponding_Representation_Clauses (Decl) loop
          case Representation_Clause_Kind (R) is

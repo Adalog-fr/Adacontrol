@@ -1335,9 +1335,13 @@ package body Framework.Object_Tracker is
          if Element_Kind (Def) = An_Expression then
          -- Case of formal parameters: Object_Declaration_View returns a name, not a definition
          -- (except for the case of access parameters, sigh...)
-            Def := Type_Declaration_View (Corresponding_Full_Type_Declaration
-                                          (Corresponding_Name_Declaration
-                                           (Simple_Name (Strip_Attributes (Def)))));
+            Def := Corresponding_Full_Type_Declaration (Corresponding_Name_Declaration
+                                                        (Simple_Name (Strip_Attributes (Def))));
+            if Declaration_Kind (Def) = A_Formal_Incomplete_Type_Declaration then
+               -- No idea what this type is, give up
+               return;
+            end if;
+            Def := Type_Declaration_View (Def);
          end if;
       end if;
 

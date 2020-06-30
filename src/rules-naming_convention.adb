@@ -1100,6 +1100,9 @@ package body Rules.Naming_Convention is
                            -- But we may have a mixture of formal or non-formal derivations...
                            loop
                               Accessed := A4G_Bugs.Corresponding_First_Subtype (Accessed);
+                              if Declaration_Kind (Accessed) = A_Formal_Incomplete_Type_Declaration then
+                                 exit;
+                              end if;
                               Def      := Type_Declaration_View (Accessed);
                               if Type_Kind (Def)
                                 in A_Derived_Type_Definition .. A_Derived_Record_Extension_Definition
@@ -1155,6 +1158,12 @@ package body Rules.Naming_Convention is
                                     when others => -- Compatibility Ada 2005
                                        null;
                                  end case;
+                              when A_Formal_Incomplete_Type_Declaration =>
+                                 if Has_Tagged (Accessed) then
+                                    Check (Name_Str, (K_All, K_Type, K_Access_Type, K_Access_To_Tagged_Type));
+                                 else
+                                    Check (Name_Str, (K_All, K_Type, K_Access_Type, K_Access_To_Regular_Type));
+                                 end if;
                               when others =>
                                  Failure ("Unexpected accessed type 2", Accessed);
                            end case;

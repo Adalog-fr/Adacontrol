@@ -592,7 +592,7 @@ package body Rules.Declarations is
                                        Check_Access_Discriminated (Element, Accessed_Ancestor_Descr.Ultimate_Type);
                                        Do_Report ((D_Type, D_Access_Type), Element);
                                  end case;
-                              when A_Formal_Type_Declaration =>
+                              when A_Formal_Type_Declaration | A_Formal_Incomplete_Type_Declaration =>
                                  Check_Access_Discriminated (Element, Accessed_Ancestor_Descr.Ultimate_Type);
                                  Do_Report ((D_Type, D_Access_Type, D_Access_Formal_Type), Element);
                               when A_Private_Type_Declaration | A_Private_Extension_Declaration =>

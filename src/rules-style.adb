@@ -1216,7 +1216,7 @@ package body Rules.Style is
                case Declaration_Kind (F) is
                   when A_Formal_Object_Declaration =>
                      E_Mode  := Object_Mode (F);
-                  when A_Formal_Type_Declaration =>
+                  when A_Formal_Type_Declaration | A_Formal_Incomplete_Type_Declaration =>
                      E_Mode  := Mode_Type;
                   when A_Formal_Procedure_Declaration =>
                      E_Mode  := Mode_Procedure;
