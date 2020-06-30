@@ -19,7 +19,7 @@ package T_Max_Primitives is
    procedure Int1_P5 (I : Enum) is null;
 
    -- Tagged
-   type PT is private;
+   type PT is private;                                   --  max 3, got 4
 
    procedure P1 (X : in out PT);
    procedure P2 (X : in out PT) is null;
