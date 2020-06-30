@@ -1119,18 +1119,21 @@ package body Framework.Object_Tracker is
                case Expression_Kind (Good_Var) is
                   when An_Identifier =>
                      Good_Var := Ultimate_Name (Good_Var);
-                  when A_Selected_Component =>
-                     if not Is_Expanded_Name (Good_Var) then
-                        -- record component...
-                        return;
+                     if not Is_Nil (Good_Var) then   -- Nil_Element: Renaming of dereference f.e.
+                        Untrack_Variable (Good_Var);
                      end if;
-                     Good_Var := Ultimate_Name (Good_Var);
+                  when A_Selected_Component =>
+                     if Is_Expanded_Name (Good_Var) then
+                        -- not record component...
+                        Good_Var := Ultimate_Name (Good_Var);
+                        if not Is_Nil (Good_Var) then   -- Nil_Element: Renaming of dereference f.e.
+                           Untrack_Variable (Good_Var);
+                        end if;
+                     end if;
                   when others =>
                      -- including Not_An_Expression (Nil_Element from dereference), indexed variable
-                     return;
+                     null;
                end case;
-
-               Untrack_Variable (Good_Var);
             end loop;
          end if;
       end loop;
