@@ -37,6 +37,7 @@ search uncheckable (false_negative, missing_unit);
 -- Check that functions for which there is a replacement in A4G_Bugs
 -- are not used directly.
 Use_A4G_Bugs: check entities (
+   Asis.Declarations.Corresponding_First_Subtype,
    Asis.Expressions.Corresponding_Expression_Type,
    Asis.Limited_Views.Get_Nonlimited_View,
    Asis.Text.Element_Span,

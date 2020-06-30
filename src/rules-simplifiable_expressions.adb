@@ -914,7 +914,7 @@ package body Rules.Simplifiable_Expressions is
                -- Get rid of subtypes, incomplete views...
                Decl := Corresponding_Name_Declaration (P);
                if Declaration_Kind (Decl) = A_Subtype_Declaration then
-                  Decl := Corresponding_First_Subtype (Decl);
+                  Decl := A4G_Bugs.Corresponding_First_Subtype (Decl);
                end if;
                Decl := Corresponding_Full_Type_Declaration (Decl);
 
@@ -930,7 +930,7 @@ package body Rules.Simplifiable_Expressions is
                         if Type_Kind (Def) in A_Derived_Type_Definition .. A_Derived_Record_Extension_Definition then
                            Def := Type_Declaration_View (Corresponding_Root_Type (Def));
                         elsif Formal_Type_Kind (Def) = A_Formal_Derived_Type_Definition then
-                           Def := Type_Declaration_View (Corresponding_First_Subtype
+                           Def := Type_Declaration_View (A4G_Bugs.Corresponding_First_Subtype
                                                          (Corresponding_Name_Declaration
                                                           (Subtype_Simple_Name (Def))));
                         else
@@ -1300,7 +1300,7 @@ package body Rules.Simplifiable_Expressions is
       Target := Corresponding_Name_Declaration (Target);
 
       if Is_Equal (Source, Target)
-        or else Is_Equal (Corresponding_First_Subtype (Source), Target)
+        or else Is_Equal (A4G_Bugs.Corresponding_First_Subtype (Source), Target)
       then
          Do_Report;
          return;

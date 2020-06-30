@@ -319,7 +319,7 @@ package body Rules.Type_Usage is
 
                -- First subtype (aka type), if different
                Decl     := Enclosing_Element (Subtypes (S));
-               First_St := Corresponding_First_Subtype (Decl);
+               First_St := A4G_Bugs.Corresponding_First_Subtype (Decl);
                if not Is_Equal (First_St, Decl) then
                   Reset (Iterator, Names (First_St) (1), Extend_To => All_Extensions);
                   Do_Report (Iterator,

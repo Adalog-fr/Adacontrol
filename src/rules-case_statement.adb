@@ -29,7 +29,6 @@ with
 
 -- Asis
 with
-  Asis.Declarations,
   Asis.Elements,
   Asis.Statements;
 
@@ -271,7 +270,6 @@ package body Rules.Case_Statement is
       end Count_Non_Others_Choices;
 
       procedure Process_Min_Others_Range is
-         use Asis.Declarations;
          Case_Paths   : constant Path_List := Statement_Paths (Statement);
          Subtype_Span : Extended_Biggest_Int;
       begin
@@ -293,7 +291,7 @@ package body Rules.Case_Statement is
          Subtype_Span := Discrete_Constraining_Lengths (A4G_Bugs.Corresponding_Expression_Type
                                                         (Case_Expression (Statement))) (1);
          if Subtype_Span = Not_Static then
-            Subtype_Span := Discrete_Constraining_Lengths (Corresponding_First_Subtype
+            Subtype_Span := Discrete_Constraining_Lengths (A4G_Bugs.Corresponding_First_Subtype
                                                            (A4G_Bugs.Corresponding_Expression_Type
                                                             (Case_Expression (Statement))))(1);
             if Subtype_Span = Not_Static then

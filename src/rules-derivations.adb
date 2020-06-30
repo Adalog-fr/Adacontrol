@@ -37,6 +37,7 @@ with
 
 -- Adalog
 with
+  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -392,7 +393,7 @@ package body Rules.Derivations is
 
          -- If it is a subtype, check corresponding type
          if Declaration_Kind (Parent_Decl) not in A_Type_Declaration then
-            Do_Report (Names (Corresponding_First_Subtype (Parent_Decl)) (1), "Type derived from", Reported);
+            Do_Report (Names (A4G_Bugs.Corresponding_First_Subtype (Parent_Decl)) (1), "Type derived from", Reported);
             if Reported then
                return;
             end if;
@@ -414,7 +415,7 @@ package body Rules.Derivations is
 
       -- Move to upper parent
       Type_Decl := Corresponding_Name_Declaration (Strip_Attributes (Type_Name));
-      Type_Def  := Type_Declaration_View (Corresponding_First_Subtype (Type_Decl));
+      Type_Def  := Type_Declaration_View (A4G_Bugs.Corresponding_First_Subtype (Type_Decl));
       if        Type_Kind (Type_Def)       in A_Derived_Type_Definition .. A_Derived_Record_Extension_Definition
         or else Formal_Type_Kind (Type_Def) = A_Formal_Derived_Type_Definition
       then

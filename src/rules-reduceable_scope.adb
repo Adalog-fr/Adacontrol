@@ -988,7 +988,7 @@ package body Rules.Reduceable_Scope is
    ------------------------
 
    procedure Process_Use_Clause (Clause : in Asis.Clause) is
-      use Asis, Asis.Clauses, Asis.Declarations, Asis.Elements, Asis.Expressions;
+      use Asis, Asis.Clauses, Asis.Elements, Asis.Expressions;
       use Framework.Queries, Thick_Queries;
    begin
       if (Rule_Used and Use_Checks) = No_Check then
@@ -1012,7 +1012,7 @@ package body Rules.Reduceable_Scope is
                                      Kind  => Kind,
                                      Path  => null,
                                      Package_Image => To_Key (Enclosing_Program_Unit
-                                                              (Corresponding_First_Subtype
+                                                              (A4G_Bugs.Corresponding_First_Subtype
                                                                (Corresponding_Name_Declaration
                                                                 (Simple_Name
                                                                  (Strip_Attributes (N))))))));

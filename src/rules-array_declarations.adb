@@ -35,6 +35,7 @@ with
 
 -- Adalog
 with
+  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -649,7 +650,7 @@ package body Rules.Array_Declarations is
                                                            (Subtype_Simple_Name (Array_Comp)));
             begin
                -- First subtype (aka type), if different
-               First_St := Corresponding_First_Subtype (Comp_Decl);
+               First_St := A4G_Bugs.Corresponding_First_Subtype (Comp_Decl);
                if not Is_Equal (First_St, Comp_Decl) then
                   Reset (Iterator, Names (First_St) (1), Extend_To => All_Extensions);
                   Compo_Report (Iterator, Title_Case);

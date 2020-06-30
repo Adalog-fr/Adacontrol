@@ -36,6 +36,7 @@ with
 
 -- Adalog
 with
+  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -461,7 +462,7 @@ package body Rules.Record_Declarations is
          Compo_Report (Iterator, Title_Case);
 
          -- First subtype (aka type), if different
-         First_St := Corresponding_First_Subtype (Compo_Type);
+         First_St := A4G_Bugs.Corresponding_First_Subtype (Compo_Type);
          if not Is_Equal (First_St, Compo_Type) then
             Reset (Iterator, Names (First_St) (1), Extend_To => All_Extensions);
             Compo_Report (Iterator, Title_Case);

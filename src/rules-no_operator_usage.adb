@@ -205,7 +205,7 @@ package body Rules.No_Operator_Usage is
 
       Decl : Asis.Declaration;
    begin
-      Decl := Corresponding_First_Subtype (T);
+      Decl := A4G_Bugs.Corresponding_First_Subtype (T);
 
       if Type_Kind (Type_Declaration_View (Ultimate_Type_Declaration (Decl)))
          not in A_Signed_Integer_Type_Definition .. A_Modular_Type_Definition
@@ -408,7 +408,7 @@ package body Rules.No_Operator_Usage is
       begin
          for N : Asis.Defining_Name of Index_Subtypes_Names (Definition) loop
             if Type_Category (N, Follow_Derived => True) in Integer_Types then
-               Type_Name           := Names (Corresponding_First_Subtype (Enclosing_Element (N)))(1);
+               Type_Name           := Names (A4G_Bugs.Corresponding_First_Subtype (Enclosing_Element (N)))(1);
                TI                  := Type_Usage.Fetch (Type_Name, Default => (Cat_Any, (others => False)));
                TI.Usage (Indexing) := True;
                Type_Usage.Store (Type_Name, TI);

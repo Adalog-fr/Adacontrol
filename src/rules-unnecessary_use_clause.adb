@@ -36,6 +36,7 @@ with   -- Asis
 
 
 with   -- Adalog
+  A4G_Bugs,
   Elements_Set,
   Scope_Manager,
   Thick_Queries,
@@ -275,9 +276,9 @@ package body Rules.Unnecessary_Use_Clause is
                end;
             when A_Use_Type_Clause | A_Use_All_Type_Clause =>
                declare
-                  use Asis.Declarations, Asis.Expressions;
+                  use Asis.Expressions;
                   Type_Unit : constant Asis.Defining_Name := Enclosing_Program_Unit
-                                                              (Corresponding_First_Subtype
+                                                              (A4G_Bugs.Corresponding_First_Subtype
                                                                (Corresponding_Name_Declaration
                                                                 (Simple_Name
                                                                  (Strip_Attributes (Name_Elem)))));

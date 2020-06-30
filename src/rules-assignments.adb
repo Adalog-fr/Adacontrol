@@ -512,7 +512,7 @@ package body Rules.Assignments is
 
          if Definition_Kind (Good_Def) = A_Subtype_Indication then
             -- Get rid of subtypes
-            Good_Def := Type_Declaration_View (Corresponding_First_Subtype
+            Good_Def := Type_Declaration_View (A4G_Bugs.Corresponding_First_Subtype
                                                (Corresponding_Name_Declaration
                                                 (Strip_Attributes
                                                  (Subtype_Simple_Name (Good_Def)))));

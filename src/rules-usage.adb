@@ -1193,7 +1193,7 @@ package body Rules.Usage is
                            -- take the prefix as well for Root_Definition
                            Name := Simple_Name (Prefix (Name));
                         end if;
-                        Root_Definition := Type_Declaration_View (Corresponding_First_Subtype
+                        Root_Definition := Type_Declaration_View (A4G_Bugs.Corresponding_First_Subtype
                                                                   (Corresponding_Name_Declaration (Name)));
                      end;
                      if Type_Kind (Root_Definition)

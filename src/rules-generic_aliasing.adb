@@ -32,6 +32,7 @@ with
 
 -- Adalog
 with
+  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -229,8 +230,8 @@ package body Rules.Generic_Aliasing is
                        in An_Ordinary_Type_Declaration .. A_Subtype_Declaration
          then
             -- Both are types
-            if Is_Equal (Corresponding_First_Subtype (Corresponding_Name_Declaration (Good_Left)),
-                         Corresponding_First_Subtype (Corresponding_Name_Declaration (Good_Right)))
+            if Is_Equal (A4G_Bugs.Corresponding_First_Subtype (Corresponding_Name_Declaration (Good_Left)),
+                         A4G_Bugs.Corresponding_First_Subtype (Corresponding_Name_Declaration (Good_Right)))
             then
                return (Certain, Complete);
             else

@@ -43,6 +43,7 @@ with
 
 -- Adalog
 with
+   A4G_Bugs,
    Linear_Queue,
    Utilities;
 
@@ -201,7 +202,7 @@ package body Framework.Object_Tracker is
             -- Subtype of an incomplete type... Anyway, we know nothing about this
             raise Not_Supported_Type;
          end if;
-         Kind := Type_Kind (Type_Declaration_View (Corresponding_First_Subtype (Decl)));
+         Kind := Type_Kind (Type_Declaration_View (A4G_Bugs.Corresponding_First_Subtype (Decl)));
       else
          Kind := Type_Kind (Def);
       end if;
@@ -1387,7 +1388,7 @@ package body Framework.Object_Tracker is
       -- Not an elementary type, may be tracked if type has discriminants
       declare
          -- We can ignore 'Class and 'Base below, since it doesn't change the discriminants
-         Type_Discr_Part   : constant Asis.Definition := Discriminant_Part (Corresponding_First_Subtype
+         Type_Discr_Part   : constant Asis.Definition := Discriminant_Part (A4G_Bugs.Corresponding_First_Subtype
                                                                             (Corresponding_Full_Type_Declaration
                                                                              (Corresponding_Name_Declaration
                                                                               (Simple_Name

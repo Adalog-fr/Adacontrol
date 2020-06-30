@@ -124,7 +124,7 @@ package body Framework.Queries is
                         end if;
                   end case;
                   -- Go to the full declaration if necessary (incomplete and private)
-                  E := Corresponding_First_Subtype (Corresponding_Full_Type_Declaration (E));
+                  E := A4G_Bugs.Corresponding_First_Subtype (Corresponding_Full_Type_Declaration (E));
                when others =>
                   Failure ("Unexpected predefined operation", N);
             end case;

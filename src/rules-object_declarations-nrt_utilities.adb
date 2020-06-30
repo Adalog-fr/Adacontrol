@@ -35,6 +35,7 @@ with
 
 -- Adalog
 with
+  A4G_Bugs,
   Binary_Map,
   Scope_Manager,
   Thick_Queries,
@@ -136,7 +137,7 @@ package body Rules.Object_Declarations.NRT_Utilities is
             else
                Decl := Corresponding_Name_Declaration (Simple_Name (St_Name));
             end if;
-            return Matching_Context (Store, Names (Corresponding_First_Subtype
+            return Matching_Context (Store, Names (A4G_Bugs.Corresponding_First_Subtype
                                      (Corresponding_Full_Type_Declaration (Decl))) (1));
          when others =>
             Failure ("Object_Declarations: unknown type attribute", St_Name);

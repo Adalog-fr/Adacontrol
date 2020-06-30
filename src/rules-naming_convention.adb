@@ -675,7 +675,7 @@ package body Rules.Naming_Convention is
                            Check_Context (Good_Context);
                         else
                            -- First subtype (aka type), if different
-                           First_St_Def_Name := Names (Corresponding_First_Subtype
+                           First_St_Def_Name := Names (A4G_Bugs.Corresponding_First_Subtype
                                                        (Enclosing_Element
                                                         (Type_Def_Name))) (1);
                            if not Is_Equal (First_St_Def_Name, Type_Def_Name)
@@ -984,7 +984,7 @@ package body Rules.Naming_Convention is
                      -- otherwise, we have no way to tell later that it is class-wide
                      if not Is_Class_Wide_Subtype (Decl) then
                         -- Get Decl and Decl_Kind from the corresponding type
-                        Decl      := Corresponding_First_Subtype (Decl);
+                        Decl      := A4G_Bugs.Corresponding_First_Subtype (Decl);
                         Decl_Kind := Declaration_Kind (Decl);
                         Def       := Type_Declaration_View (Decl);
                         if Type_Kind (Def) in A_Derived_Type_Definition .. A_Derived_Record_Extension_Definition then
@@ -1099,7 +1099,7 @@ package body Rules.Naming_Convention is
                            -- Get rid of subtyping and derivations on the accessed type
                            -- But we may have a mixture of formal or non-formal derivations...
                            loop
-                              Accessed := Corresponding_First_Subtype (Accessed);
+                              Accessed := A4G_Bugs.Corresponding_First_Subtype (Accessed);
                               Def      := Type_Declaration_View (Accessed);
                               if Type_Kind (Def)
                                 in A_Derived_Type_Definition .. A_Derived_Record_Extension_Definition
