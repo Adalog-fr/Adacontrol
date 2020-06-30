@@ -714,10 +714,13 @@ package body Rules.Assignments is
                | An_Operator_Symbol
                | A_Character_Literal
                | An_Enumeration_Literal
-               | A_Raise_Expression
                =>
                -- Final, nothing special
                null;
+
+            when A_Raise_Expression =>
+               -- A raise expression can contain various stuff, but it's not assigned
+               Control := Abandon_Children;
 
             when An_Identifier =>
                Check_Type_Def (In_Controlled,
@@ -1320,6 +1323,8 @@ package body Rules.Assignments is
                      when others =>
                         return Is_Class_Wide_Subtype (Object_Declaration_View (Decl));
                   end case;
+               when A_Function_Call =>
+                  return Is_Class_Wide_Subtype (Thick_Queries.Corresponding_Expression_Type_Definition (Simple_E));
                when others =>
                     Failure ("Is_Class_Wide: unexpected prefix", E);
             end case;
