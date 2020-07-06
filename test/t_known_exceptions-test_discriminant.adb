@@ -27,7 +27,9 @@ procedure Test_Discriminant is
             when 1 =>
                case D2 is
                   when 'a' =>
-                     Inner : Rec1 (D2);
+                     Inner1 : Rec1 (D2);
+                  when 'x' =>
+                     Inner2 : Rec1; -- use default for discriminant
                   when others =>
                      null;
                end case;
@@ -82,47 +84,52 @@ begin
    end if;
 
    -- V2 is (1, 'a') by default
-   I := V2.Inner.A;
-   I := V2.Inner.B;               -- Discrim_Error D
-   V2.Inner := V1;
+   I := V2.Inner1.A;
+   I := V2.Inner1.B;               -- Discrim_Error D
+   V2.Inner1 := V1;
 
    V2 := (1, 'b');
-   I := V2.Inner.A;               -- Discrim_Error D2, D
-   I := V2.Inner.B;               -- Discrim_Error D2
-   V2.Inner := V1;                -- Discrim_Error D2
+   I := V2.Inner1.A;               -- Discrim_Error D2, D
+   I := V2.Inner1.B;               -- Discrim_Error D2
+   V2.Inner1 := V1;                -- Discrim_Error D2
+
+   V2 := (1, 'x', V1);
+   I := V2.Inner2.A;               -- Discrim_Error D2, D
+   I := V2.Inner2.B;               -- Discrim_Error D2
+   V2.Inner2 := V1;                -- Discrim_Error D2
 
    V2 := (1, 'a', ('a', 0));
-   I := V2.Inner.A;
-   I := V2.Inner.B;               -- Discrim_Error D
-   V2.Inner := V1;
+   I := V2.Inner1.A;
+   I := V2.Inner1.B;               -- Discrim_Error D
+   V2.Inner1 := V1;
 
    V2 := (D1 => 2, D2 => 'a', C => 0);
-   I := V2.Inner.A;               -- Discrim_Error D1
-   I := V2.Inner.B;               -- Discrim_Error D1
-   V2.Inner := V1;                -- Discrim_Error D1
+   I := V2.Inner1.A;               -- Discrim_Error D1
+   I := V2.Inner1.B;               -- Discrim_Error D1, D
+   V2.Inner1 := V1;                -- Discrim_Error D1
    I := V2.C;
 
    V2 := (D1 => 2, D2 => 'b', C => 0);
-   I := V2.Inner.A;               -- Discrim_Error D2, D1, D
-   I := V2.Inner.B;               -- Discrim_Error D2, D1
-   V2.Inner := V1;                -- Discrim_Error D2, D1
+   I := V2.Inner1.A;               -- Discrim_Error D2, D1, D
+   I := V2.Inner1.B;               -- Discrim_Error D2, D1
+   V2.Inner1 := V1;                -- Discrim_Error D2, D1
 
-   I := V3.R21.Inner.A;
-   I := V3.R21.Inner.B;           -- Discrim_Error D
-   I := V3.R22.Inner.A;
-   I := V3.R22.Inner.B;           -- Discrim_Error D
+   I := V3.R21.Inner1.A;
+   I := V3.R21.Inner1.B;           -- Discrim_Error D
+   I := V3.R22.Inner1.A;
+   I := V3.R22.Inner1.B;           -- Discrim_Error D
 
    V3 := (D3 => 'b', R21 => V2);
 
-   I := V3.R21.Inner.A;           -- Discrim_Error D, D2
-   I := V3.R21.Inner.B;           -- Discrim_Error D2
-   I := V3.R22.Inner.A;           -- Discrim_Error D, D2, D3
-   I := V3.R22.Inner.B;           -- Discrim_Error D2, D3
+   I := V3.R21.Inner1.A;           -- Discrim_Error D, D2
+   I := V3.R21.Inner1.B;           -- Discrim_Error D2
+   I := V3.R22.Inner1.A;           -- Discrim_Error D, D2, D3
+   I := V3.R22.Inner1.B;           -- Discrim_Error D2, D3
 
    -- Check acces through renaming
    declare
       V3  : Rec2 (1, 'a');
-      Ren : Rec1 renames V3.Inner;
+      Ren : Rec1 renames V3.Inner1;
       RenA : Integer renames Ren.A;
       RenB : Integer renames Ren.B; -- Discrim_Error D
    begin

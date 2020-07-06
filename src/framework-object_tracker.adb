@@ -39,6 +39,7 @@ with
    Asis.Elements,
    Asis.Exceptions,
    Asis.Expressions,
+   Asis.Iterator,
    Asis.Statements;
 
 -- Adalog
@@ -176,12 +177,23 @@ package body Framework.Object_Tracker is
       use Asis.Elements;
       use Utilities;
       Discr_Def : constant Asis.Defining_Name := First_Defining_Name (Discr);
+      Discr_Image : constant Wide_String := Full_Name_Image (Discr_Def);
+      -- TBSL use Discr_Image instead of Is_Equal (problem with cxai014)
    begin
       for Discr_Inx in In_Table'Range loop
-         if Is_Equal (Discr_Def, In_Table (Discr_Inx).Discrim_Name) then
+         if Discr_Image = Full_Name_Image (In_Table (Discr_Inx).Discrim_Name) then
+         --  if Is_Equal (Discr_Def, In_Table (Discr_Inx).Discrim_Name) then
             return Discr_Inx;
          end if;
       end loop;
+
+      declare
+         D1 : Asis.Element := Discr_Def;
+      begin
+         while Declaration_Kind (D1) /= A_Package_Declaration loop
+            D1 := Enclosing_Element (D1);
+         end loop;
+      end;
       Failure ("Discriminant_Index: not found", Discr);
    end Discriminant_Index;
 
@@ -198,7 +210,7 @@ package body Framework.Object_Tracker is
    begin
       if Definition_Kind (Def) = A_Subtype_Indication then
          Decl := Corresponding_Name_Declaration (Simple_Name (Strip_Attributes (Subtype_Simple_Name (Def))));
-         if Declaration_Kind (Decl) = An_Incomplete_Type_Declaration then
+         if Declaration_Kind (Decl) in An_Incomplete_Type_Declaration | A_Tagged_Incomplete_Type_Declaration then
             -- Subtype of an incomplete type... Anyway, we know nothing about this
             raise Not_Supported_Type;
          end if;
@@ -262,7 +274,7 @@ package body Framework.Object_Tracker is
       Discriminated_Queue : Discriminated_Descr_List.Queue;
 
       Good_Var            : Asis.Element := Ultimate_Name (Var);
-      Good_Discr          : Asis.Name    := Discr;
+      Good_Discr          : Asis.Name;
       Value               : Value_Descr;
       Var_Path            : Asis.Element;
       Path_Assigned       : Boolean;
@@ -270,12 +282,17 @@ package body Framework.Object_Tracker is
       Imin                : Extended_Biggest_Int := Min;
       Imax                : Extended_Biggest_Int := Max;
    begin
-      if Is_Nil (Good_Discr)
-        and then Expression_Kind (Var) = A_Selected_Component
-        and then Declaration_Kind (Corresponding_Name_Declaration (Selector (Var))) = A_Discriminant_Specification
-      then
-         Good_Discr := Selector (Var);
-         Good_Var   := Ultimate_Name (Prefix (Var));
+      if Is_Nil (Discr) then
+         if Expression_Kind (Var) = A_Selected_Component
+           and then Declaration_Kind (Corresponding_Name_Declaration (Selector (Var))) = A_Discriminant_Specification
+         then
+            Good_Var   := Ultimate_Name (Prefix (Var));
+            Good_Discr := First_Defining_Name (Selector (Var));
+         else
+            Good_Discr := Nil_Element;
+         end if;
+      else
+         Good_Discr := First_Defining_Name (Discr);
       end if;
 
       if Is_Nil (Good_Discr) then
@@ -812,6 +829,7 @@ package body Framework.Object_Tracker is
                   return Unknown_Value (Untracked);
                end if;
             end if;
+
             declare
                Descr_Table : constant Discriminated_Variable_Descr := Fetch (First (Var_Queue));
             begin
@@ -850,20 +868,48 @@ package body Framework.Object_Tracker is
       Good_Decl := Corresponding_Name_Declaration (Good_Var);
       if Declaration_Kind (Good_Decl) not in A_Constant_Declaration | A_Loop_Parameter_Specification
         and then Mode_Kind (Good_Decl) not in An_In_Mode | A_Default_In_Mode
-        and then not Is_Equal (Enclosing_Program_Unit (Good_Decl), Enclosing_Program_Unit (Var))
       then
-         -- A variable accessed from a different unit than where the variable is declared
-         -- We don't know where this subprogram is called from, therefore it is an
-         -- unknown value, unless the enclosing program unit is an expression function (macro model)
-         if Declaration_Kind (Enclosing_Element (Enclosing_Program_Unit (Var))) /= An_Expression_Function_Declaration
-         then
-            return Unknown_Value (Descriptor.Kind);
-         end if;
+         -- Good_Var is a true variable. Check if Var (the reference to it) is nested in some procedure/function/generic
+         -- local to the scope of the declaration of Good_Var
+         declare
+            Good_Var_Scope : constant Asis.Declaration := Enclosing_Element (Enclosing_Program_Unit
+                                                                             (Corresponding_Name_Declaration
+                                                                              (Good_Var)));
+            Ref_Enclosing  : Asis.Element := Enclosing_Element (Var);
+         begin
+            while not Is_Nil (Ref_Enclosing) and then not Is_Equal (Ref_Enclosing, Good_Var_Scope) loop
+               case Declaration_Kind (Ref_Enclosing) is
+                  when A_Procedure_Body_Declaration
+                     | A_Function_Body_Declaration
+                     | A_Task_Body_Declaration
+                     =>
+                  -- A variable accessed from a unit nested in the unit where the variable is declared
+                  -- We don't know where this subprogram is called from (or the state of the task), therefore it is an
+                  -- unknown value
+                  -- This is not applicable to expression functions, since the evaluator evaluates the corresponding
+                  -- expression in place
+                     if Declaration_Kind (Good_Var_Scope) = A_Package_Declaration then
+                        -- This is necessarily a package nested in the procedure, so it's OK
+                        exit;
+                     end if;
+                     return Unknown_Value (Descriptor.Kind);
+                  when A_Package_Body_Declaration =>
+                     -- The same goes for generic package bodies, since we don't know where they are instantiated
+                     -- Non generic package bodies are OK, since they are elaborated in place
+                     if Is_Generic_Unit (Ref_Enclosing) then
+                        return Unknown_Value (Descriptor.Kind);
+                     end if;
+                  when others =>
+                     null;
+               end case;
+               Ref_Enclosing := Enclosing_Element (Ref_Enclosing);
+            end loop;
+         end;
       end if;
 
       -- If the variable is nested in an "intrinsically unknown" path, such as a loop, exception handler, etc.
       -- then the value is forced to unknown (modulo the constraints), unless the variable has been assigned in
-      -- the current construct, or is a constant (including for loop control variables)
+      -- the current construct, or is a constant (including for loop control objects)
       if Is_Empty (Intrinsically_Unknown_Paths) then
          -- Not nested in an intrinsically unknown path
          Forced_Unknown := False;
@@ -1105,13 +1151,60 @@ package body Framework.Object_Tracker is
    ---------------------------
 
    procedure Process_Instantiation (Inst : Asis.Declaration) is
-      use Asis.Declarations, Asis.Elements, Asis.Expressions;
+      use Asis.Declarations, Asis.Elements, Asis.Expressions, Asis.Iterator;
+      type Null_State is null record;
 
       Formals  : constant Asis.Declaration_List := Generic_Formal_Part (Corresponding_Name_Declaration
                                                                         (Ultimate_Name
                                                                          (Simple_Name (Generic_Unit_Name (Inst)))));
-      Good_Var : Asis.Expression;
-   begin
+      Good_Var        : Asis.Expression;
+      Ignored_Control : Traverse_Control := Continue;
+      Ignored_State   : Null_State;
+
+      procedure Pre_Operation   (Element       :        Asis.Element;
+                                 Control       : in out Traverse_Control;
+                                 In_Controlled : in out Null_State);
+      procedure Post_Operation  (Element       :        Asis.Element;
+                                 Control       : in out Traverse_Control;
+                                 In_Controlled : in out Null_State) is null;
+      procedure Traverse is new Traverse_Element (Null_State, Pre_Operation, Post_Operation);
+
+      procedure Pre_Operation  (Element       :        Asis.Element;
+                                Control       : in out Traverse_Control;
+                                In_Controlled : in out Null_State)
+      is
+         pragma Unreferenced (Control, In_Controlled);
+      begin
+         case Element_Kind (Element) is
+            when A_Declaration =>
+               case Declaration_Kind (Element) is
+                  when An_Ordinary_Type_Declaration
+                     | A_Subtype_Declaration
+                     =>
+                     Process_Type_Declaration (Element);
+                  when A_Constant_Declaration
+                     | A_Variable_Declaration
+                     | A_Parameter_Specification
+                     =>
+                     Process_Object_Declaration (Element);
+                  when A_Generic_Instantiation =>
+                     Process_Instantiation (Element);
+                  when others =>
+                     null;
+               end case;
+            when An_Expression =>
+               case Expression_Kind (Element) is
+                  when A_Function_Call =>
+                     Process_Function_Call (Element);
+                  when others =>
+                     null;
+               end case;
+            when others =>
+               null;
+         end case;
+      end Pre_Operation;
+
+   begin   -- Process_Instantiation
       for Formal : Asis.Declaration of Formals loop
          if Mode_Kind (Formal) = An_In_Out_Mode then
             for Name : Asis.Name of Names (Formal) loop
@@ -1137,6 +1230,12 @@ package body Framework.Object_Tracker is
             end loop;
          end if;
       end loop;
+
+      -- Since elements declared in a package spec are visible outside, we need to traverse the instantiated
+      -- specification of packages
+      if Declaration_Kind (Inst) = A_Package_Instantiation then
+         Traverse (Corresponding_Declaration (Inst), Ignored_Control, Ignored_State);
+      end if;
    end Process_Instantiation;
 
    --------------------

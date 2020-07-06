@@ -569,6 +569,43 @@ begin
       end if;
    end;
 
+
+   -- Check declarations from nested (generic) package specs
+   declare
+      package Pack1 is
+         type T (D : Integer) is null record;
+         V1 : T (1);
+      end Pack1;
+      use Pack1;
+
+      generic package Gen is
+         type T (D : Integer) is null record;
+         V2 : T (1);
+      end Gen;
+      package Pack2 is new Gen;
+      use Pack2;
+
+      V01 : Pack1.T (1);
+      V02 : Pack2.T (1);
+
+   begin
+      if V1.D = 1 then
+         null;
+      end if;
+
+      if V2.D = 1 then
+         null;
+      end if;
+
+      if V01.D = 1 then
+         null;
+      end if;
+
+      if V02.D = 1 then
+         null;
+      end if;
+   end;
+
    I := 10; -- This assignment to (possibly) fool the exception handler
 exception
       -- check handlers

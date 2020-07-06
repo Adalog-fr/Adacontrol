@@ -14,51 +14,51 @@ t_known_exceptions-test_index.adb:19:9: Error: Index_Error: Indexing raises Cons
 t_known_exceptions-test_index.adb:21:9: Error: Index_Error: Indexing raises Constraint_Error
 t_known_exceptions-test_index.adb:24:22: Error: Index_Error: Indexing raises Constraint_Error
 t_known_exceptions-test_index.adb:32:15: Error: Index_Error: Indexing raises Constraint_Error
-t_known_exceptions-test_discriminant.adb:44:32: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D1= 1
-t_known_exceptions-test_discriminant.adb:60:12: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
-t_known_exceptions-test_discriminant.adb:62:13: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
-t_known_exceptions-test_discriminant.adb:67:13: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 100
-t_known_exceptions-test_discriminant.adb:71:13: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 122
-t_known_exceptions-test_discriminant.adb:75:13: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 120
-t_known_exceptions-test_discriminant.adb:76:13: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 120
-t_known_exceptions-test_discriminant.adb:80:16: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D in 98..99
-t_known_exceptions-test_discriminant.adb:86:18: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
-t_known_exceptions-test_discriminant.adb:90:18: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 98
-t_known_exceptions-test_discriminant.adb:90:12: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D2= 98
-t_known_exceptions-test_discriminant.adb:91:12: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D2= 98
-t_known_exceptions-test_discriminant.adb:92:7: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D2= 98
-t_known_exceptions-test_discriminant.adb:96:18: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
-t_known_exceptions-test_discriminant.adb:100:12: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D1= 2
-t_known_exceptions-test_discriminant.adb:101:18: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
-t_known_exceptions-test_discriminant.adb:101:12: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D1= 2
-t_known_exceptions-test_discriminant.adb:102:7: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D1= 2
-t_known_exceptions-test_discriminant.adb:106:18: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 98
-t_known_exceptions-test_discriminant.adb:106:12: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D2= 98
-t_known_exceptions-test_discriminant.adb:106:12: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D1= 2
-t_known_exceptions-test_discriminant.adb:107:12: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D2= 98
+t_known_exceptions-test_discriminant.adb:46:32: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D1= 1
+t_known_exceptions-test_discriminant.adb:62:12: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
+t_known_exceptions-test_discriminant.adb:64:13: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
+t_known_exceptions-test_discriminant.adb:69:13: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 100
+t_known_exceptions-test_discriminant.adb:73:13: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 122
+t_known_exceptions-test_discriminant.adb:77:13: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 120
+t_known_exceptions-test_discriminant.adb:78:13: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 120
+t_known_exceptions-test_discriminant.adb:82:16: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D in 98..99
+t_known_exceptions-test_discriminant.adb:88:19: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
+t_known_exceptions-test_discriminant.adb:92:19: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 98
+t_known_exceptions-test_discriminant.adb:92:12: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D2= 98
+t_known_exceptions-test_discriminant.adb:93:12: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D2= 98
+t_known_exceptions-test_discriminant.adb:94:7: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D2= 98
+t_known_exceptions-test_discriminant.adb:103:19: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
 t_known_exceptions-test_discriminant.adb:107:12: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D1= 2
-t_known_exceptions-test_discriminant.adb:108:7: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D2= 98
-t_known_exceptions-test_discriminant.adb:108:7: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D1= 2
-t_known_exceptions-test_discriminant.adb:111:22: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
-t_known_exceptions-test_discriminant.adb:113:22: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
-t_known_exceptions-test_discriminant.adb:117:22: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 98
-t_known_exceptions-test_discriminant.adb:117:16: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D2= 98
-t_known_exceptions-test_discriminant.adb:118:16: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D2= 98
-t_known_exceptions-test_discriminant.adb:119:22: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 98
-t_known_exceptions-test_discriminant.adb:119:16: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D2= 98
-t_known_exceptions-test_discriminant.adb:119:12: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D3= 98
-t_known_exceptions-test_discriminant.adb:120:16: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D2= 98
-t_known_exceptions-test_discriminant.adb:120:12: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D3= 98
-t_known_exceptions-test_discriminant.adb:127:34: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
-t_known_exceptions-test_discriminant.adb:130:16: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
-t_known_exceptions-test_discriminant.adb:157:12: Error: Access_Error: Implicit dereference raises Constraint_Error (null pointer)
-t_known_exceptions-test_discriminant.adb:158:12: Error: Access_Error: Implicit dereference raises Constraint_Error (null pointer)
-t_known_exceptions-test_discriminant.adb:171:22: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
-t_known_exceptions-test_discriminant.adb:176:20: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
-t_known_exceptions-test_discriminant.adb:178:20: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
-t_known_exceptions-test_discriminant.adb:198:25: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
-t_known_exceptions-test_discriminant.adb:203:23: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
-t_known_exceptions-test_discriminant.adb:205:23: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
+t_known_exceptions-test_discriminant.adb:108:19: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
+t_known_exceptions-test_discriminant.adb:108:12: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D1= 2
+t_known_exceptions-test_discriminant.adb:109:7: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D1= 2
+t_known_exceptions-test_discriminant.adb:113:19: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 98
+t_known_exceptions-test_discriminant.adb:113:12: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D2= 98
+t_known_exceptions-test_discriminant.adb:113:12: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D1= 2
+t_known_exceptions-test_discriminant.adb:114:12: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D2= 98
+t_known_exceptions-test_discriminant.adb:114:12: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D1= 2
+t_known_exceptions-test_discriminant.adb:115:7: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D2= 98
+t_known_exceptions-test_discriminant.adb:115:7: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D1= 2
+t_known_exceptions-test_discriminant.adb:118:23: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
+t_known_exceptions-test_discriminant.adb:120:23: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
+t_known_exceptions-test_discriminant.adb:124:23: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 98
+t_known_exceptions-test_discriminant.adb:124:16: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D2= 98
+t_known_exceptions-test_discriminant.adb:125:16: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D2= 98
+t_known_exceptions-test_discriminant.adb:126:23: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 98
+t_known_exceptions-test_discriminant.adb:126:16: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D2= 98
+t_known_exceptions-test_discriminant.adb:126:12: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D3= 98
+t_known_exceptions-test_discriminant.adb:127:16: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D2= 98
+t_known_exceptions-test_discriminant.adb:127:12: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D3= 98
+t_known_exceptions-test_discriminant.adb:134:34: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
+t_known_exceptions-test_discriminant.adb:137:16: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
+t_known_exceptions-test_discriminant.adb:164:12: Error: Access_Error: Implicit dereference raises Constraint_Error (null pointer)
+t_known_exceptions-test_discriminant.adb:165:12: Error: Access_Error: Implicit dereference raises Constraint_Error (null pointer)
+t_known_exceptions-test_discriminant.adb:178:22: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
+t_known_exceptions-test_discriminant.adb:183:20: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
+t_known_exceptions-test_discriminant.adb:185:20: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
+t_known_exceptions-test_discriminant.adb:205:25: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
+t_known_exceptions-test_discriminant.adb:210:23: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
+t_known_exceptions-test_discriminant.adb:212:23: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
 
 Counts summary:
 All_Errors: 61

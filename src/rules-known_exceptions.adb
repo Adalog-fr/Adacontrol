@@ -244,7 +244,13 @@ package body Rules.Known_Exceptions is
 
          -- Find the constraint of the parent
 
-         Def := Subtype_Constraint (Constraining_Definition (Parent_Decl));
+         Def := Constraining_Definition (Parent_Decl);
+         if Definition_Kind (Def) = A_Type_Definition then
+            -- No constraint => The discriminant is mutable, no idea what it is
+            return Unknown_Value (Untracked);
+         end if;
+
+         Def := Subtype_Constraint (Def);
          if Is_Nil (Def) then
             -- No constraint => The discriminant is mutable, no idea what it is
             return Unknown_Value (Untracked);
