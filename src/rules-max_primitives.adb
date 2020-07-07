@@ -222,22 +222,14 @@ package body Rules.Max_Primitives is
    ------------------------------------
 
    procedure Process_Subprogram_Declaration (Decl : Asis.Declaration) is
-      use Asis.Elements;
    begin
       if not Rule_Used then
          return;
       end if;
 
-      case Declaration_Kind (Decl) is
-         when A_Procedure_Declaration | A_Null_Procedure_Declaration |
-              A_Function_Declaration | A_Function_Instantiation | An_Expression_Function_Declaration |
-              A_Procedure_Body_Stub | A_Function_Body_Stub =>
-            for Declaration : Asis.Declaration of Corresponding_Primitive_Types (Decl) loop
-               Add_Primitive (Declaration, 1);
-            end loop;
-         when others =>
-            Failure ("Invalid type", Decl);
-      end case;
+      for Declaration : Asis.Declaration of Corresponding_Primitive_Types (Decl) loop
+         Add_Primitive (Declaration, 1);
+      end loop;
    end Process_Subprogram_Declaration;
 
 
@@ -267,9 +259,9 @@ package body Rules.Max_Primitives is
                case Declaration_Kind (Element) is
                   when A_Type_Declaration =>
                      Process_Type_Declaration (Element);
-                  when A_Null_Procedure_Declaration | A_Procedure_Declaration |
-                       A_Procedure_Body_Stub | A_Function_Declaration | An_Expression_Function_Declaration |
-                       A_Function_Body_Stub =>
+                  when A_Procedure_Declaration | A_Procedure_Body_Stub | A_Null_Procedure_Declaration
+                     | A_Function_Declaration  | A_Function_Body_Stub  | An_Expression_Function_Declaration
+                     =>
                      Process_Subprogram_Declaration (Element);
                   when A_Package_Instantiation | A_Procedure_Instantiation | A_Function_Instantiation =>
                      Process_Instantiation (Element);

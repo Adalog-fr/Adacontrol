@@ -1059,9 +1059,10 @@ package body Rules.Expressions is
                              in A_Type_Declaration | A_Subtype_Declaration
                   then
                      Source_Descr := Corresponding_Derivation_Description (Enclosing_Element (Source_Type_Def));
-                     Target_Descr := Corresponding_Derivation_Description
-                                      (Enclosing_Element
-                                       (Thick_Queries.Corresponding_Expression_Type_Definition (Target_Expr)));
+                     Target_Descr := Corresponding_Derivation_Description (Corresponding_Name_Declaration
+                                                                           (Simple_Name
+                                                                            (Strip_Attributes
+                                                                             (Target_Expr))));
                      if         not Is_Nil (Source_Descr.Ultimate_Type)
                        and then not Is_Nil (Target_Descr.Ultimate_Type)
                        and then Is_Equal (Source_Descr.Ultimate_Type, Target_Descr.Ultimate_Type)

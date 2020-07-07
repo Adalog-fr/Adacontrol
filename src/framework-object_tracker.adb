@@ -187,13 +187,6 @@ package body Framework.Object_Tracker is
          end if;
       end loop;
 
-      declare
-         D1 : Asis.Element := Discr_Def;
-      begin
-         while Declaration_Kind (D1) /= A_Package_Declaration loop
-            D1 := Enclosing_Element (D1);
-         end loop;
-      end;
       Failure ("Discriminant_Index: not found", Discr);
    end Discriminant_Index;
 

@@ -616,6 +616,14 @@ package body Rules.Improper_Initialization is
                                "Entity is not statically determinable (dereference)");
                   return;
 
+               when A_Function_Call =>
+                  -- Function call on the LHS => must be a user defined implicit dereference
+                  Uncheckable (Rule_Id,
+                               False_Positive,
+                               Get_Location (Name),
+                               "Entity is not statically determinable (user defined dereference)");
+                  return;
+
                when others =>
                   Failure (Rule_Id & ": invalid expression kind", Good_Name);
             end case;
