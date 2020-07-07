@@ -1,6 +1,20 @@
 =============
+== V1.22b3 ==
+=============
+
+General:
+--------
+Bug fixes
+Choose tree generator with ASISGCC variable or --GCC option
+
+=============
 == V1.22b2 ==
 =============
+
+General:
+--------
+Bug fixes, improvements to object tracker
+
 
 =============
 == V1.22b1 ==

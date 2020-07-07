@@ -1087,7 +1087,7 @@ Rules:
    Unsafe_Unchecked_Conversion     Usage                           
    Use_Clauses                     With_Clauses                    
 
-ADACTL v. 1.22b2 
+ADACTL v. 1.22b3 
 ----
 Copyright (C) 2004-2020 Eurocontrol/Adalog and others.
 This software is covered by the GNU Modified General Public License.
