@@ -548,11 +548,19 @@ package body Adactl_Options is
    ------------------
 
    function Asis_Options return Wide_String is
-      use Ada.Characters.Handling, Ada.Strings.Wide_Unbounded;
+      use Ada.Characters.Handling, Ada.Strings.Wide_Fixed, Ada.Strings.Wide_Unbounded;
       use Implementation_Options, Analyzer;
+      Tail_Options : constant Wide_String  := To_Wide_String (Tail_Value);
+      Iargs_Pos    : constant Natural      := Index (Tail_Options, "-iargs");
    begin
-      return Parameters_String (Project,
-                                Other_Options => To_Wide_String (Tail_Value) & To_Wide_String (Extra_Pathes));
+      if Iargs_Pos = 0 then
+         return Parameters_String (Project,
+                                   Other_Options => Tail_Options & To_Wide_String (Extra_Pathes));
+      else
+         return Parameters_String (Project,
+                                   Other_Options => Tail_Options (Tail_Options'First .. Iargs_Pos - 1)
+                                                    & To_Wide_String (Extra_Pathes));
+      end if;
    exception
       when Occur : Analyzer.Options_Error | Project_File.Project_Error =>
          Option_Error (Occur);
@@ -573,8 +581,17 @@ package body Adactl_Options is
    -----------------------
 
    function Initialize_String return Wide_String is
+      use Ada.Characters.Handling, Ada.Strings.Wide_Fixed;
+      use Analyzer;
+      Tail_Options : constant Wide_String  := To_Wide_String (Tail_Value);
+      Iargs_Pos    : constant Natural := Index (Tail_Options, "-iargs");
    begin
-      return Implementation_Options.Initialize_String (Utilities.Debug_Option);
+      if Iargs_Pos = 0 then
+         return Implementation_Options.Initialize_String (Utilities.Debug_Option);
+      else
+         return Implementation_Options.Initialize_String (Utilities.Debug_Option)
+           & ' ' & Tail_Options (Iargs_Pos + String'("-iargs")'Length .. Tail_Options'Last);
+      end if;
    end Initialize_String;
 
    ------------------

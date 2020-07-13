@@ -6,6 +6,8 @@ General:
 --------
 Bug fixes
 Choose tree generator with ASISGCC variable or --GCC option
+Add ASIS option "-iargs" for specifying ASIS initialize options
+  (for developpers only)
 
 =============
 == V1.22b2 ==

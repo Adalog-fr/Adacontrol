@@ -1087,10 +1087,10 @@ adactl -x -f my_rules.aru proc.adb
 @node ASIS options,  , Exit on error, Command line parameters and options
 @subsection ASIS options
 Everything that appears on the command line after ``-@w{}-'' will be
-treated as an ASIS option, as described in the ASIS user manual.
+treated as an ASIS ``Associate'' option, as described in the ASIS user manual.
 
-Casual users don't need to care about ASIS options, except in two
-cases:
+Casual users don't need to care about ASIS ``Associate'' options,
+except in two cases:
 @itemize @bullet
 @item
 if you are using GnatPro 21.0 and above and GnatTools is not installed
@@ -1111,10 +1111,14 @@ provide other directories where sources can be found. The syntax is
 the same as the ``-I'' option for GNAT.
 @end itemize
 
-Other ASIS options, like the ``-Cx'' and/or ``-Fx'' options, can be
-specified. Most users can ignore this feature; however, specifying
-these options can improve the processing time of big
-projects. @xref{Optimizing Adacontrol}.
+Other ASIS ``Associate'' options, like the ``-Cx'' and/or ``-Fx''
+options, can be specified. Most users can ignore this feature;
+however, specifying these options can improve the processing time of
+big projects. @xref{Optimizing Adacontrol}.
+
+In addition, every option after ``-iargs'' is passed as an ASIS ``initialize''
+option. These options can be useful only if you are adding new rules to
+AdaControl. See the AdaControl Programmer's Manual for details.
 
 @node Return codes, Environment variable and default settings, Command line parameters and options, Program Usage
 @section Return codes

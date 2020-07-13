@@ -920,6 +920,12 @@ and do your own analysis, depending on whether the returned
 @code{Expression_Kind} is @code{An_Attribute_Reference} or not.
 @end table
 
+A frequent cause of inefficiencies in ASIS for Gnat arises from tree
+swapping.  Read the section about tree swapping in the ASIS-for-GNAT
+User Guide. Passing ``@code{@w{-iargs} @w{-do} @w{-dt}}'' as an ASIS
+option to AdaControl can be handy in evaluating the effect of tree
+swapping.
+
 @node Plugging-in a new rule into the framework, Testing and debugging a rule, Writing a new rule, Top
 @chapter Plugging-in a new rule into the framework
 
