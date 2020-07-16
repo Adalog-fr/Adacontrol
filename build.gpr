@@ -30,7 +30,11 @@ project Build is
       for mode use "usage";
       for install_name use "adacontrol";
       for artifacts ("share/gps/plug-ins") use ("GPS/*");
-      for artifacts ("share/gprconfig") use ("GPS/adacontrol.xml");
+      for artifacts ("share/gprconfig")    use ("GPS/adacontrol.xml");
+      for artifacts ("share/doc/gps/html") use ("doc/*.html");
+      for artifacts ("share/doc/gps/pdf")  use ("doc/*.pdf");
+      for artifacts ("share/doc/gps/info") use ("doc/*.info*");
+      for artifacts ("share/doc/gps/txt")  use ("/*.txt");
       for artifacts ("share/doc/gps/html") use ("doc/*.html");
    end Install;
 end Build;
