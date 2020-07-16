@@ -44,7 +44,7 @@ with
 
 -- Adactl
 with
-  Framework.Language,
+  Framework.Variables,
   Framework.Reports;
 
 package body Adactl_Options is
@@ -282,17 +282,16 @@ package body Adactl_Options is
          end if;
       end Flag_To_Command;
 
-      procedure Execute_Command (Option : Character; Param : Wide_String; Inverted : Boolean := False) is
-         use Framework.Language;
+      procedure Set_Option_Variable (Option : Character; Param : Wide_String; Inverted : Boolean := False) is
       begin
          if Is_Present (Option) or else Project.Tool_Switch_Present ("adacontrol", '-' & Option) then
             if Inverted then
-               Execute ("set " & Param & " off;");
+               Set_Variable (Param, "OFF");
             else
-               Execute ("set " & Param & " on;");
+               Set_Variable (Param, "ON");
             end if;
          end if;
-      end Execute_Command;
+      end Set_Option_Variable;
 
       procedure Value_To_Command (Option : Character;
                                   Param    : Wide_String;
@@ -401,8 +400,8 @@ package body Adactl_Options is
       -- "set debug on/off"
       -- Must also be set first, in case we want to debug Options_Commands, f.e.
       -- Verbose must also be set before we start analyzing
-      Execute_Command  ('d', "debug");
-      Execute_Command  ('v', "verbose");
+      Set_Option_Variable  ('d', "debug");
+      Set_Option_Variable  ('v', "verbose");
 
       -- Defaults from the ADACTLINI environment variable
       if Exists ("ADACTLINI") then
