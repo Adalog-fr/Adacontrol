@@ -1,4 +1,14 @@
 =============
+== V1.22b4 ==
+=============
+
+General:
+--------
+Bug fixes
+Add -iargs option to ASIS options to add ASIS initialize options
+Install also pdf, info, and txt docs
+
+=============
 == V1.22b3 ==
 =============
 
