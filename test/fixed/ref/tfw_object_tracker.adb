@@ -442,11 +442,40 @@ begin
       
    end;
 
+
+   -- Check declarations from nested (generic) package specs
+   declare
+      package Pack1 is
+         type T (D : Integer) is null record;
+         V1 : T (1);
+      end Pack1;
+      use Pack1;
+
+      generic package Gen is
+         type T (D : Integer) is null record;
+         V2 : T (1);
+      end Gen;
+      package Pack2 is new Gen;
+      use Pack2;
+
+      V01 : Pack1.T (1);
+      V02 : Pack2.T (1);
+
+   begin
+      null;
+
+      null;
+
+      null;
+
+      null;
+   end;
+
    I := 10; -- This assignment to (possibly) fool the exception handler
 exception
       -- check handlers
    when Constraint_Error =>
-      if I > 3 then                   -- Unknown
+      if I > 3 then             -- Unknown
          X := 1;
       end if;
       I := 5;

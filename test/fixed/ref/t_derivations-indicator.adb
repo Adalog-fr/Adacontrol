@@ -153,7 +153,7 @@ procedure Indicator is
       procedure P4 (X : out GT) is null;                 -- Ok (not primitive)
 
       type Der is new GT with null record;               --  Derivations: Type derived from category TAGGED
-      procedure P4 (X : Der) is null;                    --  Indicator: Missing not overriding indicator
+      not overriding procedure P4 (X : Der) is null;                    --  Indicator: Missing not overriding indicator
 
       type BigDer is new TagT1 and GI1 with null record; --  Derivations: Type derived from category TAGGED, More than 1 parents (2)
    end Generic_Package;

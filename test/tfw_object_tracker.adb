@@ -589,19 +589,19 @@ begin
       V02 : Pack2.T (1);
 
    begin
-      if V1.D = 1 then
+      if V1.D = 1 then          -- True
          null;
       end if;
 
-      if V2.D = 1 then
+      if V2.D = 1 then          -- True
          null;
       end if;
 
-      if V01.D = 1 then
+      if V01.D = 1 then         -- True
          null;
       end if;
 
-      if V02.D = 1 then
+      if V02.D = 1 then         -- True
          null;
       end if;
    end;
@@ -610,11 +610,11 @@ begin
 exception
       -- check handlers
    when Constraint_Error =>
-      if I > 3 then                   -- Unknown
+      if I > 3 then             -- Unknown
          X := 1;
       end if;
       I := 5;
-      if I > 3 then                   -- True
+      if I > 3 then             -- True
          X := 1;
       end if;
 
