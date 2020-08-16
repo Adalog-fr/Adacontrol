@@ -14,6 +14,9 @@ LARGS =
 
 .PHONY : *
 
+# Do not interfer with gprbuild's parallelism.
+.NOTPARALLEL:
+
 executables := adactl adactl_fix ptree pfni
 
 help :

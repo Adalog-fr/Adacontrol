@@ -33,7 +33,13 @@ help() {
 #
 # Initialization
 #
-GCC=gcc
+
+# Default value for gcc, unless already set in the environment.
+if test "x$GCC" = x; then
+    GCC=gcc
+fi
+
+#Check OS
 case $(uname) in
     *win*|*Win*|*WIN*)  # Windows, Cygwin...
 	EXT=".exe"
@@ -257,12 +263,12 @@ if [ $SPEEDUP = 0 ] ; then
         result=10
     fi
 
-    # Create timing file
-    echo "Rule;Time;Percent" >res/rules_timing.csv
-    grep -E "^[A-Za-z_]+: [0-9.]+ \([0-9.]+%\)" res/${test_case}.txt >>res/rules_timing.csv
     ###########################################################################
     # Put "PASSED" as the result if OK
     if [ $result -le 1 ]; then
+    # Create timing file
+        echo "Rule;Time;Percent" >res/rules_timing.csv
+        grep -E "^[A-Za-z_]+: [0-9.]+ \([0-9.]+%\)" res/${test_case}.txt >>res/rules_timing.csv
         put_line "PASSED"
         rm -f res/${test_case}.txt
         echo "PASSED" | tr -d \\r >res/${test_case}.txt
@@ -369,7 +375,7 @@ if [ $SILENT -eq 1 ] ; then
 else
     print_time "Total run time: " `expr $run_stop - $run_start`
     if [ $nb_failed -ne 0 ] ; then
-	./failed.sh
+	. ./failed.sh
     fi
 
 fi
