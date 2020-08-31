@@ -575,6 +575,7 @@ begin
       package Pack1 is
          type T (D : Integer) is null record;
          V1 : T (1);
+         V11 : Integer := 1;
       end Pack1;
       use Pack1;
 
@@ -590,6 +591,10 @@ begin
 
    begin
       if V1.D = 1 then          -- True
+         null;
+      end if;
+
+      if V11 = 1 then           -- True
          null;
       end if;
 

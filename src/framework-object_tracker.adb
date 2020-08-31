@@ -84,7 +84,7 @@ package body Framework.Object_Tracker is
    -- When a path with a condition is entered (if path, case path, while loop statement), a new value is pushed
    -- with the current condition. The value is intersected with the current condition.
    --
-   -- When a variable is assigned (including [in] out parameters and initializatin), the assigned value is
+   -- When a variable is assigned (including [in] out parameters and initialization), the assigned value is
    -- intersected with the declaration condition. If this is the first assignment in this path, other assigned
    -- values in enclosing paths become "unknown", since a path has other parallel paths that may (or not)
    -- change the variable.
@@ -174,7 +174,6 @@ package body Framework.Object_Tracker is
    ------------------------
 
    function Discriminant_Index (In_Table : Discriminant_Descr_Table; Discr : Asis.Name) return Asis.ASIS_Integer is
-      use Asis.Elements;
       use Utilities;
       Discr_Def : constant Asis.Defining_Name := First_Defining_Name (Discr);
       Discr_Image : constant Wide_String := Full_Name_Image (Discr_Def);
@@ -865,9 +864,7 @@ package body Framework.Object_Tracker is
          -- Good_Var is a true variable. Check if Var (the reference to it) is nested in some procedure/function/generic
          -- local to the scope of the declaration of Good_Var
          declare
-            Good_Var_Scope : constant Asis.Declaration := Enclosing_Element (Enclosing_Program_Unit
-                                                                             (Corresponding_Name_Declaration
-                                                                              (Good_Var)));
+            Good_Var_Scope : constant Asis.Declaration := Enclosing_Element (Enclosing_Program_Unit (Good_Decl));
             Ref_Enclosing  : Asis.Element := Enclosing_Element (Var);
          begin
             while not Is_Nil (Ref_Enclosing) and then not Is_Equal (Ref_Enclosing, Good_Var_Scope) loop
@@ -881,8 +878,13 @@ package body Framework.Object_Tracker is
                   -- unknown value
                   -- This is not applicable to expression functions, since the evaluator evaluates the corresponding
                   -- expression in place
-                     if Declaration_Kind (Good_Var_Scope) = A_Package_Declaration then
-                        -- This is necessarily a package nested in the procedure, so it's OK
+                     if Declaration_Kind (Good_Var_Scope) = A_Package_Declaration
+                       and then Is_Part_Of ((if Is_Part_Of_Instance (Good_Var_Scope)
+                                                then Ultimate_Enclosing_Instantiation (Good_Var_Scope)
+                                                else Good_Var_Scope),
+                                            Inside => Ref_Enclosing)
+                     then
+                        -- This is a package nested in the procedure, so it's OK
                         exit;
                      end if;
                      return Unknown_Value (Descriptor.Kind);
