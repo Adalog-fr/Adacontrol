@@ -222,6 +222,11 @@ package body Rules.Known_Exceptions is
             return Unknown_Value (Untracked);
          end if;
          Parent_Name := Ultimate_Name (Parent);
+         if Is_Nil (Parent_Name) then
+            -- Renaming of function call or dereference
+            return Unknown_Value (Untracked);
+         end if;
+
          Parent_Decl := Corresponding_Name_Declaration (Parent_Name);
          Discr_Name  := Corresponding_Name_Definition (Discr);
 
