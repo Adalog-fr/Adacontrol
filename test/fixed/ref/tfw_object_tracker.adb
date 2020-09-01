@@ -448,6 +448,7 @@ begin
       package Pack1 is
          type T (D : Integer) is null record;
          V1 : T (1);
+         V11 : Integer := 1;
       end Pack1;
       use Pack1;
 
@@ -462,6 +463,8 @@ begin
       V02 : Pack2.T (1);
 
    begin
+      null;
+
       null;
 
       null;

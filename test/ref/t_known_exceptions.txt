@@ -10,10 +10,10 @@ t_known_exceptions-test_access.adb:62:27: Error: Access_Error: Implicit derefere
 t_known_exceptions-test_access.adb:64:7: Error: Access_Error: Implicit dereference raises Constraint_Error (null pointer)
 t_known_exceptions-test_access.adb:64:19: Error: Access_Error: Implicit dereference raises Constraint_Error (null pointer)
 t_known_exceptions-test_access.adb:75:7: Error: Access_Error: Implicit dereference raises Constraint_Error (null pointer)
-t_known_exceptions-test_index.adb:19:9: Error: Index_Error: Indexing raises Constraint_Error
-t_known_exceptions-test_index.adb:21:9: Error: Index_Error: Indexing raises Constraint_Error
-t_known_exceptions-test_index.adb:24:22: Error: Index_Error: Indexing raises Constraint_Error
-t_known_exceptions-test_index.adb:32:15: Error: Index_Error: Indexing raises Constraint_Error
+t_known_exceptions-test_index.adb:19:9: Error: Index_Error: Indexing raises Constraint_Error, value=11
+t_known_exceptions-test_index.adb:21:9: Error: Index_Error: Indexing raises Constraint_Error, value=2
+t_known_exceptions-test_index.adb:24:22: Error: Index_Error: Indexing raises Constraint_Error, value=-1
+t_known_exceptions-test_index.adb:32:15: Error: Index_Error: Indexing raises Constraint_Error, value=11
 t_known_exceptions-test_discriminant.adb:46:32: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D1= 1
 t_known_exceptions-test_discriminant.adb:62:12: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97
 t_known_exceptions-test_discriminant.adb:64:13: Found: Discrim_Error: Access to component raises Constraint_Error, discriminant D= 97

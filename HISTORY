@@ -1,4 +1,16 @@
 =============
+== V1.22b5 ==
+=============
+
+General:
+--------
+Bug fixes
+
+Changes to existing rules:
+--------------------------
+Known_Exceptions: print value of failing index
+
+=============
 == V1.22b4 ==
 =============
 
