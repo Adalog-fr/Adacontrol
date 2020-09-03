@@ -128,6 +128,15 @@ package Framework.Language is
    -- Like Get_String_Parameter, but treats the string as a modifier (i.e. does not call
    -- Next_Parameter)
 
+   function Get_Integer_Modifier (Min : Thick_Queries.Biggest_Int := Thick_Queries.Biggest_Int'First;
+                                  Max : Thick_Queries.Biggest_Int := Thick_Queries.Biggest_Int'Last)
+                                  return Thick_Queries.Biggest_Int;
+   function Get_Integer_Modifier (Min : Asis.ASIS_Integer := Asis.ASIS_Integer'First;
+                                  Max : Asis.ASIS_Integer := Asis.ASIS_Integer'Last)
+                                  return Asis.ASIS_Integer;
+   -- Like Get_Integer_Parameter, but treats the value as a modifier (i.e. does not call
+   -- Next_Parameter)
+
 
    --  The following two packages can be instantiated to parse modifiers and "flag"
    --  parameters (keywords). The flags are the 'Image of the values

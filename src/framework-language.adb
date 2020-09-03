@@ -878,6 +878,31 @@ package body Framework.Language is
                                    Max : Thick_Queries.Biggest_Int := Thick_Queries.Biggest_Int'Last)
                                    return Thick_Queries.Biggest_Int
    is
+      Result : constant Thick_Queries.Biggest_Int := Get_Integer_Modifier (Min, Max);
+   begin
+      Next_Parameter;
+      return Result;
+   end Get_Integer_Parameter;
+
+   function Get_Integer_Parameter (Min : Asis.ASIS_Integer := Asis.ASIS_Integer'First;
+                                   Max : Asis.ASIS_Integer := Asis.ASIS_Integer'Last)
+                                   return Asis.ASIS_Integer
+   is
+      Result : constant Asis.ASIS_Integer := Get_Integer_Modifier (Min, Max);
+   begin
+      Next_Parameter;
+      return Result;
+   end Get_Integer_Parameter;
+
+
+   --------------------------
+   -- Get_Integer_Modifier --
+   --------------------------
+
+   function Get_Integer_Modifier (Min : Thick_Queries.Biggest_Int := Thick_Queries.Biggest_Int'First;
+                                  Max : Thick_Queries.Biggest_Int := Thick_Queries.Biggest_Int'Last)
+                                  return Thick_Queries.Biggest_Int
+   is
       use Thick_Queries;
    begin
       if not In_Parameters then
@@ -890,7 +915,6 @@ package body Framework.Language is
                Result : constant Biggest_Int := Current_Token.Value;
             begin
                Next_Token;
-               Next_Parameter;
                if Result not in Min .. Max then
                   if Max = Biggest_Int'Last then
                      Syntax_Error ("Parameter must be >= "
@@ -917,17 +941,17 @@ package body Framework.Language is
          when Name | Bad_Float =>
             Syntax_Error ("Integer parameter expected", Current_Token.Position);
          when others =>
-           Syntax_Error ("Parameter expected", Current_Token.Position);
+            Syntax_Error ("Parameter expected", Current_Token.Position);
       end case;
-   end Get_Integer_Parameter;
+   end Get_Integer_Modifier;
 
-   function Get_Integer_Parameter (Min : Asis.ASIS_Integer := Asis.ASIS_Integer'First;
-                                   Max : Asis.ASIS_Integer := Asis.ASIS_Integer'Last)
-                                   return Asis.ASIS_Integer
+   function Get_Integer_Modifier (Min : Asis.ASIS_Integer := Asis.ASIS_Integer'First;
+                                  Max : Asis.ASIS_Integer := Asis.ASIS_Integer'Last)
+                                  return Asis.ASIS_Integer
    is
       use Thick_Queries;
       use type Asis.ASIS_Integer;   --## rule line off Unnecessary_Use_Clause Reduceable_Scope ## Gela compatibility
-      Result : constant Biggest_Int := Get_Integer_Parameter;
+      Result : constant Biggest_Int := Get_Integer_Modifier;
    begin
       if Result not in Biggest_Int (Min) .. Biggest_Int (Max) then
          if Max = Asis.ASIS_Integer'Last then
@@ -947,7 +971,8 @@ package body Framework.Language is
          end if;
       end if;
       return Asis.ASIS_Integer (Result);
-   end Get_Integer_Parameter;
+   end Get_Integer_Modifier;
+
 
    -------------------------
    -- Get_Float_Parameter --
@@ -1584,7 +1609,7 @@ package body Framework.Language is
       end Get_Modifier_List;
 
       function Image (List : Modifier_List) return Wide_String is
-         use type Asis.ASIS_Integer;   -- Gela-ASIS compatibility
+         use type Asis.ASIS_Integer;   --## rule line off Unnecessary_Use_Clause Reduceable_Scope ## Gela compatibility
       begin
          if List = Empty_List then
             return "";
