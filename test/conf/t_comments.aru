@@ -4,7 +4,7 @@ Pattern:  check comments (pattern, "tbsl");
 Terminating: check comments (terminating, "junk", begin, "^ok", "^bad", "^$", end, end_record);
 
 Begin: search comments (unnamed_begin, program_unit package),
-       search comments (unnamed_begin, procedure, declaration function);
+       search comments (unnamed_begin, min 3 procedure, declaration function);
 
 End_Record: search comments (unnamed_end_record, 1),
             check  comments (unnamed_end_record, 4);

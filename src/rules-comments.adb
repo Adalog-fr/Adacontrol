@@ -114,6 +114,7 @@ package body Rules.Comments is
    type Unnamed_Begin_Context is new Basic_Rule_Context with
       record
          Condition : Decl_Conditions;
+         Nb_Lines  : Asis.Text.Line_Number;
       end record;
 
    Units_Used             : array (True_Units) of Boolean := (others => False);
@@ -150,12 +151,13 @@ package body Rules.Comments is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
-      use Ada.Strings.Wide_Unbounded;
-      use String_Matching, Framework.Language;
+      use Ada.Strings.Wide_Unbounded, Asis.Text;
+      use Framework.Language, String_Matching;
       use Decl_Conditions_Utilities, Subrules_Flags_Utilities, Units_Flags_Utilities, Utilities;
-      Sr : Subrules;
-      Dc : Decl_Conditions;
-      Un : Units;
+      Sr  : Subrules;
+      Dc  : Decl_Conditions;
+      Min : Line_Number;
+      Un  : Units;
    begin
       if not Parameter_Exists then
          Parameter_Error (Rule_Id, "at least one parameter required");
@@ -245,19 +247,24 @@ package body Rules.Comments is
             end if;
 
             while Parameter_Exists loop
-               Dc := Get_Modifier       (Required  => False);
+               Dc  := Get_Modifier (Required  => False);
+               if Get_Modifier ("MIN") then
+                  Min := Get_Integer_Modifier (Min => 0);
+               else
+                  Min := 0;
+               end if;
                Un := Get_Flag_Parameter (Allow_Any => False);
                if Un = U_All then
                   if Units_Used /= (True_Units => False) then
                      Parameter_Error (Rule_Id, "Subrule already specified");
                   end if;
-                  Unnamed_Begin_Contexts := (others => (Basic.New_Context (Ctl_Kind, Ctl_Label) with Dc));
+                  Unnamed_Begin_Contexts := (others => (Basic.New_Context (Ctl_Kind, Ctl_Label) with Dc, Min));
                   Units_Used             := (others => True);
                else
                   if Units_Used (Un) then
                      Parameter_Error (Rule_Id, "Subrule already specified for " & Image (Un, Lower_Case));
                   end if;
-                  Unnamed_Begin_Contexts (Un) := (Basic.New_Context (Ctl_Kind, Ctl_Label) with Dc);
+                  Unnamed_Begin_Contexts (Un) := (Basic.New_Context (Ctl_Kind, Ctl_Label) with Dc, Min);
                   Units_Used (Un)             := True;
                end if;
             end loop;
@@ -301,7 +308,7 @@ package body Rules.Comments is
       User_Message ("Parameter(2..): ""<allowed pattern>"" | begin | end");
       User_Message;
       User_Message ("for unnamed_begin:");
-      User_Message ("Parameter(2..): [<condition>] <unit>");
+      User_Message ("Parameter(2..): [<condition>] [min <value>] <unit>");
       Decl_Conditions_Utilities.Help_On_Modifiers (Header => "<condition>:");
       Units_Flags_Utilities.Help_On_Flags         (Header => "<unit>     :");
       User_Message;
@@ -355,7 +362,7 @@ package body Rules.Comments is
 
       Line_Nb    : constant Line_Number  := Get_First_Line (After);
       Line_Text  : constant Program_Text := To_Upper (Trim (Line_Image
-                                                      (Lines (Identifier, Line_Nb, Line_Nb) (Line_Nb)),
+                                                            (Lines (Identifier, Line_Nb, Line_Nb) (Line_Nb)),
                                                       Side => Right));
       -- Ignore trailing spaces to avoid problems in the replacement of the comment
       Comment_Pos : Natural := 0;
@@ -598,43 +605,6 @@ package body Rules.Comments is
       use Asis, Asis.Declarations, Asis.Elements;
       use Framework.Locations, Thick_Queries, Utilities;
 
-      function Is_Comment_Optional (Un : Units) return Boolean is
-      begin
-         case Unnamed_Begin_Contexts (Un).Condition is
-            when Always =>
-               return False;
-            when Declaration =>
-               return Declarative_Items (Unit) = Nil_Element_List;
-            when Program_Unit =>
-               for D : Asis.Element of Declarative_Items (Unit) loop
-                  case Declaration_Kind (D) is
-                     when A_Procedure_Declaration
-                        | A_Null_Procedure_Declaration
-                        | A_Generic_Procedure_Declaration
-                        | A_Procedure_Body_Declaration
-
-                        | A_Function_Declaration
-                        | An_Expression_Function_Declaration   -- Ada 2012
-                        | A_Generic_Function_Declaration
-                        | A_Function_Body_Declaration
-
-                        | An_Entry_Body_Declaration
-
-                        | A_Package_Declaration
-                        | A_Generic_Package_Declaration
-                        | A_Package_Body_Declaration
-
-                        | A_Task_Body_Declaration
-                        | A_Protected_Body_Declaration
-                        =>
-                        return False;
-                     when others =>
-                        null;
-                  end case;
-               end loop;
-               return True;
-         end case;
-      end Is_Comment_Optional;
 
       Un : Units;
    begin   -- Process_Program_Unit
@@ -666,16 +636,56 @@ package body Rules.Comments is
       end if;
 
       declare
-         Stmts   : constant Statement_List := Statements (Unit);
+         Stmts    : constant Statement_List := Statements (Unit);
+         Optional : Boolean := True;
          Ignored : Identifier_Status;
       begin
          if Stmts = Nil_Element_List then
             return;
          end if;
 
+         if A4G_Bugs.Last_Line_Number (Stmts (Stmts'Last)) - A4G_Bugs.First_Line_Number (Stmts (Stmts'First)) + 1
+            >= Unnamed_Begin_Contexts (Un).Nb_Lines
+         then
+            case Unnamed_Begin_Contexts (Un).Condition is
+               when Always =>
+                  Optional := False;
+               when Declaration =>
+                  Optional := Declarative_Items (Unit) = Nil_Element_List;
+               when Program_Unit =>
+                  for D : Asis.Element of Declarative_Items (Unit) loop
+                     case Declaration_Kind (D) is
+                        when A_Procedure_Declaration
+                           | A_Null_Procedure_Declaration
+                           | A_Generic_Procedure_Declaration
+                           | A_Procedure_Body_Declaration
+
+                           | A_Function_Declaration
+                           | An_Expression_Function_Declaration   -- Ada 2012
+                           | A_Generic_Function_Declaration
+                           | A_Function_Body_Declaration
+
+                           | An_Entry_Body_Declaration
+
+                           | A_Package_Declaration
+                           | A_Generic_Package_Declaration
+                           | A_Package_Body_Declaration
+
+                           | A_Task_Body_Declaration
+                           | A_Protected_Body_Declaration
+                           =>
+                           Optional := False;
+                           exit;
+                        when others =>
+                           null;
+                     end case;
+                  end loop;
+            end case;
+         end if;
+
          Check_Identifier (Identifier => Names (Unit) (1),
                            After      => Get_Previous_Word_Location (Stmts, "BEGIN") + 4,
-                           Optional   => Is_Comment_Optional (Un),
+                           Optional   => Optional,
                            Keyword    => "begin",
                            Cont       => Unnamed_Begin_Contexts (Un),
                            Result     => Ignored);

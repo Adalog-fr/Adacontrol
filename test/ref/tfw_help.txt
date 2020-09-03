@@ -121,7 +121,7 @@ for terminating:
 Parameter(2..): "<allowed pattern>" | begin | end
 
 for unnamed_begin:
-Parameter(2..): [<condition>] <unit>
+Parameter(2..): [<condition>] [min <value>] <unit>
 <condition>: always | declaration | program_unit
 <unit>     : all  | procedure | function | entry | package |
              task

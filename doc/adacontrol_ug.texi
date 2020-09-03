@@ -3959,7 +3959,7 @@ This rule controls comments that must, or must not, appear in certain cases.
 <control_kind> comments (unnamed_begin, <kind> @{, <kind>@});
 <control_kind> comments (unnamed_end_record @{, <value>@});
 <bounds>    ::= min|max <value> [, min|max <value> ]
-<kind>      ::= [<condition>] <unit_kind>
+<kind>      ::= [<condition>] [min <value>] <unit_kind>
 <condition> ::= always | declaration | program_unit
 <unit_kind> ::= all | procedure | function | entry | package | task
 @end example
@@ -4027,6 +4027,11 @@ declaration part is non-empty (not counting pragmas).
 declaration part contains the declarations of other program units
 (subprograms, packages, protected objects, or tasks).
 @end itemize
+
+If ``min <value>'' is specified, it tells the minimum number of lines
+in the statement part that follows  @code{@b{begin}} for the control
+to apply, i.e. the comment is not required if the statement part has
+less lines than the indicated value.
 
 The <unit_kind> keyword detemines the kind of program unit to which
 the rule applies (``all'' stands for all kinds). This subrule can be

@@ -9,6 +9,7 @@ Bug fixes
 Changes to existing rules:
 --------------------------
 Known_Exceptions: print value of failing index
+Comments.Unnamed_Begin: add "min" modifier
 
 =============
 == V1.22b4 ==
