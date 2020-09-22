@@ -30,6 +30,7 @@
 
 -- ASIS
 with
+  Asis.Declarations,
   Asis.Definitions,
   Asis.Elements,
   Asis.Exceptions,
@@ -218,7 +219,28 @@ package body Rules.Known_Exceptions is
          Discr_Name  : Asis.Defining_Name;
          Discr_Value : Asis.Expression := Nil_Element;
          Def         : Asis.Definition;
-      begin
+         Def_Constraint : Asis.Constraint;
+
+         function Associations_From_Derivation (Type_Name : Asis.Expression) return Asis.Association_List is
+         -- If Type_Name denotes a type extension, and the type extension includes discriminant associations,
+         -- returns the (normalized) discriminant associations.
+         -- Otherwise, returns an empty list
+            use Asis.Declarations;
+            Type_Decl : constant Asis.Definition := Type_Declaration_View (Corresponding_Name_Declaration (Type_Name));
+            Constr    : Asis.Constraint;
+         begin
+            if Type_Kind (Type_Decl) /= A_Derived_Record_Extension_Definition then
+               return Nil_Element_List;
+            end if;
+
+            Constr := Subtype_Constraint (Parent_Subtype_Indication (Type_Decl));
+            if Is_Nil (Constr) then
+               return Nil_Element_List;
+            end if;
+            return Discriminant_Associations (Constr, Normalized => True);
+         end Associations_From_Derivation;
+
+      begin  -- Discriminant_Value
          if Expression_Kind (Parent) in A_Function_Call | An_Indexed_Component then
             -- Too dynamic for us
             return Unknown_Value (Untracked);
@@ -257,35 +279,54 @@ package body Rules.Known_Exceptions is
             return Unknown_Value (Untracked);
          end if;
 
-         Def := Subtype_Constraint (Def);
-         if Is_Nil (Def) then
+         Def_Constraint := Subtype_Constraint (Def);
+         if Is_Nil (Def_Constraint) then
             -- No constraint => The discriminant is mutable, no idea what it is
             return Unknown_Value (Untracked);
          end if;
 
          -- Here, the component declaration has its own constraint
-         for Assoc : Asis.Association of Discriminant_Associations (Def, Normalized => True) loop
+
+         -- Try the discriminant from regular associations
+         for Assoc : Asis.Association of Discriminant_Associations (Def_Constraint, Normalized => True) loop
             if Is_Equal (Discriminant_Selector_Names (Assoc) (1), Discr_Name) then
                Discr_Value := Discriminant_Expression (Assoc);
-               exit;
+               -- Transmitted discriminants are always direct names
+               -- This implies that if a name of a discriminant is the sole element of the constraint, it
+               -- belongs necessarily to the enclosing structure (otherwise it would not be directly accessible)
+               if Expression_Kind (Discr_Value) = An_Identifier
+                 and then Declaration_Kind (Corresponding_Name_Declaration (Discr_Value)) = A_Discriminant_Specification
+               then -- A transmitted discriminant
+                  return Discriminant_Value (Prefix (Enclosing_Element (Parent_Name)), Discr_Value);
+               else
+                  return Expression_Value (Discr_Value, RM_Static => True);
+                  -- We need RM_Static here, because the expression comes from the object declaration.
+                  -- If it involves variables, they may have changed since the object declaration was elaborated.
+               end if;
             end if;
          end loop;
-         if Is_Nil (Discr_Value) then
-            Failure ("Discriminant_Value: not found (2)", Discr);
-         end if;
 
-         -- Transmitted discriminants are always direct names
-         -- This implies that if a name of a discriminant is the sole element of the constraint, it
-         -- belongs necessarily to the enclosing structure (otherwise it would not be directly accessible)
-         if Expression_Kind (Discr_Value) = An_Identifier
-           and then Declaration_Kind (Corresponding_Name_Declaration (Discr_Value)) = A_Discriminant_Specification
-         then -- A transmitted discriminant
-            return Discriminant_Value (Prefix(Enclosing_Element (Parent_Name)), Discr_Value);
-         else
-            return Expression_Value (Discr_Value, RM_Static => True);
-            -- We need RM_Static here, because the expression comes from the object declaration.
-            -- If it involves variables, they may have changed since the object declaration was elaborated.
-         end if;
+         -- Try the discriminants from the constraint of the ancestor part if it is a type extension
+         for Assoc : Asis.Association of Associations_From_Derivation (Subtype_Simple_Name (Def)) loop
+            if Is_Equal (Discriminant_Selector_Names (Assoc) (1), Discr_Name) then
+               Discr_Value := Discriminant_Expression (Assoc);
+               -- Transmitted discriminants are always direct names
+               -- This implies that if a name of a discriminant is the sole element of the constraint, it
+               -- belongs necessarily to the enclosing structure (otherwise it would not be directly accessible)
+               if Expression_Kind (Discr_Value) = An_Identifier
+                 and then Declaration_Kind (Corresponding_Name_Declaration (Discr_Value)) = A_Discriminant_Specification
+               then -- A transmitted discriminant
+                  return Discriminant_Value (Parent_Name, Discr_Value);
+               else
+                  return Expression_Value (Discr_Value, RM_Static => True);
+                  -- We need RM_Static here, because the expression comes from the object declaration.
+                  -- If it involves variables, they may have changed since the object declaration was elaborated.
+               end if;
+            end if;
+         end loop;
+
+         -- Not found at all
+         Failure ("Discriminant_Value: not found", Discr);
       end Discriminant_Value;
 
       Current_Branch : Asis.Variant;
@@ -315,7 +356,7 @@ package body Rules.Known_Exceptions is
 
       Current_Branch := Enclosing_Element (Current_Branch);
       while Definition_Kind (Current_Branch) = A_Variant loop
-         -- Component (or enclosing variang) is part of a variant
+         -- Component (or enclosing variant) is part of a variant
 
          declare
             Possible_Values : constant Asis.Element_List := Variant_Choices (Current_Branch);
@@ -359,13 +400,17 @@ package body Rules.Known_Exceptions is
             if not Possibly_Inside then
                if Discr_Value.Imin = Discr_Value.Imax then
                   Report (Rule_Id, Contexts (SR_Discriminant), Get_Location (Selector (Expr)),
-                          "Access to component raises Constraint_Error, discriminant "
+                          "Access to component "
+                          & Name_Image (Selector (Expr))
+                          & " raises Constraint_Error, discriminant "
                           & Name_Image (Discriminant_Direct_Name (Enclosing_Element (Current_Branch)))
                           & "= "
                           & Biggest_Int_Img (Discr_Value.Imin));
                else
                   Report (Rule_Id, Contexts (SR_Discriminant), Get_Location (Selector (Expr)),
-                          "Access to component raises Constraint_Error, discriminant "
+                          "Access to component "
+                          & Name_Image (Selector (Expr))
+                          & " raises Constraint_Error, discriminant "
                           & Name_Image (Discriminant_Direct_Name (Enclosing_Element (Current_Branch)))
                           & " in "
                           & Biggest_Int_Img (Discr_Value.Imin)

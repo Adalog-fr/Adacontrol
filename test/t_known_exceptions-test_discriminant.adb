@@ -215,4 +215,43 @@ begin
    begin
       null;
    end;
+
+   -- Check inherited discriminants
+   declare
+      type Enum is (A, B);
+      type Rec1 (DRec1 : Enum) is tagged
+         record
+            case DRec1 is
+               when A =>
+                  I : Integer;
+               when B =>
+                  F : Float;
+            end case;
+         end record;
+
+      type Rec2 (DRec2 : Enum) is new Rec1 (Drec1 => Drec2) with null record;
+
+      type Rec3 (DRec3 : Enum) is
+         record
+            case Drec3 is
+               when A =>
+                  C : Rec2 (Drec2 => DRec3);
+               when B =>
+                  D : Rec1 (Drec1 => Drec3);
+            end case;
+         end record;
+
+      type Rec4  (DRec4 : Enum) is
+         record
+            E : Rec1 (Drec1 => Drec4);
+         end record;
+
+      VF : Float;
+      R3 : Rec3 (Drec3 => A);
+      R4 : Rec4 (Drec4 => A);
+   begin
+      VF := R3.C.F;
+      VF := R3.D.F;
+      VF := R4.E.F;
+   end;
 end Test_Discriminant;
