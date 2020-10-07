@@ -889,10 +889,6 @@ package body Rules.Simplifiable_Statements is
    -- Process_Case_Statement --
    ----------------------------
 
-   ----------------------------
-   -- Process_Case_Statement --
-   ----------------------------
-
    procedure Process_Case_Statement (Stmt  : in Asis.Statement) is
       use Asis, Asis.Elements, Asis.Statements;
       use Framework.Locations, Framework.Reports;
