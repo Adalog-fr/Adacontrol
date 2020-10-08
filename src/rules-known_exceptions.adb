@@ -241,10 +241,13 @@ package body Rules.Known_Exceptions is
          end Associations_From_Derivation;
 
       begin  -- Discriminant_Value
-         if Expression_Kind (Parent) in A_Function_Call | An_Indexed_Component then
+         if Expression_Kind (Parent) in A_Function_Call | An_Indexed_Component | An_Explicit_Dereference
+           or else Is_Access_Expression (Parent)
+         then
             -- Too dynamic for us
             return Unknown_Value (Untracked);
          end if;
+
          Parent_Name := Ultimate_Name (Parent);
          if Is_Nil (Parent_Name) then
             -- Renaming of function call or dereference
@@ -331,6 +334,10 @@ package body Rules.Known_Exceptions is
 
       Current_Branch : Asis.Variant;
    begin  -- Process_Selected_Component
+      if Is_Expanded_Name (Expr) then   -- Certainly not a record component
+         return;
+      end if;
+
       if Is_Access_Expression (Prefix (Expr)) then
          -- Implicit dereference
          Process_Dereference (Expr);
