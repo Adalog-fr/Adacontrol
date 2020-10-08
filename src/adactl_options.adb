@@ -402,6 +402,9 @@ package body Adactl_Options is
       -- Verbose must also be set before we start analyzing
       Set_Option_Variable  ('d', "debug");
       Set_Option_Variable  ('v', "verbose");
+      -- Mirror Debug and Verbose options
+      Utilities.Debug_Option   := Adactl_Options.Debug_Option.Value   = On;
+      Utilities.Verbose_Option := Adactl_Options.Verbose_Option.Value = On;
 
       -- Defaults from the ADACTLINI environment variable
       if Exists ("ADACTLINI") then
