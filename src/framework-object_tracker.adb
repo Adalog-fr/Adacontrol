@@ -174,14 +174,11 @@ package body Framework.Object_Tracker is
    ------------------------
 
    function Discriminant_Index (In_Table : Discriminant_Descr_Table; Discr : Asis.Name) return Asis.ASIS_Integer is
-      use Utilities;
+      use Asis.Elements, Utilities;
       Discr_Def   : constant Asis.Defining_Name := First_Defining_Name (Discr);
-      Discr_Image : constant Wide_String        := Full_Name_Image (Discr_Def);
-      -- TBSL use Discr_Image instead of Is_Equal (problem with cxai014)
    begin
       for Discr_Inx in In_Table'Range loop
-         if Discr_Image = Full_Name_Image (In_Table (Discr_Inx).Discrim_Name) then
-         --  if Is_Equal (Discr_Def, In_Table (Discr_Inx).Discrim_Name) then
+         if Is_Equal (Discr_Def, In_Table (Discr_Inx).Discrim_Name) then
             return Discr_Inx;
          end if;
       end loop;
