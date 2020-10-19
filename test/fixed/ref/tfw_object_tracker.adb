@@ -320,6 +320,17 @@ begin
       end if;
       X := 1;
    end;
+   declare                            -- No exceptions raised here
+      B : array (1 .. 10) of Boolean;
+      I : Integer := 0;
+      function F return Boolean is (B (I));
+      function G return Boolean is
+      begin
+         return (B (I));
+      end G;
+   begin
+      null;
+   end;
 
    -- Check generic and instantiation
    declare

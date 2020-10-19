@@ -78,7 +78,8 @@ package Framework.Object_Tracker is
    -- Evaluates Expr, and return the value in Imin and Imax
    -- Kind is set according to Expr
 
-   function Object_Value (Var : Asis.Element; Discr : Asis.Name := Asis.Nil_Element) return Object_Value_Set;
+   function Object_Value (Var : Asis.Element; Discr : Asis.Name := Asis.Nil_Element; From_Expansion : Boolean := False)
+                          return Object_Value_Set;
    -- Provides the range of possible values of Var at the current place, or Unknown.
    -- If Descr is not Nil_Element, returns the value of the corresponding discriminant of Var
    -- Alternatively, Var may be a selected component whose selector is a discriminant
@@ -89,7 +90,10 @@ package Framework.Object_Tracker is
    --   A_Definition
    --   A_Defining_Name
 
-   function Object_Value_Image (Var : Asis.Element; Wanted : Thick_Queries.Expression_Info) return Wide_String;
+   function Object_Value_Image (Var            : Asis.Element;
+                                Wanted         : Thick_Queries.Expression_Info;
+                                From_Expansion : Boolean := False)
+                                return Wide_String;
    -- If Variable_Value (Var) is a single known value, returns the image of the value
    -- Otherwise, returns ""
    --

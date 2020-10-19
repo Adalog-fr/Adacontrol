@@ -722,8 +722,9 @@ package body Framework.Object_Tracker is
    -- Object_Value --
    ------------------
 
-   function Object_Value (Var   : Asis.Element;
-                          Discr : Asis.Name := Nil_Element -- Nil_Element if no discriminant
+   function Object_Value (Var            : Asis.Element;
+                          Discr          : Asis.Name := Nil_Element; -- Nil_Element if no discriminant
+                          From_Expansion : Boolean   := False
                          ) return Object_Value_Set
    is
    -- Var is a variable name, or a selected name whose prefix is a variable and selector a discriminant
@@ -868,23 +869,29 @@ package body Framework.Object_Tracker is
                case Declaration_Kind (Ref_Enclosing) is
                   when A_Procedure_Body_Declaration
                      | A_Function_Body_Declaration
+                     | An_Expression_Function_Declaration
                      | A_Task_Body_Declaration
                      =>
                   -- A variable accessed from a unit nested in the unit where the variable is declared
                   -- We don't know where this subprogram is called from (or the state of the task), therefore it is an
                   -- unknown value
-                  -- This is not applicable to expression functions, since the evaluator evaluates the corresponding
-                  -- expression in place
-                     if Declaration_Kind (Good_Var_Scope) = A_Package_Declaration
-                       and then Is_Part_Of ((if Is_Part_Of_Instance (Good_Var_Scope)
-                                                then Ultimate_Enclosing_Instantiation (Good_Var_Scope)
-                                                else Good_Var_Scope),
-                                            Inside => Ref_Enclosing)
+
+                  -- This is not applicable to expression functions when the evaluator expands a call to
+                  --  the corresponding expression in place
+                     if not From_Expansion
+                       or else Declaration_Kind (Ref_Enclosing) /= An_Expression_Function_Declaration
                      then
-                        -- This is a package nested in the procedure, so it's OK
-                        exit;
+                        if Declaration_Kind (Good_Var_Scope) = A_Package_Declaration
+                          and then Is_Part_Of ((if Is_Part_Of_Instance (Good_Var_Scope)
+                                               then Ultimate_Enclosing_Instantiation (Good_Var_Scope)
+                                               else Good_Var_Scope),
+                                               Inside => Ref_Enclosing)
+                        then
+                           -- This is a package nested in the subprogram, so it's OK
+                           exit;
+                        end if;
+                        return Unknown_Value (Descriptor.Kind);
                      end if;
-                     return Unknown_Value (Descriptor.Kind);
                   when A_Package_Body_Declaration =>
                      -- The same goes for generic package bodies, since we don't know where they are instantiated
                      -- Non generic package bodies are OK, since they are elaborated in place
@@ -978,8 +985,12 @@ package body Framework.Object_Tracker is
    -- Object_Value_Image --
    ------------------------
 
-   function Object_Value_Image (Var : Asis.Element; Wanted : Thick_Queries.Expression_Info) return Wide_String is
-      Val : constant Object_Value_Set := Object_Value (Var);
+   function Object_Value_Image (Var            : Asis.Element;
+                                Wanted         : Thick_Queries.Expression_Info;
+                                From_Expansion : Boolean := False)
+                                return Wide_String
+   is
+      Val : constant Object_Value_Set := Object_Value (Var, From_Expansion => From_Expansion);
    begin
       if Val.Kind = Untracked then
          return "";
