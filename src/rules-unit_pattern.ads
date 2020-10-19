@@ -1,7 +1,7 @@
 ----------------------------------------------------------------------
 --  Rules.Unit_Pattern - Package specification                      --
 --                                                                  --
---  This software  is (c) Adalog/Alstom  2004-2014.                 --
+--  This software is (c) Alstom and Adalog 2004-2014.                  --
 --  The Ada Controller is  free software; you can  redistribute  it --
 --  and/or modify it under  terms of the GNU General Public License --
 --  as published by the Free Software Foundation; either version 2, --

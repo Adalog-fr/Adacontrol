@@ -1,7 +1,7 @@
 ----------------------------------------------------------------------
 --  Rules.With_Clauses - Package body                               --
 --                                                                  --
---  This  software  is  (c)  CSEE  and Adalog  2004-2006.           --
+--  This software is (c) CSEE and Adalog 2004-2006.                 --
 --  The Ada Controller is  free software; you can  redistribute  it --
 --  and/or modify it under  terms of the GNU General Public License --
 --  as published by the Free Software Foundation; either version 2, --

@@ -1,7 +1,7 @@
 ----------------------------------------------------------------------
 --  Rules.Potentially_Blocking_Operations - Package body            --
 --                                                                  --
---  This module  is (c) BelgoControl and Adalog  2004-2005.         --
+--  This module  is (c) BelgoControl and Adalog 2004-2005.          --
 --  The Ada Controller is  free software; you can  redistribute  it --
 --  and/or modify it under  terms of the GNU General Public License --
 --  as published by the Free Software Foundation; either version 2, --
