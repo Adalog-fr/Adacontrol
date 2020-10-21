@@ -6430,9 +6430,11 @@ controlled.
 This rule can be given at most once for each subrule.
 
 @subsection Tip
-The error message indicates the failing value (and the failing discriminant name for the
-``discriminant'' subrule). Note that if the value is from an enumerated type (including character types),
-the value given is the integer position value (i.e. the @code{'Pos}).
+The error message indicates the failing value and the expected bound
+(for the ``index'' subrule), or the failing discriminant name (for the
+``discriminant'' subrule). Note that if the value is from an
+enumerated type (including character types), the value given is the
+integer position value (i.e. the @code{'Pos}).
 
 @node Local_Access, Local_Hiding, Known_Exceptions, Rules reference
 @section Local_Access

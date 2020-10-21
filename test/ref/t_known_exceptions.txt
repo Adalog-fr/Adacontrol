@@ -10,10 +10,11 @@ t_known_exceptions-test_access.adb:62:27: Error: Access_Error: Implicit derefere
 t_known_exceptions-test_access.adb:64:7: Error: Access_Error: Implicit dereference raises Constraint_Error (null pointer)
 t_known_exceptions-test_access.adb:64:19: Error: Access_Error: Implicit dereference raises Constraint_Error (null pointer)
 t_known_exceptions-test_access.adb:75:7: Error: Access_Error: Implicit dereference raises Constraint_Error (null pointer)
-t_known_exceptions-test_index.adb:19:9: Error: Index_Error: Indexing raises Constraint_Error, value=11
-t_known_exceptions-test_index.adb:21:9: Error: Index_Error: Indexing raises Constraint_Error, value=2
-t_known_exceptions-test_index.adb:24:22: Error: Index_Error: Indexing raises Constraint_Error, value=-1
-t_known_exceptions-test_index.adb:32:15: Error: Index_Error: Indexing raises Constraint_Error, value=11
+t_known_exceptions-test_index.adb:21:9: Error: Index_Error: Indexing raises Constraint_Error, value 11 > 10
+t_known_exceptions-test_index.adb:23:9: Error: Index_Error: Indexing raises Constraint_Error, value 2 > 1
+t_known_exceptions-test_index.adb:26:22: Error: Index_Error: Indexing raises Constraint_Error, value -1 < 0
+t_known_exceptions-test_index.adb:34:15: Error: Index_Error: Indexing raises Constraint_Error, value 11 > 10
+t_known_exceptions-test_index.adb:42:15: Error: Index_Error: Indexing raises Constraint_Error, value 11 > 10
 t_known_exceptions-test_discriminant.adb:46:32: Found: Discrim_Error: Access to component C raises Constraint_Error, discriminant D1= 1
 t_known_exceptions-test_discriminant.adb:62:12: Found: Discrim_Error: Access to component B raises Constraint_Error, discriminant D= 97
 t_known_exceptions-test_discriminant.adb:64:13: Found: Discrim_Error: Access to component B raises Constraint_Error, discriminant D= 97
@@ -65,4 +66,4 @@ t_known_exceptions-test_discriminant.adb:254:16: Found: Discrim_Error: Access to
 t_known_exceptions-test_discriminant.adb:255:18: Found: Discrim_Error: Access to component F raises Constraint_Error, discriminant DRec1= 0
 
 Counts summary:
-All_Errors: 65
+All_Errors: 66

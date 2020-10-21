@@ -4,6 +4,8 @@ procedure Test_Index is
    I : Inx := 5;
    type Arr1 is array (Inx) of Character;
    VA1 : Arr1;
+   C : Character;
+   Tab : array (2..10) of Arr1;
 
    VS1 : String (1 .. 10);
    J : Integer;
@@ -29,9 +31,15 @@ begin
       when 10 =>
          VS1 (J) := 'A';
       when 11 =>
-         VS1 (J) := 'B';
+         VS1 (J) := 'B';             -- Index_Error
       when others =>
          VS1 (J) := '?';
    end case;
+
+   -- Check bounds from component iterator
+   for S of Tab loop
+      C := S (1);
+      C := S (11);                   -- Index_Error
+   end loop;
 
 end Test_Index;

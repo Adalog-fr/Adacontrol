@@ -186,7 +186,8 @@ package body Rules.Known_Exceptions is
               and then Inx_Val >  Bounds (Bound_Inx + 1)
             then
                Report (Rule_Id, Contexts (SR_Index), Get_Location (Var_Inx),
-                       "Indexing raises Constraint_Error, value=" & Biggest_Int_Img (Inx_Val));
+                       "Indexing raises Constraint_Error, value " & Biggest_Int_Img (Inx_Val)
+                       & " > " & Biggest_Int_Img (Bounds (Bound_Inx + 1)));
             end if;
             Inx_Val := Discrete_Static_Expression_Value (Var_Inx, Maximum);
             if         Inx_Val            /= Not_Static
@@ -194,7 +195,8 @@ package body Rules.Known_Exceptions is
               and then Inx_Val <  Bounds (Bound_Inx)
             then
                Report (Rule_Id, Contexts (SR_Index), Get_Location (Var_Inx),
-                       "Indexing raises Constraint_Error, value=" & Biggest_Int_Img (Inx_Val));
+                       "Indexing raises Constraint_Error, value " & Biggest_Int_Img (Inx_Val)
+                       & " < " & Biggest_Int_Img (Bounds (Bound_Inx)));
             end if;
             Bound_Inx := Bound_Inx + 2;
          end loop;
