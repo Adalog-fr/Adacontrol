@@ -942,6 +942,17 @@ By default, the output is in ``Gnat'' format, unless an output file
 is specified with a name whose extension is ``.csv'' (in any casing),
 in which case it defaults to ``CSV''.
 
+The ``-F'' option can also be followed by a character string that
+describes the output format. @xref{Syntax of format strings}. Since
+this string is passed on the command line, it must be quoted, and
+therefore it is recommended to use ``~'' as the string delimiter for
+AdaControl. @xref{Parameters}.
+
+Ex:
+@example
+-F "~%m (%f:%l:%c)~"
+@end example
+
 The ``-G'' option controls the generation, in the output file, of
 commands for fixing violations. It must be followed by ``none'' (the
 default), where no fixes information is generated, ``check'', where
