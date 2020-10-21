@@ -617,13 +617,7 @@ package body Rules.Unsafe_Paired_Calls is
          end loop;
 
          -- Find matching opening call
-         if Element_Kind (Enclosing) = An_Exception_Handler then  -- TBSL duplicated?
-            -- Since the handler is a nested scope
-            Active_Procs.Reset (All_Scopes);
-         else
-            Active_Procs.Reset (All_Scopes);
-         end if;
-
+         Active_Procs.Reset (All_Scopes);
          while Active_Procs.Data_Available loop
             Opening_Call := Active_Procs.Current_Data;
             exit when Is_Matching_Locking (Call, Closing_Call_Context, Opening_Call);

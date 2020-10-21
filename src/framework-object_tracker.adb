@@ -1412,7 +1412,7 @@ package body Framework.Object_Tracker is
          return Descriptor;
       end Build_Descriptor;
 
-      Def          : Asis.Definition;   -- TBSL Clean-up usage of Def
+      Def          : Asis.Definition;
       Subtype_Name : Asis.Expression;
       Is_Parameter : Boolean;
    begin  -- Process_Object_Declaration

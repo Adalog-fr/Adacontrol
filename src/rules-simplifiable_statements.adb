@@ -950,7 +950,7 @@ package body Rules.Simplifiable_Statements is
 
                   elsif Definition_Kind (PE) = An_Others_Choice then
                      -- Not handled here, equivalent to check Case_Statement (Others_Span, min 1)
-                     Count := 1; -- or whatever /= 0  TBSL null_and_raise
+                     Count := 1; -- or whatever /= 0
                      exit Count_Values;
 
                   elsif Element_Kind (PE) = An_Expression then   -- It's not a discrete range => it's a real expression
