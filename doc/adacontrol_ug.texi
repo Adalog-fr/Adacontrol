@@ -6418,7 +6418,7 @@ construct is certain to raise an exception.
 @subsection Syntax
 @example
 <control_kind> known_exceptions [(<subrule> @{,<subrule>@})];
-<subrule>   ::= access | discriminant | index
+<subrule>   ::= access | discriminant | index | raise_expression
 @end example
 
 @subsection Action
@@ -6434,18 +6434,31 @@ to have an incompatible value.
 @item
 ``index'': controls indexings where the index value is statically known
 to be out of range.
+@item
+``raise_expression'': controls @code{@b{raise}} expressions that
+appear anywhere else than as the right expression of a short-circuit
+test (@code{@b{and then}} and @code{@b{or else}}), or as a dependent
+expression of an @code{@b{if}} expression or a @code{@b{case}}
+expression.
 @end itemize
 Without parameters, all kinds of known exceptions are
 controlled.
 
 This rule can be given at most once for each subrule.
 
-@subsection Tip
+@subsection Tips
 The error message indicates the failing value and the expected bound
 (for the ``index'' subrule), or the failing discriminant name (for the
 ``discriminant'' subrule). Note that if the value is from an
 enumerated type (including character types), the value given is the
 integer position value (i.e. the @code{'Pos}).
+
+A @code{@b{raise}} expression should not be evaluated unconditionally,
+it is rather to be used as a default in cases where other conditions
+are not met (and especially in pre/post conditions). The subrule is
+especially useful to catch pre/post conditions of the form
+``... @code{@b{or raise} Constraint_Error}'' instead of
+``... @code{@b{or else raise} Constraint_Error}''.
 
 @node Local_Access, Local_Hiding, Known_Exceptions, Rules reference
 @section Local_Access

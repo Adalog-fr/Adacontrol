@@ -47,13 +47,14 @@ with
   Framework.Locations,
   Framework.Object_Tracker,
   Framework.Rules_Manager,
-  Framework.Reports;
+  Framework.Reports,
+  Framework.Reports.Fixes;
 pragma Elaborate (Framework.Language);
 
 package body Rules.Known_Exceptions is
    use Framework, Framework.Control_Manager;
 
-   type Subrules is (SR_Index, SR_Discriminant, SR_Access);
+   type Subrules is (SR_Access, SR_Discriminant, SR_Index, SR_Raise_Expression);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, "SR_");
 
    type Usage_Flags is array (Subrules) of Boolean;
@@ -202,6 +203,93 @@ package body Rules.Known_Exceptions is
          end loop;
       end;
    end Process_Index_Expression;
+
+
+   ------------------------------
+   -- Process_Raise_Expression --
+   ------------------------------
+
+   procedure Process_Raise_Expression (Expr : Asis.Expression) is
+      use Asis, Asis.Elements, Asis.Expressions;
+      use Framework.Reports, Thick_Queries;
+
+      Encl : Asis.Element;
+      Good_Expr : Asis.Expression;
+
+      procedure Do_Report (Extra : Wide_String := "") is
+         use Framework.Locations;
+      begin
+         if Extra = "" then
+            Report (Rule_Id, Contexts (SR_Raise_Expression), Get_Location (Expr),
+                    "Raise_Expression executed unconditionally");
+         else
+            Report (Rule_Id, Contexts (SR_Raise_Expression), Get_Location (Expr),
+                    "Raise_Expression executed unconditionally, " & Extra);
+         end if;
+      end Do_Report;
+
+   begin  -- Process_Raise_Expression
+      if not Rule_Used (SR_Raise_Expression) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      Good_Expr := Expr;
+      loop
+         Encl := Enclosing_Element (Good_Expr);
+         exit when Element_Kind (Encl) /= An_Association and then Expression_Kind (Encl) /= A_Parenthesized_Expression;
+         Good_Expr := Encl;
+      end loop;
+
+      case Element_Kind (Encl) is
+         when A_Path =>
+            -- can only be A_Case_Expression_Path or An_If_Expression_Path, OK
+            null;
+         when An_Expression =>
+            case Expression_Kind (Encl) is
+               when An_And_Then_Short_Circuit | An_Or_Else_Short_Circuit =>
+                  if Is_Equal (Good_Expr, Short_Circuit_Operation_Left_Expression (Encl)) then
+                     Do_Report ;
+                  end if;
+               when A_Function_Call =>
+                  case Operator_Kind (Called_Simple_Name (Encl)) is
+                     when An_And_Operator =>
+                        if Is_Prefix_Call (Encl) then
+                           -- No access to normalized associations in A4G, and it is an unlikely case
+                           -- give up better message, fix would not be possible anyhow
+                           Do_Report;
+                        else
+                           if Is_Equal (Good_Expr, Actual_Expressions (Encl) (1)) then
+                              Do_Report ;
+                           else
+                              Do_Report ("use ""and then"" instead");
+                              Fixes.Replace (Called_Simple_Name (Encl), "and then");
+                           end if;
+                        end if;
+                     when An_Or_Operator =>
+                        if Is_Prefix_Call (Encl) then
+                           -- No access to normalized associations in A4G, and it is an unlikely case
+                           -- give up better message, fix would not be possible anyhow
+                           Do_Report;
+                        else
+                           if Is_Equal (Good_Expr, Actual_Expressions (Encl) (1)) then
+                              Do_Report ;
+                           else
+                              Do_Report ("use ""or else"" instead");
+                              Fixes.Replace (Called_Simple_Name (Encl), "or else");
+                           end if;
+                        end if;
+                     when others =>
+                        Do_Report ;
+                  end case;
+               when others =>
+                  Do_Report ;
+            end case;
+         when others =>
+            Do_Report ;
+      end case;
+   end Process_Raise_Expression;
+
 
    --------------------------------
    -- Process_Selected_Component --

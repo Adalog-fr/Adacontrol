@@ -64,6 +64,18 @@ t_known_exceptions-test_discriminant.adb:253:18: Found: Discrim_Error: Access to
 t_known_exceptions-test_discriminant.adb:254:18: Found: Discrim_Error: Access to component F raises Constraint_Error, discriminant DRec1= 0
 t_known_exceptions-test_discriminant.adb:254:16: Found: Discrim_Error: Access to component D raises Constraint_Error, discriminant Drec3= 0
 t_known_exceptions-test_discriminant.adb:255:18: Found: Discrim_Error: Access to component F raises Constraint_Error, discriminant DRec1= 0
+t_known_exceptions-test_raise_expression.adb:25:16: Error: Exceptions: Raise_Expression executed unconditionally, use "or else" instead
+t_known_exceptions-test_raise_expression.adb:25:13: Replace:25:14
+!or else
+t_known_exceptions-test_raise_expression.adb:29:17: Error: Exceptions: Raise_Expression executed unconditionally, use "and then" instead
+t_known_exceptions-test_raise_expression.adb:29:13: Replace:29:15
+!and then
+t_known_exceptions-test_raise_expression.adb:33:7: Error: Exceptions: Raise_Expression executed unconditionally
+t_known_exceptions-test_raise_expression.adb:37:10: Error: Exceptions: Raise_Expression executed unconditionally
+t_known_exceptions-test_raise_expression.adb:41:9: Error: Exceptions: Raise_Expression executed unconditionally
+t_known_exceptions-test_raise_expression.adb:44:55: Error: Exceptions: Raise_Expression executed unconditionally, use "or else" instead
+t_known_exceptions-test_raise_expression.adb:44:52: Replace:44:53
+!or else
 
 Counts summary:
-All_Errors: 66
+All_Errors: 72

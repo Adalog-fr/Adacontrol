@@ -1,4 +1,5 @@
 Index_Error   : check  known_exceptions (Index);
 Access_Error  : check  known_exceptions (access);
 Discrim_Error : search known_exceptions (Discriminant);
+Exceptions    : check  known_exceptions (Raise_expression);
 All_Errors    : count  known_exceptions;

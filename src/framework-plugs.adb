@@ -820,6 +820,9 @@ package body Framework.Plugs is
                when An_Explicit_Dereference =>
                   Rules.Known_Exceptions.Process_Dereference (Element);
 
+               when A_Raise_Expression =>
+                  Rules.Known_Exceptions.Process_Raise_Expression (Element);
+
                when others =>
                   null;
             end case;

@@ -39,5 +39,6 @@ package Rules.Known_Exceptions is
 
    procedure Process_Dereference        (Expr : Asis.Expression);
    procedure Process_Index_Expression   (Expr : Asis.Expression);
+   procedure Process_Raise_Expression   (Expr : Asis.Expression);
    procedure Process_Selected_Component (Expr : Asis.Expression);
 end Rules.Known_Exceptions;

@@ -406,7 +406,8 @@ Parameter(2..): Enumeration type names whose values are insufficient
 Rule: KNOWN_EXCEPTIONS
 Control constructs that are provably always raising an exception
 
-Parameter(s): index | discriminant | access
+Parameter(s): access           | discriminant | index |
+              raise_expression
               (optional, default=all)
 ----
 Rule: LOCAL_ACCESS
