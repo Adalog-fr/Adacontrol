@@ -1,4 +1,16 @@
 =============
+== V1.22b7 ==
+=============
+
+General:
+--------
+Bug fixes
+
+Changes to existing rules:
+--------------------------
+Known_Exceptions: new subrule raise_expression
+
+=============
 == V1.22b6 ==
 =============
 

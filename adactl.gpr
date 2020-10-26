@@ -46,7 +46,7 @@ project Adactl is
 
    package Dashboard is
       for Project_Name use "AdaControl";
-      for Project_Version use "1.22b6";
+      for Project_Version use "1.22b7";
       for Project_Key use "adactl";
       for Source_Encoding use "Windows-1252";
    end Dashboard;
