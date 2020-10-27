@@ -1218,6 +1218,7 @@ package body Rules.Simplifiable_Statements is
                      Var := Actual_Parameter (Function_Call_Parameters (Cond) (1));
                      Check_Expression (Actual_Parameter (Function_Call_Parameters (Cond) (2)));
                      if Expression_Kind (Var) = An_Identifier
+                       and then not Is_Nil (Ultimate_Name (Var))
                        and then Declaration_Kind (Corresponding_Name_Declaration
                                                   (Ultimate_Name (Var))) = A_Variable_Declaration
                      then
@@ -1234,6 +1235,7 @@ package body Rules.Simplifiable_Statements is
                         Var := Actual_Parameter (Function_Call_Parameters (Cond) (2));
                         Check_Expression (Actual_Parameter (Function_Call_Parameters (Cond) (1)));
                         if Expression_Kind (Var) = An_Identifier
+                          and then not Is_Nil (Ultimate_Name (Var))
                           and then Declaration_Kind (Corresponding_Name_Declaration
                                                      (Ultimate_Name (Var))) = A_Variable_Declaration
                         then   --## rule line off Simplifiable_statements ## Keep symetry with previous case

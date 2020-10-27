@@ -1015,6 +1015,7 @@ package body Framework.Object_Tracker is
    --       are not allowed as LHS of assignments.
       use Asis.Declarations, Asis.Elements, Asis.Expressions;
       Good_Var             : Asis.Expression;
+      Good_Expr            : Asis.Expression;
       Current_Unit         : Asis.Declaration;
       Good_Path            : Asis.Element := Path;
       Is_Discriminated_Var : Boolean;
@@ -1037,7 +1038,7 @@ package body Framework.Object_Tracker is
    begin   -- Process_Assignment
       if Expression_Kind (Var) in An_Identifier | A_Selected_Component then
          Good_Var := Ultimate_Name (Var);
-         if Is_Nil (Good_Var)  -- Name includes a dereference
+         if Is_Nil (Good_Var)  -- Name includes a dereference or indexing
            or else Declaration_Kind (Corresponding_Name_Declaration (Good_Var))
                    in A_Component_Declaration | A_Parameter_Specification | A_Constant_Declaration
          then
@@ -1082,12 +1083,13 @@ package body Framework.Object_Tracker is
          -- Simulate an assignment to every discriminant
          case Expression_Kind (Expr) is
             when An_Identifier | A_Selected_Component =>
-               if Discriminated_Object_Table.Is_Present (Ultimate_Name (Expr)) then
+               Good_Expr := Ultimate_Name (Expr);
+               if not Is_Nil (Good_Expr) and then Discriminated_Object_Table.Is_Present (Good_Expr) then
                   -- Variable_1 := Variable_2;
                   declare
                      use Discriminated_Descr_List;
                      LHS_Queue :          Queue := Discriminated_Object_Table.Fetch (Good_Var);
-                     RHS_Queue : constant Queue := Discriminated_Object_Table.Fetch (Ultimate_Name (Expr));
+                     RHS_Queue : constant Queue := Discriminated_Object_Table.Fetch (Good_Expr);
                      LHS       : constant Discriminated_Variable_Descr := Fetch (First (LHS_Queue));
                      RHS       : constant Discriminated_Variable_Descr := Fetch (First (RHS_Queue));
                   begin
