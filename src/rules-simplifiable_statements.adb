@@ -533,13 +533,15 @@ package body Rules.Simplifiable_Statements is
                        Get_Location (Paths (2)),
                        "alternative to a statically false path");
             end if;
-         elsif Rule_Used (Stmt_True_If)  and then First_Path_Cond = "1" then  -- "1" => True
-            Report (Rule_Id,
-                    Usage (Stmt_True_If),
-                    Get_Location (Paths (Paths'First)),
-                    "condition is always true");
-            Fixes.Replace (Stmt, Sequence_Of_Statements (Paths (Paths'First), Include_Pragmas => True));
-            Already_Fixed  := True;
+         elsif First_Path_Cond = "1" then  -- "1" => True
+            if Rule_Used (Stmt_True_If) then
+               Report (Rule_Id,
+                       Usage (Stmt_True_If),
+                       Get_Location (Paths (Paths'First)),
+                       "condition is always true");
+               Fixes.Replace (Stmt, Sequence_Of_Statements (Paths (Paths'First), Include_Pragmas => True));
+               Already_Fixed  := True;
+            end if;
             All_Paths_Dead := True;
          end if;
 
@@ -876,9 +878,9 @@ package body Rules.Simplifiable_Statements is
          Process_If_Static_Paths;
       end if;
 
-         -- Stmt_Unnecessary_If
-         -- Assignment of True or False to same variable:
-         -- Must be strictly if... then... else... end if;
+      -- Stmt_Unnecessary_If
+      -- Assignment of True or False to same variable:
+      -- Must be strictly if... then... else... end if;
       if Rule_Used (Stmt_Unnecessary_If) then
          if Paths'Length = 2  and then Path_Kind (Paths (2)) = An_Else_Path then
             Process_Same_Logical_Assignment;
@@ -1613,8 +1615,8 @@ package body Rules.Simplifiable_Statements is
             end if;
 
          when An_If_Statement =>
-            if (Rule_Used and Usage_Flags'(Stmt_If          | Stmt_Nested_Path | Stmt_If_Not |
-                                           Stmt_If_For_Case | Stmt_Dead        | Stmt_Unnecessary_If
+            if (Rule_Used and Usage_Flags'(Stmt_Dead        | Stmt_If      | Stmt_If_For_Case | Stmt_If_Not |
+                                           Stmt_Nested_Path | Stmt_True_If | Stmt_Unnecessary_If
                                                    => True,
                                            others  => False)) /= Not_Used
             then
