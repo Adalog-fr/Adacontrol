@@ -7693,7 +7693,7 @@ that is required to be of the type;
 @item
 It is used in an expression given as an actual of a call to a
 language-defined or implementation-defined subprogram, unless it is a
-call to predefined operator.
+call to a predefined operator.
 @item
 It is used as part of the definition of a @code{@b{for}} loop, and the loop index
 is required to be of the type.
