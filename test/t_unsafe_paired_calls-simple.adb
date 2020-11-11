@@ -103,6 +103,13 @@ begin
    end;
 
    begin
+      null;
+   exception
+      when others =>
+         V;             -- Error: no matching opening call
+   end;
+
+   begin
       P;
       null;
       Not_A_Lock;
