@@ -9923,6 +9923,10 @@ If a predefined operator or an attribute is renamed, the
 used in the scope of the renaming.  Such cases are
 detected by the rule ``uncheckable''. @xref{Uncheckable}.
 
+For a ``@code{@b{pragma} Interface}", both subrules ``casing_keyword"
+and ``casing_pragma'' apply to the word ``Interface''. You should not
+use ``@code{@b{pragma} Interface}" anyway...
+
 @node Terminating_Tasks, Type_Initial_Values, Style, Rules reference
 @section Terminating_Tasks
 This rule controls tasks that can terminate.

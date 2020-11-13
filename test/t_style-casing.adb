@@ -1,5 +1,5 @@
 with X_STYLE_CASING.CHILD_1.CHILD_2;                    -- Casing_Identifier x3
-with System;
+WITH System;                                            -- Casing_Keyword
 separate (T_STYLE)
 procedure Casing is
    pragma PAGE;
@@ -22,26 +22,29 @@ procedure Casing is
 
    type T is (Aa, Bb, CC)
      with SIZE => System.Word_SIZE;              -- Casing_Aspect, Casing_Identifier
-   subtype ST is T range AA .. BB;               -- Casing_Identifier (Mantis 0000032)
+   subtype ST is T range AA .. BB;               -- Casing_Identifier x2 (Mantis 0000032)
+   type Ptr is Access All Integer;               -- Casing_Keyword x2
 
-   type TT is tagged null record;
-   procedure Prim (X : in TT)
-     with PRE'CLASS => True                      -- Casing_Aspect
-   is
-   begin
-      null;
-   end Prim;
+   package Pack is
+      type TT is ABSTRACT tagged null record;    -- Casing_Keyword
+      Not OVERRIDING procedure Prim (X : in TT)  -- Casing_Keyword x2
+         IS abstract with PRE'CLASS => True;     -- Casing_Aspect, Casing_Keyword
+   end Pack;
 
    Dim   : constant := 1;
-   Expo1 : constant := 1.0E10;
+   Expo1 : ALIASED constant Float := 1.0E10;    -- Casing_Keyword
    Expo2 : constant Float := 1.0e10;            -- Casing_Exponent
    Expo3 : constant := 1e5;                     -- Casing_Exponent
    Base1 : constant := 16#1AB#;
    Base2 : constant Float := 16#1ab.0c#E2;      -- Casing_Number
    Base3 : Integer := 14#1AbC#;                 -- Casing_Number
 
+   type Sync is Synchronized Interface;               -- Casing_Keyword x2
+   Str   : constanT String := "abcd";                 -- Casing_Keyword
+   B     : Boolean := (For Some C of Str => C = 'a'); -- Casing_Keyword x2
+
 begin
-   Int := 1;
+   Int := Abs 1;                                -- Casing_Keyword
    Ada.Text_IO.Put_Line (Integer'image (INT));  -- Casing_Identifier, Casing_Attribute
    INT := FOo (INt);                            -- Casing_Identifier x3
    Ada.TEXT_IO.Put_Line (Integer'Image (InT));  -- Casing_Identifier x2

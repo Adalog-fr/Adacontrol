@@ -70,76 +70,118 @@ t_style-casing.adb:25:26: Replace:25:27
 t_style-casing.adb:25:32: Found: Casing: Wrong casing of "BB", should be "Bb"
 t_style-casing.adb:25:32: Replace:25:33
 !Bb
-t_style-casing.adb:29:11: Found: Casing: Wrong casing of "PRE'Class", should be "Pre'Class"
-t_style-casing.adb:29:11: Replace:29:19
+t_style-casing.adb:31:27: Found: Casing: Wrong casing of "PRE'Class", should be "Pre'Class"
+t_style-casing.adb:31:27: Replace:31:35
 !Pre'Class
-t_style-casing.adb:37:33: Found: Casing: Wrong casing of exponent, should be 'E'
-t_style-casing.adb:37:33: Replace:37:33
+t_style-casing.adb:36:33: Found: Casing: Wrong casing of exponent, should be 'E'
+t_style-casing.adb:36:33: Replace:36:33
 !E
-t_style-casing.adb:38:25: Found: Casing: Wrong casing of exponent, should be 'E'
-t_style-casing.adb:38:25: Replace:38:25
+t_style-casing.adb:37:25: Found: Casing: Wrong casing of exponent, should be 'E'
+t_style-casing.adb:37:25: Replace:37:25
 !E
-t_style-casing.adb:40:33: Found: Casing: Wrong casing of extended digit(s), should be 1AB.0C
-t_style-casing.adb:40:33: Replace:40:38
+t_style-casing.adb:39:33: Found: Casing: Wrong casing of extended digit(s), should be 1AB.0C
+t_style-casing.adb:39:33: Replace:39:38
 !1AB.0C
-t_style-casing.adb:41:26: Found: Casing: Wrong casing of extended digit(s), should be 1ABC
-t_style-casing.adb:41:26: Replace:41:29
+t_style-casing.adb:40:26: Found: Casing: Wrong casing of extended digit(s), should be 1ABC
+t_style-casing.adb:40:26: Replace:40:29
 !1ABC
-t_style-casing.adb:45:34: Found: Casing: Wrong casing of "image", should be "Image"
-t_style-casing.adb:45:34: Replace:45:38
+t_style-casing.adb:48:34: Found: Casing: Wrong casing of "image", should be "Image"
+t_style-casing.adb:48:34: Replace:48:38
 !Image
-t_style-casing.adb:45:41: Found: Casing: Wrong casing of "INT", should be "Int"
-t_style-casing.adb:45:41: Replace:45:43
+t_style-casing.adb:48:41: Found: Casing: Wrong casing of "INT", should be "Int"
+t_style-casing.adb:48:41: Replace:48:43
 !Int
-t_style-casing.adb:46:4: Found: Casing: Wrong casing of "INT", should be "Int"
-t_style-casing.adb:46:4: Replace:46:6
+t_style-casing.adb:49:4: Found: Casing: Wrong casing of "INT", should be "Int"
+t_style-casing.adb:49:4: Replace:49:6
 !Int
-t_style-casing.adb:46:11: Found: Casing: Wrong casing of "FOo", should be "Foo"
-t_style-casing.adb:46:11: Replace:46:13
+t_style-casing.adb:49:11: Found: Casing: Wrong casing of "FOo", should be "Foo"
+t_style-casing.adb:49:11: Replace:49:13
 !Foo
-t_style-casing.adb:46:16: Found: Casing: Wrong casing of "INt", should be "Int"
-t_style-casing.adb:46:16: Replace:46:18
+t_style-casing.adb:49:16: Found: Casing: Wrong casing of "INt", should be "Int"
+t_style-casing.adb:49:16: Replace:49:18
 !Int
-t_style-casing.adb:47:8: Found: Casing: Wrong casing of "TEXT_IO", should be "Text_IO" or "Text_Io"
-t_style-casing.adb:47:8: Replace:47:14
+t_style-casing.adb:50:8: Found: Casing: Wrong casing of "TEXT_IO", should be "Text_IO" or "Text_Io"
+t_style-casing.adb:50:8: Replace:50:14
 !Text_IO
-t_style-casing.adb:47:41: Found: Casing: Wrong casing of "InT", should be "Int"
-t_style-casing.adb:47:41: Replace:47:43
+t_style-casing.adb:50:41: Found: Casing: Wrong casing of "InT", should be "Int"
+t_style-casing.adb:50:41: Replace:50:43
 !Int
-t_style-casing.adb:50:12: Error: Multiple_Keyword: "loop" does not start line
-t_style-casing.adb:50:12: Insert
+t_style-casing.adb:53:12: Error: Multiple_Keyword: "loop" does not start line
+t_style-casing.adb:53:12: Insert
 !
 !   
-t_style-casing.adb:53:22: Found: Casing: Wrong casing of "DIM", should be "Dim"
-t_style-casing.adb:53:22: Replace:53:24
+t_style-casing.adb:56:22: Found: Casing: Wrong casing of "DIM", should be "Dim"
+t_style-casing.adb:56:22: Replace:56:24
 !Dim
-t_style-casing.adb:56:7: Error: Exposed: character literal 'a' not in allowed construct
-t_style-casing.adb:63:9: Found: Casing: Wrong casing of ""AND"", should be ""and""
-t_style-casing.adb:63:9: Replace:63:13
+t_style-casing.adb:59:7: Error: Exposed: character literal 'a' not in allowed construct
+t_style-casing.adb:66:9: Found: Casing: Wrong casing of ""AND"", should be ""and""
+t_style-casing.adb:66:9: Replace:66:13
 !"and"
-t_style-casing.adb:50:12: Found: Casing: Wrong casing of "LOOP", should be "loop"
-t_style-casing.adb:50:12: Replace:50:15
+t_style-casing.adb:2:1: Found: Casing: Wrong casing of "WITH", should be "with"
+t_style-casing.adb:2:1: Replace:2:4
+!with
+t_style-casing.adb:26:16: Found: Casing: Wrong casing of "Access", should be "access"
+t_style-casing.adb:26:16: Replace:26:21
+!access
+t_style-casing.adb:26:23: Found: Casing: Wrong casing of "All", should be "all"
+t_style-casing.adb:26:23: Replace:26:25
+!all
+t_style-casing.adb:29:18: Found: Casing: Wrong casing of "ABSTRACT", should be "abstract"
+t_style-casing.adb:29:18: Replace:29:25
+!abstract
+t_style-casing.adb:30:7: Found: Casing: Wrong casing of "Not", should be "not"
+t_style-casing.adb:30:7: Replace:30:9
+!not
+t_style-casing.adb:30:11: Found: Casing: Wrong casing of "OVERRIDING", should be "overriding"
+t_style-casing.adb:30:11: Replace:30:20
+!overriding
+t_style-casing.adb:31:10: Found: Casing: Wrong casing of "IS", should be "is"
+t_style-casing.adb:31:10: Replace:31:11
+!is
+t_style-casing.adb:35:12: Found: Casing: Wrong casing of "ALIASED", should be "aliased"
+t_style-casing.adb:35:12: Replace:35:18
+!aliased
+t_style-casing.adb:42:17: Found: Casing: Wrong casing of "Synchronized", should be "synchronized"
+t_style-casing.adb:42:17: Replace:42:28
+!synchronized
+t_style-casing.adb:42:30: Found: Casing: Wrong casing of "Interface", should be "interface"
+t_style-casing.adb:42:30: Replace:42:38
+!interface
+t_style-casing.adb:43:12: Found: Casing: Wrong casing of "constanT", should be "constant"
+t_style-casing.adb:43:12: Replace:43:19
+!constant
+t_style-casing.adb:44:24: Found: Casing: Wrong casing of "For", should be "for"
+t_style-casing.adb:44:24: Replace:44:26
+!for
+t_style-casing.adb:44:28: Found: Casing: Wrong casing of "Some", should be "some"
+t_style-casing.adb:44:28: Replace:44:31
+!some
+t_style-casing.adb:47:11: Found: Casing: Wrong casing of "Abs", should be "abs"
+t_style-casing.adb:47:11: Replace:47:13
+!abs
+t_style-casing.adb:53:12: Found: Casing: Wrong casing of "LOOP", should be "loop"
+t_style-casing.adb:53:12: Replace:53:15
 !loop
-t_style-casing.adb:51:7: Found: Casing: Wrong casing of "Null", should be "null"
-t_style-casing.adb:51:7: Replace:51:10
+t_style-casing.adb:54:7: Found: Casing: Wrong casing of "Null", should be "null"
+t_style-casing.adb:54:7: Replace:54:10
 !null
-t_style-casing.adb:52:4: Found: Casing: Wrong casing of "END", should be "end"
-t_style-casing.adb:52:4: Replace:52:6
+t_style-casing.adb:55:4: Found: Casing: Wrong casing of "END", should be "end"
+t_style-casing.adb:55:4: Replace:55:6
 !end
-t_style-casing.adb:52:8: Found: Casing: Wrong casing of "LOOP", should be "loop"
-t_style-casing.adb:52:8: Replace:52:11
+t_style-casing.adb:55:8: Found: Casing: Wrong casing of "LOOP", should be "loop"
+t_style-casing.adb:55:8: Replace:55:11
 !loop
-t_style-casing.adb:57:6: Found: Casing: Wrong casing of "NULL", should be "null"
-t_style-casing.adb:57:6: Replace:57:9
+t_style-casing.adb:60:6: Found: Casing: Wrong casing of "NULL", should be "null"
+t_style-casing.adb:60:6: Replace:60:9
 !null
-t_style-casing.adb:58:4: Found: Casing: Wrong casing of "eND", should be "end"
-t_style-casing.adb:58:4: Replace:58:6
+t_style-casing.adb:61:4: Found: Casing: Wrong casing of "eND", should be "end"
+t_style-casing.adb:61:4: Replace:61:6
 !end
-t_style-casing.adb:58:8: Found: Casing: Wrong casing of "If", should be "if"
-t_style-casing.adb:58:8: Replace:58:9
+t_style-casing.adb:61:8: Found: Casing: Wrong casing of "If", should be "if"
+t_style-casing.adb:61:8: Replace:61:9
 !if
-t_style-casing.adb:61:11: Found: Casing: Wrong casing of "AND", should be "and"
-t_style-casing.adb:61:11: Replace:61:13
+t_style-casing.adb:64:11: Found: Casing: Wrong casing of "AND", should be "and"
+t_style-casing.adb:64:11: Replace:64:13
 !and
 t_style-no_closing_name.adb:3:4: Error: No_Closing_Name: name not repeated at the end
 t_style-no_closing_name.adb:8:7: Insert

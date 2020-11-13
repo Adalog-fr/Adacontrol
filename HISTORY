@@ -2,6 +2,10 @@
 == V1.22b8 ==
 =============
 
+Changes to existing rules:
+--------------------------
+Style: add missing keywords for subrule casing_keyword
+
 =============
 == V1.22b7 ==
 =============
