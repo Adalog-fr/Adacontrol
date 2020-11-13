@@ -2,6 +2,10 @@
 == V1.22b8 ==
 =============
 
+General:
+--------
+Avoid cascading errors in case of Asis bugs;
+
 Changes to existing rules:
 --------------------------
 Style: add missing keywords for subrule casing_keyword

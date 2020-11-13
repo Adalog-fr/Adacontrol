@@ -137,6 +137,13 @@ package body Framework.Language.Commands is
          use Asis.Implementation;
          Phase : constant Wide_String := To_Title (Control_Phases'Wide_Image (Current_Phase));
       begin
+         if Failure_Occurred and then Exception_Identity (Occur) = Scope_Manager.Scope_Manager_Failure'Identity then
+            -- Presumably, a consequence of previous failure
+            User_Message ("Unit " & Units_List.Current_Unit & " abandonned due to previous failure");
+            -- Exit_Option.Value cannot be On, since the first failure would have stopped execution
+            return;
+         end if;
+
          Failure_Occurred := True;
 
          -- Clean-up:
@@ -195,7 +202,7 @@ package body Framework.Language.Commands is
             end if;
             User_Message ("       Message: " & To_Wide_String (Exception_Message (Local_Occur)));
 
-            -- Propagate the exception only if Exit_Option set
+            -- Propagate the exception only if Exit_Option is set
             if Adactl_Options.Exit_Option.Value = On then
                raise;
             end if;

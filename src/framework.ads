@@ -102,6 +102,7 @@ package Framework is
    -- Appropriate element kinds for Matches:
    --   like Matching_Context, see Framework.Control_Manager
 
+   Failure_Occurred : Boolean := False;  -- Set to True in case of internal error
 private
    use Ada.Strings.Wide_Unbounded;
 
