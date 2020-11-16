@@ -280,6 +280,16 @@ package body Rules.Known_Exceptions is
                when others =>
                   Do_Report ;
             end case;
+         when A_Declaration =>
+            case Declaration_Kind (Encl) is
+               when An_Expression_Function_Declaration =>
+                  -- OK to have an expression function defined with a single raise expression, it's the simplest way
+                  -- to provide an expression that raises an exception on purpose.
+                  null;
+               when others =>
+                  Do_Report ;
+            end case;
+
          when others =>
             Do_Report ;
       end case;

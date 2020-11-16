@@ -4,6 +4,7 @@
 
 General:
 --------
+Bug fixes
 Avoid cascading errors in case of Asis bugs;
 
 Changes to existing rules:

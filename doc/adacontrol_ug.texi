@@ -6437,14 +6437,23 @@ to be out of range.
 @item
 ``raise_expression'': controls @code{@b{raise}} expressions that
 appear anywhere else than as the right expression of a short-circuit
-test (@code{@b{and then}} and @code{@b{or else}}), or as a dependent
+test (@code{@b{and then}} and @code{@b{or else}}), as a dependent
 expression of an @code{@b{if}} expression or a @code{@b{case}}
-expression.
+expression, or as the expression of an expression function (the later
+being assumed to be a function that raises the exception on purpose).
 @end itemize
 Without parameters, all kinds of known exceptions are
 controlled.
 
 This rule can be given at most once for each subrule.
+
+@subsection Fixes
+The subrule``raise_expression'' generates fixes in the case where the
+@code{@b{raise}} expression appears as the right expression of an
+@code{@b{and}} or @code{@b{or}} operator: the operator is changed to
+the corresponding short-circuit operation (@code{@b{and then}} or
+@code{@b{or else}}, respectively).
+
 
 @subsection Tips
 The error message indicates the failing value and the expected bound
