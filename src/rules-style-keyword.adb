@@ -27,7 +27,6 @@
 -- Ada
 with
   Ada.Characters.Handling,
-  Ada.Characters.Latin_1,
   Ada.Strings.Wide_Maps.Wide_Constants;
 
 --ASIS
@@ -293,7 +292,6 @@ package body Rules.Style.Keyword is
    --    Range loop ...
    -- We need to be careful however, because 'in' is a keyword in:
    --    if 'a' in character then ...
-   Wide_HT : constant Wide_Character := Wide_Character'Val(Character'Pos (Ada.Characters.Latin_1.HT));
    procedure Process_Line (Line     : in Asis.Program_Text;
                            Loc      : in Framework.Locations.Location;
                            Expected : in Casing_Set)
@@ -448,7 +446,7 @@ package body Rules.Style.Keyword is
 
          if State /= In_Quotes then
             case Line (I) is
-               when Wide_Space | Wide_HT =>
+               when Wide_Space | Framework.Wide_HT =>
                   null;
                when ''' =>
                   -- The following is not perfectly correct in a general parser to recognize

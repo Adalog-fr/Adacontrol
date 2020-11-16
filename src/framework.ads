@@ -25,6 +25,8 @@
 ----------------------------------------------------------------------
 
 -- Ada
+with
+  Ada.Characters.Latin_1;
 private with
   Ada.Strings.Wide_Unbounded;
 
@@ -37,6 +39,12 @@ with
   Adactl_Constants;
 package Framework is
    use Adactl_Constants;
+
+   -------------------------------------------------------------------
+   -- Misc utility constants
+   -------------------------------------------------------------------
+
+   Wide_HT : constant Wide_Character := Wide_Character'Val (Character'Pos (Ada.Characters.Latin_1.HT));
 
    -------------------------------------------------------------------
    -- The ASIS context                                              --
