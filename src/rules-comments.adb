@@ -419,25 +419,33 @@ package body Rules.Comments is
             end if;
          end if;
       else
-         Name_Inx := Comment_Pos + 2;
-         while Name_Inx <= Line_Text'Last and then Is_In (Line_Text (Name_Inx), Separators) loop
-            Name_Inx := Name_Inx + 1;
-         end loop;
+         declare
+            Name : constant Program_Text := Extended_Name_Image (Identifier);
+         begin
+            Name_Inx := Comment_Pos + 2;
+            while Name_Inx <= Line_Text'Last and then Is_In (Line_Text (Name_Inx), Separators) loop
+               Name_Inx := Name_Inx + 1;
+            end loop;
 
-         if Line_Text (Name_Inx .. Line_Text'Last) = To_Upper (Extended_Name_Image (Identifier)) then
-            Result := Ok;
-         else
-            Result := Reported;
-            Report (Rule_Id,
-                    Cont,
-                    After + 1,
-                    '"' & Keyword & """ comment does not name " & Extended_Name_Image (Identifier));
-            if Cont.Ctl_Kind /= Count then
-               Fixes.Replace (From   => Create_Location (Get_File_Name (After), Line_Nb, Name_Inx),
-                              Length => Line_Text'Last - Name_Inx + 1,
-                              By     => Extended_Name_Image (Identifier));
+            if Line_Text (Name_Inx .. Positive'Min (Line_Text'Last, Name_Inx + Name'Length - 1)) = To_Upper (Name)
+              and then (Line_Text'Last = Name_Inx + Name'Length - 1
+                        or else Line_Text (Name_Inx + Name'Length) in ' ' | Wide_HT | ',')
+            then
+               -- Identifer alone or followed by space or ','
+               Result := Ok;
+            else
+               Result := Reported;
+               Report (Rule_Id,
+                       Cont,
+                       After + 1,
+                       '"' & Keyword & """ comment does not name " & Extended_Name_Image (Identifier));
+               if Cont.Ctl_Kind /= Count then
+                  Fixes.Replace (From   => Create_Location (Get_File_Name (After), Line_Nb, Name_Inx),
+                                 Length => Line_Text'Last - Name_Inx + 1,
+                                 By     => Name);
+               end if;
             end if;
-         end if;
+         end;
       end if;
    end Check_Identifier;
 

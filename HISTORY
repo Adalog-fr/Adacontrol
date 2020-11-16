@@ -10,6 +10,8 @@ Avoid cascading errors in case of Asis bugs;
 Changes to existing rules:
 --------------------------
 Style: add missing keywords for subrule casing_keyword
+Comments: allow extra info after name for unnamed_begin and
+  unnamed_end_record
 
 =============
 == V1.22b7 ==

@@ -6,11 +6,11 @@ procedure Test_Unnamed_End_Record is
          I : Integer;
       end record; -- Ok_1
 
-   -- Regular case, different casing
+   -- Regular case, different casing, more text
    type Ok_2 is
       record
          I : Integer;
-      end record; -- oK_2
+      end record; -- oK_2 record
 
    -- No end record:
    type Ok_3 is null record;

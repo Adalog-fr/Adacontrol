@@ -4023,8 +4023,10 @@ always case insensitive.
 @item
 ``unnamed_begin'' controls @code{@b{begin}} of various constructs that
 do not have a comment that repeats the name of the program unit
-associated to the @code{@b{begin}}. Except for spaces, the comment
-must not contain anything else than the unit name.
+associated to the @code{@b{begin}}. The unit name must be the first word
+of the comment (after any number of spaces). Some extra information can
+be provided after the name, provided it is separated from the name by
+a space or a comma.
 
 The <condition> keyword determines circumstances where the comment is required:
 @itemize
@@ -4050,11 +4052,12 @@ given only once of each kind of program unit.
 @item
 ``unnamed_end_record'' controls the @code{@b{end record}} of a record
 type declaration (including tagged types and type extensions) that
-does not have a comment that repeats the name of the record
-type. Except for spaces, the comment must not contain anything else
-than the type name.
+does not have a comment that repeats the name of the record type.  The
+type name must be the first word of the comment (after any number of
+spaces). Some extra information can be provided after the name,
+provided it is separated from the name by a space or a comma.
 
-If a <value> is given as the second paramater, it indicates the
+If a <value> is given as the second parameter, it indicates the
 maximum size in lines of record type declarations where the comment
 may be omitted. If <value> is omitted or is 0, all record type
 declarations are controlled.

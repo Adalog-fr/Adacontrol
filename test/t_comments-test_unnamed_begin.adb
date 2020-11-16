@@ -4,9 +4,9 @@ procedure Test_Unnamed_Begin is
    -- Error: Terminating, begin OK
    procedure P1 is begin null; end P1; --P1
 
-   -- OK
+   -- OK (with comma separated comment)
    procedure P2 is
-   begin      --            P2
+   begin      --            P2, with comment
       null;
       null;
       null;
@@ -50,10 +50,10 @@ procedure Test_Unnamed_Begin is
          return Result;
       end F2;
 
-      -- OK
+      -- OK (with space separated comment)
       function F3 return Integer is
          Result : constant Integer := 0;
-      begin  -- F3
+      begin  -- F3 returning Integer
          null;
          null;
          return Result;
