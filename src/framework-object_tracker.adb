@@ -1479,7 +1479,7 @@ package body Framework.Object_Tracker is
             null;
       end case;
 
-      -- Only discriminated types after this point
+      -- Only (possibly) discriminated types after this point
 
       if Is_Parameter then
          -- Case of formal parameters: Object_Declaration_View returns a name, not a definition
@@ -1488,7 +1488,7 @@ package body Framework.Object_Tracker is
          Subtype_Name := Subtype_Simple_Name (Def);
       end if;
 
-      -- Not an elementary type, may be tracked if type has discriminants
+      -- Track discriminants if any
       declare
          -- We can ignore 'Class and 'Base below, since it doesn't change the discriminants
          Type_Discr_Part   : constant Asis.Definition := Discriminant_Part (A4G_Bugs.Corresponding_First_Subtype
@@ -1497,16 +1497,28 @@ package body Framework.Object_Tracker is
                                                                               (Simple_Name
                                                                                (Strip_Attributes
                                                                                 (Subtype_Name))))));
-         Object_Constraint   : constant Asis.Constraint := (if Is_Parameter
-                                                            then (if Definition_Kind (Def) = A_Type_Definition
-                                                                  then Nil_Element
-                                                                  else Subtype_Constraint (Def))
-                                                            else Subtype_Constraint (Object_Declaration_View (Decl)));
+         Object_Constraint   : Asis.Constraint;
          Discr_Count         : Asis.ASIS_Natural := 0;
          Is_Formal_Parameter : constant Boolean := Declaration_Kind (Decl) = A_Parameter_Specification ;
       begin
          if Is_Nil (Type_Discr_Part) or else Definition_Kind (Type_Discr_Part) = An_Unknown_Discriminant_Part then
             return;
+         end if;
+
+         if Is_Parameter then
+            if Definition_Kind (Def) = A_Type_Definition then
+               Object_Constraint := Nil_Element;
+            else
+               Object_Constraint := Subtype_Constraint (Def);
+            end if;
+         else
+            Object_Constraint := Constraining_Definition (Decl);
+            if Definition_Kind (Object_Constraint) = A_Type_Definition then
+               -- Back to the original type => no constraint
+               Object_Constraint := Nil_Element;
+            else
+               Object_Constraint := Subtype_Constraint (Object_Constraint);
+            end if;
          end if;
 
          -- Count discriminants

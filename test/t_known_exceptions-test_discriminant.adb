@@ -10,16 +10,19 @@ procedure Test_Discriminant is
             when others => null;
          end case;
       end record;
-   subtype Rec1_A is Rec1 ('a');
+   subtype Rec1_A     is Rec1 ('a');
+   subtype Rec1_B     is Rec1 ('b');
+   subtype Rec1_B_Bis is Rec1_B;
 
    function Build_Rec1 return Rec1 is
    begin
       return ('b', 1);
    end Build_Rec1;
 
-   V1  : Rec1 := ('a', 1);
-   V1a : Rec1_A;
-   V1b : Rec1 := Build_Rec1;  -- Discriminant value is dynamic
+   V1   : Rec1 := ('a', 1);
+   V1a  : Rec1_A;
+   V1b1 : Rec1 := Build_Rec1;  -- Discriminant value is dynamic
+   V1b2 : Rec1_B_Bis;
 
    type Rec2 (D1 : Integer := 1; D2 : Character := 'a') is
       record
@@ -62,8 +65,10 @@ begin
    I := V1.B;                     -- Discrim_Error D
    I := V1a.A;
    I := V1a.B;                    -- Discrim_Error D
-   I := V1b.A;                    -- Unknown
-   I := V1b.B;                    -- Unknown
+   I := V1b1.A;                   -- Unknown
+   I := V1b1.B;                   -- Unknown
+   I := V1b2.A;                   -- Discrim_Error D
+   I := V1b2.B;
 
    V1 := (D => 'd', B => 1);
    I  := V1.A;                    -- Discrim_Error D
