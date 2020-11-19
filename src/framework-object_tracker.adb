@@ -900,7 +900,7 @@ package body Framework.Object_Tracker is
 
       -- If the variable is nested in an "intrinsically unknown" path, such as a loop, exception handler, etc.
       -- then the value is forced to unknown (modulo the constraints), unless the variable has been assigned in
-      -- the current construct, or is a constant (including for loop control objects)
+      -- the current construct, or is a constant (including for loop control objects and in parameters)
       if Is_Empty (Intrinsically_Unknown_Paths) then
          -- Not nested in an intrinsically unknown path
          Forced_Unknown := False;
@@ -1241,9 +1241,9 @@ package body Framework.Object_Tracker is
       end if;
    end Process_Instantiation;
 
-   --------------------
-   -- Process_Labels --
-   --------------------
+   -----------------------------
+   -- Process_Outer_Statement --
+   -----------------------------
 
    procedure Process_Outer_Statement (Stmt : in Asis.Statement) is
       use Asis.Elements, Asis.Statements;

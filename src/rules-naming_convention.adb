@@ -525,7 +525,7 @@ package body Rules.Naming_Convention is
    -------------
 
    function Is_Used (Filters : Key_Set) return Boolean is
-     (for Some F of Filters => Usage (F));
+     (for some F of Filters => Usage (F));
 
    ---------------------------
    -- Process_Defining_Name --
