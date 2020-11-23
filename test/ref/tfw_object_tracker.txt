@@ -204,6 +204,20 @@ tfw_object_tracker.adb:616:7: Replace:618:13
 tfw_object_tracker.adb:620:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
 tfw_object_tracker.adb:620:7: Replace:622:13
 !null;
-tfw_object_tracker.adb:633:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:633:7: Replace:635:13
+tfw_object_tracker.adb:642:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+tfw_object_tracker.adb:642:10: Delete:644:16
+tfw_object_tracker.adb:651:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:651:10: Replace:653:16
+!null;
+tfw_object_tracker.adb:668:10: Error: KNOWN_EXCEPTIONS: Explicit dereference raises Constraint_Error (null pointer)
+tfw_object_tracker.adb:669:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:669:10: Replace:671:16
+!null;
+tfw_object_tracker.adb:676:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+tfw_object_tracker.adb:676:7: Delete:678:13
+tfw_object_tracker.adb:685:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:685:7: Replace:687:13
+!null;
+tfw_object_tracker.adb:698:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:698:7: Replace:700:13
 !X := 1;

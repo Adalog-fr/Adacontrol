@@ -622,6 +622,71 @@ begin
       end if;
    end;
 
+   -- Combinations of formal parameters and discriminants
+   declare
+      type Rec1 (D : Character := 'a') is
+         record
+            case D is
+               when 'a'              => A : Integer;
+               when 'b' .. 'e' | 'z' => B : Integer;
+               when others => null;
+            end case;
+         end record;
+      subtype Rec1_A     is Rec1 ('a');
+      type Int_Ptr is access Integer;
+      type Rec (D1 : Int_Ptr := null; D2 : Integer := 1) is null record;
+
+      type Short is range 1 .. 10;
+      procedure P1 (Y : in out Short) is
+      begin
+         if Y < 0 then    -- False
+            null;
+         end if;
+
+         if Y = 1 then    -- Unknown
+            null;
+         end if;
+
+         Y := 1;
+         if Y = 1 then    -- True
+            null;
+         end if;
+      end P1;
+
+      procedure P2 (X : in Rec; Y : in out Rec) is
+      begin
+         X.D1.all := 1;   -- Unknown
+         Y.D1.all := 1;   -- Unknown
+         if Y.D2 = 1 then -- Unknown
+            null;
+         end if;
+
+         Y := (new Integer, 2);
+         Y.D1.all := 1;   -- Ok
+
+         Y := (null, 1);
+         Y.D1.all := 1;   -- Null dereference
+         if Y.D2 = 1 then -- True
+            null;
+         end if;
+      end P2;
+
+      A : Short;
+   begin
+      if A < 0 then -- False
+         null;
+      end if;
+
+      if A = 1 then -- OK (unknown)
+         null;
+      end if;
+
+      A := 1;
+      if A = 1 then -- True
+         null;
+      end if;
+   end;
+
    I := 10; -- This assignment to (possibly) fool the exception handler
 exception
       -- check handlers

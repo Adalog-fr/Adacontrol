@@ -1040,9 +1040,11 @@ package body Framework.Object_Tracker is
          Good_Var := Ultimate_Name (Var);
          if Is_Nil (Good_Var)  -- Name includes a dereference or indexing
            or else Declaration_Kind (Corresponding_Name_Declaration (Good_Var))
-                   in A_Component_Declaration | A_Parameter_Specification | A_Constant_Declaration
+                   in A_Component_Declaration | A_Constant_Declaration
          then
-            -- We don't track regular components, and we know nothing about the value of a formal parameter
+            -- We don't track regular components.
+            -- The initial value of formal parameters is unknown, but they must be tracked
+            -- (even in parameters due to possibly constrained discriminants)
             -- Normally, Process_Assignment should not be called on constants, but this can happen for
             -- constants given as actual parameters to a dispatching or attribute procedure call.
             return;
@@ -1262,13 +1264,12 @@ package body Framework.Object_Tracker is
    procedure Process_Object_Declaration (Decl : in Asis.Declaration) is
       use Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
 
-      function Build_Descriptor (Obj_Def : Asis.Element; Initial_Expr : Asis.Expression) return Value_Descr is
+      function Build_Descriptor (Obj_Def : Asis.Element; Initial_Value : Extended_Biggest_Int) return Value_Descr is
          -- Obj_Def: a type definition or a subtype mark
          use Utilities;
 
          Descriptor       : Value_Descr;
          Range_Descriptor : Object_Value_Set;
-         Initial_Value    : Extended_Biggest_Int;
          Bounds           : Extended_Biggest_Int_List (1 .. 2);
          Obj_Type_Name    : Asis.Expression;
       begin
@@ -1343,7 +1344,6 @@ package body Framework.Object_Tracker is
                Descriptor.Constraint_Min := Descriptor.Declaration_Min;
                Descriptor.Constraint_Max := Descriptor.Declaration_Max;
 
-               Initial_Value := Discrete_Static_Expression_Value (Initial_Expr);
                if Initial_Value = Not_Static then
                   Descriptor.Assigned_Min := Descriptor.Constraint_Min;
                   Descriptor.Assigned_Max := Descriptor.Constraint_Max;
@@ -1392,12 +1392,6 @@ package body Framework.Object_Tracker is
                Descriptor.Constraint_Min  := Descriptor.Declaration_Min;
                Descriptor.Constraint_Max  := Descriptor.Declaration_Max;
 
-               if Is_Nil (Initial_Expr) then
-                  Initial_Value := 0;  -- null is the default for access types
-               else
-                  Initial_Value := Discrete_Static_Expression_Value (Initial_Expr);
-               end if;
-
                if Initial_Value = Not_Static then
                   Descriptor.Assigned_Min := Descriptor.Constraint_Min;
                   Descriptor.Assigned_Max := Descriptor.Constraint_Max;
@@ -1412,9 +1406,11 @@ package body Framework.Object_Tracker is
          return Descriptor;
       end Build_Descriptor;
 
-      Def          : Asis.Definition;
-      Subtype_Name : Asis.Expression;
-      Is_Parameter : Boolean;
+      Def           : Asis.Definition;
+      Subtype_Name  : Asis.Expression;
+      Is_Parameter  : constant Boolean := Declaration_Kind (Decl) = A_Parameter_Specification;
+      Initial_Value : Extended_Biggest_Int;
+      Cat           : Type_Categories;
    begin  -- Process_Object_Declaration
       if Corresponding_Aspects (Decl, "VOLATILE") /= Nil_Element_List
         or else Corresponding_Pragma_Set (Decl) (A_Volatile_Pragma)
@@ -1422,8 +1418,7 @@ package body Framework.Object_Tracker is
          return;
       end if;
 
-      Def          := Object_Declaration_View (Decl);
-      Is_Parameter := Declaration_Kind (Decl) = A_Parameter_Specification;
+      Def := Object_Declaration_View (Decl);
       if Is_Parameter then
          if Declaration_Kind (Enclosing_Element (Decl))
             not in A_Procedure_Body_Declaration | A_Function_Body_Declaration
@@ -1449,14 +1444,23 @@ package body Framework.Object_Tracker is
          return;
       end if;
 
-      case Type_Category (Decl, Follow_Derived => True) is
+      Cat := Type_Category (Decl, Follow_Derived => True);
+      case Cat is
          when Discrete_Types | An_Access_Type =>
             for Name : Asis.Name of Names (Decl) loop
                Force_New_Evaluation;
+               if Is_Parameter then
+                  Initial_Value := Not_Static;
+               elsif Cat = An_Access_Type and then Is_Nil (Initialization_Expression (Decl)) then
+                  -- not a parameter: without anything else, access variables are initialized to null
+                  Initial_Value := 0;
+               else
+                  Initial_Value := Discrete_Static_Expression_Value (Initialization_Expression (Decl));
+               end if;
                declare
                   use Simple_Descr_List;
                   Val_Queue : Simple_Descr_List.Queue;
-                  Descr     : constant Value_Descr := Build_Descriptor (Def, Initialization_Expression (Decl));
+                  Descr     : constant Value_Descr := Build_Descriptor (Def, Initial_Value);
                begin
                   if Descr.Kind /= Untracked then
                      Prepend (Val_Queue, (Enclosing_Element (Decl), False, Descr));
@@ -1497,21 +1501,20 @@ package body Framework.Object_Tracker is
                                                                               (Simple_Name
                                                                                (Strip_Attributes
                                                                                 (Subtype_Name))))));
-         Object_Constraint   : Asis.Constraint;
-         Discr_Count         : Asis.ASIS_Natural := 0;
-         Is_Formal_Parameter : constant Boolean := Declaration_Kind (Decl) = A_Parameter_Specification ;
+         Object_Constraint : Asis.Constraint;
+         Discr_Count       : Asis.ASIS_Natural := 0;
       begin
          if Is_Nil (Type_Discr_Part) or else Definition_Kind (Type_Discr_Part) = An_Unknown_Discriminant_Part then
             return;
          end if;
 
-         if Is_Parameter then
-            if Definition_Kind (Def) = A_Type_Definition then
-               Object_Constraint := Nil_Element;
-            else
-               Object_Constraint := Subtype_Constraint (Def);
-            end if;
-         else
+         --  if Is_Parameter then
+         --     if Definition_Kind (Def) = A_Type_Definition then
+         --        Object_Constraint := Nil_Element;
+         --     else
+         --        Object_Constraint := Subtype_Constraint (Def);
+         --     end if;
+         --  else
             Object_Constraint := Constraining_Definition (Decl);
             if Definition_Kind (Object_Constraint) = A_Type_Definition then
                -- Back to the original type => no constraint
@@ -1519,13 +1522,14 @@ package body Framework.Object_Tracker is
             else
                Object_Constraint := Subtype_Constraint (Object_Constraint);
             end if;
-         end if;
+         --  end if;
 
          -- Count discriminants
          for Discr_Decl : Asis.Declaration of Discriminants (Type_Discr_Part) loop
             Discr_Count := Discr_Count + Names (Discr_Decl)'Length;
          end loop;
 
+         -- Initialize discriminants for each name in the declaration
          for Var_Name : Asis.Defining_Name of Names (Decl) loop
             declare
                use Discriminated_Descr_List;
@@ -1533,7 +1537,7 @@ package body Framework.Object_Tracker is
                Discr_Inx   : Asis_Natural := 0;
                Discr_Decls : constant Discriminant_Specification_List := Discriminants (Type_Discr_Part);
                Descr_Queue : Discriminated_Descr_List.Queue;
-               Init_Expr   : constant Asis.Expression := Initialization_Expression (Decl);
+               Init_Expr   : Asis.Expression;
             begin
                Force_New_Evaluation;
                for Discr_Decl : Asis.Declaration of Discr_Decls  loop
@@ -1541,13 +1545,14 @@ package body Framework.Object_Tracker is
                      Discr_Inx := Discr_Inx + 1;
                      if Is_Nil (Object_Constraint) then
                         -- Constraint from the type declaration
+                        if Is_Parameter then
+                           Initial_Value := Not_Static;
+                        else
+                           Initial_Value := Discrete_Static_Expression_Value(Initialization_Expression (Discr_Decl));
+                        end if;
                         Var_Descr.Discriminants (Discr_Inx) := (First_Defining_Name (Discr_Name),
-                                                                Build_Descriptor
-                                                                  (Object_Declaration_View (Discr_Decl),
-                                                                   (if Is_Formal_Parameter
-                                                                    then Nil_Element
-                                                                    else Initialization_Expression (Discr_Decl)
-                                                                   )));
+                                                                Build_Descriptor (Object_Declaration_View (Discr_Decl),
+                                                                                  Initial_Value));
                      else
                         -- Constraint from the object declaration
                         declare
@@ -1555,11 +1560,12 @@ package body Framework.Object_Tracker is
                                                                                    (Object_Constraint,
                                                                                     Normalized => True);
                         begin
+                           Initial_Value := Discrete_Static_Expression_Value (Discriminant_Expression
+                                                                              (Discr_Associations (Discr_Inx)));
                            Var_Descr.Discriminants (Discr_Inx) := (First_Defining_Name (Discr_Name),
                                                                    Build_Descriptor
-                                                                    (Object_Declaration_View (Discr_Decl),
-                                                                     Discriminant_Expression
-                                                                      (Discr_Associations (Discr_Inx))));
+                                                                     (Object_Declaration_View (Discr_Decl),
+                                                                      Initial_Value));
                         end;
                      end if;
                   end loop;
@@ -1567,7 +1573,10 @@ package body Framework.Object_Tracker is
 
                Prepend (Descr_Queue, Var_Descr);
                Discriminated_Object_Table.Store (Var_Name, Descr_Queue);
-               if not Is_Formal_Parameter and not Is_Nil (Init_Expr) then
+
+               -- Now, consider global initialization of the variable, handle like an assignment
+               Init_Expr := Initialization_Expression (Decl);
+               if not Is_Parameter and not Is_Nil (Init_Expr) then
                   -- Don't consider initialization expression of formal parameters
                   Process_Assignment (Enclosing_Element (Decl), Var_Name, Init_Expr);
                end if;
