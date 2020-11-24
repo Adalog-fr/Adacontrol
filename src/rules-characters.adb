@@ -46,7 +46,7 @@ with
 pragma Elaborate (Framework.Language);
 
 package body Rules.Characters is
-   use Ada.Strings.Wide_Maps, Framework, Framework.Control_Manager;
+   use Framework, Framework.Control_Manager;
 
    type Subrule is (Control, Not_Iso_646, Trailing_Space, Wide);
    package Subrule_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrule);
@@ -125,6 +125,7 @@ package body Rules.Characters is
    ------------------
 
    procedure Process_Line (Line : in Asis.Program_Text; Loc : Framework.Locations.Location) is
+      use Ada.Strings.Wide_Maps;
       use Framework.Locations, Framework.Reports, Asis.Text;
 
       procedure Check_Control is

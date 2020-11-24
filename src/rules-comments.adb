@@ -26,8 +26,6 @@
 
 -- Ada
 with
-  Ada.Characters.Handling,
-  Ada.Characters.Latin_1,
   Ada.Unchecked_Deallocation,
   Ada.Strings.Wide_Maps,
   Ada.Strings.Wide_Fixed,
