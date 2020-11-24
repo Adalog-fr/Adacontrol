@@ -48,11 +48,6 @@ pragma Elaborate (Framework.Language);
 package body Rules.Characters is
    use Ada.Strings.Wide_Maps, Framework, Framework.Control_Manager;
 
-   Tab_Chars  : constant  Wide_Character_Set := To_Set (Wide_String'(Ada.Characters.Wide_Latin_1.HT,
-                                                                     Ada.Characters.Wide_Latin_1.VT,
-                                                                     Ada.Characters.Wide_Latin_1.FF));
-   Separators : constant Wide_Character_Set := Tab_Chars or To_Set (' ');
-
    type Subrule is (Control, Not_Iso_646, Trailing_Space, Wide);
    package Subrule_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrule);
 

@@ -56,9 +56,6 @@ pragma Elaborate (Framework.Language);
 package body Rules.Comments is
    use Framework, Framework.Control_Manager, Framework.Language.Shared_Keys;
 
-   Separators : constant Ada.Strings.Wide_Maps.Wide_Character_Set
-     := Ada.Strings.Wide_Maps.To_Set (Ada.Characters.Handling.To_Wide_String (' ' & Ada.Characters.Latin_1.HT));
-
    type Subrules is (Pattern, Position, Terminating, Unnamed_Begin, Unnamed_End_Record);
    package Subrules_Flags_Utilities is new Framework.Language.Flag_Utilities (Subrules);
    type Subrules_Set is array (Subrules) of Boolean;

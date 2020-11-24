@@ -26,7 +26,8 @@
 
 -- Ada
 with
-  Ada.Characters.Latin_1;
+  Ada.Characters.Wide_Latin_1,
+  Ada.Strings.Wide_Maps;
 private with
   Ada.Strings.Wide_Unbounded;
 
@@ -44,7 +45,17 @@ package Framework is
    -- Misc utility constants
    -------------------------------------------------------------------
 
-   Wide_HT : constant Wide_Character := Wide_Character'Val (Character'Pos (Ada.Characters.Latin_1.HT));
+   Wide_HT    : Wide_Character renames Ada.Characters.Wide_Latin_1.HT;
+   Tab_Chars  : constant Ada.Strings.Wide_Maps.Wide_Character_Set := Ada.Strings.Wide_Maps.To_Set
+                                                                      (Wide_String'(Ada.Characters.Wide_Latin_1.HT,
+                                                                                    Ada.Characters.Wide_Latin_1.VT,
+                                                                                    Ada.Characters.Wide_Latin_1.FF));
+   Separators : constant Ada.Strings.Wide_Maps.Wide_Character_Set := Ada.Strings.Wide_Maps.To_Set
+                                                                      (Wide_String'(' ',
+                                                                                    Ada.Characters.Wide_Latin_1.HT,
+                                                                                    Ada.Characters.Wide_Latin_1.VT,
+                                                                                    Ada.Characters.Wide_Latin_1.FF));
+
 
    -------------------------------------------------------------------
    -- The ASIS context                                              --
