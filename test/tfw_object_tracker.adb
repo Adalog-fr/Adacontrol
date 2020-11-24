@@ -280,6 +280,15 @@ begin
       X := 2;
    end if;
 
+   I := 1;
+   if I = 1 then                      -- True
+      X := 2;
+   end if;
+   Pinout (Natural (I));
+   if I = 1 then                      -- Unknown
+      X := 2;
+   end if;
+
    -- Check for loops
    for Control in Integer range 1 .. 1 loop
       if Control = 1 then             -- True
@@ -685,6 +694,33 @@ begin
       if A = 1 then -- True
          null;
       end if;
+   end;
+
+   -- Private type with discriminants
+   declare
+      package Pack is
+         type T (D1 : access Integer; D2 : Integer) is private;
+      private
+         type T (D1 : access Integer; D2 : Integer) is null record;
+      end Pack;
+      subtype St1 is Pack.T;
+      subtype St2 is Pack.T (null, 1);
+
+      procedure P (X : St1; Y : St2) is
+         J : Integer;
+      begin
+         J := X.D1.all;
+         if X.D2 = 1 then
+            null;
+         end if;
+
+         J := Y.D1.all;     -- Null dereference
+         if Y.D2 = 1 then   -- True
+            null;
+         end if;
+      end P;
+   begin
+      null;
    end;
 
    I := 10; -- This assignment to (possibly) fool the exception handler

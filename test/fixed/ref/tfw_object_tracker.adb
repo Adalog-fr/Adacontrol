@@ -216,6 +216,13 @@ begin
       X := 2;
    end if;
 
+   I := 1;
+   X := 2;
+   Pinout (Natural (I));
+   if I = 1 then                      -- Unknown
+      X := 2;
+   end if;
+
    -- Check for loops
    for Control in Integer range 1 .. 1 loop
       X := 1;
@@ -482,6 +489,86 @@ begin
 
       null;
 
+      null;
+   end;
+
+   -- Combinations of formal parameters and discriminants
+   declare
+      type Rec1 (D : Character := 'a') is
+         record
+            case D is
+               when 'a'              => A : Integer;
+               when 'b' .. 'e' | 'z' => B : Integer;
+               when others => null;
+            end case;
+         end record;
+      subtype Rec1_A     is Rec1 ('a');
+      type Int_Ptr is access Integer;
+      type Rec (D1 : Int_Ptr := null; D2 : Integer := 1) is null record;
+
+      type Short is range 1 .. 10;
+      procedure P1 (Y : in out Short) is
+      begin
+         
+
+         if Y = 1 then    -- Unknown
+            null;
+         end if;
+
+         Y := 1;
+         null;
+      end P1;
+
+      procedure P2 (X : in Rec; Y : in out Rec) is
+      begin
+         X.D1.all := 1;   -- Unknown
+         Y.D1.all := 1;   -- Unknown
+         if Y.D2 = 1 then -- Unknown
+            null;
+         end if;
+
+         Y := (new Integer, 2);
+         Y.D1.all := 1;   -- Ok
+
+         Y := (null, 1);
+         Y.D1.all := 1;   -- Null dereference
+         null;
+      end P2;
+
+      A : Short;
+   begin
+      
+
+      if A = 1 then -- OK (unknown)
+         null;
+      end if;
+
+      A := 1;
+      null;
+   end;
+
+   -- Private type with discriminants
+   declare
+      package Pack is
+         type T (D1 : access Integer; D2 : Integer) is private;
+      private
+         type T (D1 : access Integer; D2 : Integer) is null record;
+      end Pack;
+      subtype St1 is Pack.T;
+      subtype St2 is Pack.T (null, 1);
+
+      procedure P (X : St1; Y : St2) is
+         J : Integer;
+      begin
+         J := X.D1.all;
+         if X.D2 = 1 then
+            null;
+         end if;
+
+         J := Y.D1.all;     -- Null dereference
+         null;
+      end P;
+   begin
       null;
    end;
 

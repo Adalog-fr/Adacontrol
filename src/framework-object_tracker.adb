@@ -1014,7 +1014,7 @@ package body Framework.Object_Tracker is
    -- Note: Var cannot be a reference to a discriminant (even through renamings), since discriminants
    --       are not allowed as LHS of assignments.
       use Asis.Declarations, Asis.Elements, Asis.Expressions;
-      Good_Var             : Asis.Expression;
+      Good_Var             : Asis.Expression := Var;
       Good_Expr            : Asis.Expression;
       Current_Unit         : Asis.Declaration;
       Good_Path            : Asis.Element := Path;
@@ -1036,8 +1036,12 @@ package body Framework.Object_Tracker is
       end Make_Discriminants_Unknown;
 
    begin   -- Process_Assignment
-      if Expression_Kind (Var) in An_Identifier | A_Selected_Component then
-         Good_Var := Ultimate_Name (Var);
+      while Expression_Kind (Good_Var) = A_Type_Conversion loop
+         Good_Var := Converted_Or_Qualified_Expression (Good_Var);
+      end loop;
+
+      if Expression_Kind (Good_Var) in An_Identifier | A_Selected_Component then
+         Good_Var := Ultimate_Name (Good_Var);
          if Is_Nil (Good_Var)  -- Name includes a dereference or indexing
            or else Declaration_Kind (Corresponding_Name_Declaration (Good_Var))
                    in A_Component_Declaration | A_Constant_Declaration
@@ -1062,8 +1066,8 @@ package body Framework.Object_Tracker is
             Untrack_Variable (Good_Var);
             return;
          end if;
-      elsif Element_Kind (Var) = A_Defining_Name then
-         Good_Var := Ultimate_Name (Var);
+      elsif Element_Kind (Good_Var) = A_Defining_Name then
+         Good_Var := Ultimate_Name (Good_Var);
       else
          return;   -- indexed variable, dereference, function call...
       end if;
@@ -1487,7 +1491,7 @@ package body Framework.Object_Tracker is
 
       if Is_Parameter then
          -- Case of formal parameters: Object_Declaration_View returns a name, not a definition
-         Subtype_Name := Object_Declaration_View (Decl);
+         Subtype_Name := Simple_Name (Strip_Attributes (Object_Declaration_View (Decl)));
       else
          Subtype_Name := Subtype_Simple_Name (Def);
       end if;
@@ -1508,21 +1512,15 @@ package body Framework.Object_Tracker is
             return;
          end if;
 
-         --  if Is_Parameter then
-         --     if Definition_Kind (Def) = A_Type_Definition then
-         --        Object_Constraint := Nil_Element;
-         --     else
-         --        Object_Constraint := Subtype_Constraint (Def);
-         --     end if;
-         --  else
-            Object_Constraint := Constraining_Definition (Decl);
-            if Definition_Kind (Object_Constraint) = A_Type_Definition then
-               -- Back to the original type => no constraint
-               Object_Constraint := Nil_Element;
-            else
-               Object_Constraint := Subtype_Constraint (Object_Constraint);
-            end if;
-         --  end if;
+         Object_Constraint := Constraining_Definition (Decl);
+         if Definition_Kind (Object_Constraint) in
+           A_Type_Definition | A_Private_Type_Definition .. A_Private_Extension_Definition
+         then
+            -- Back to the original type => no constraint
+            Object_Constraint := Nil_Element;
+         else
+            Object_Constraint := Subtype_Constraint (Object_Constraint);
+         end if;
 
          -- Count discriminants
          for Discr_Decl : Asis.Declaration of Discriminants (Type_Discr_Part) loop

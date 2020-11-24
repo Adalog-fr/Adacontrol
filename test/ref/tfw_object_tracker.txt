@@ -88,136 +88,143 @@ tfw_object_tracker.adb:264:4: Replace:266:10
 tfw_object_tracker.adb:274:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
 tfw_object_tracker.adb:274:4: Replace:276:10
 !X := 2;
-tfw_object_tracker.adb:285:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:285:7: Replace:287:13
-!X := 1;
-tfw_object_tracker.adb:288:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:288:7: Replace:290:13
-!X := 1;
+tfw_object_tracker.adb:284:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:284:4: Replace:286:10
+!X := 2;
 tfw_object_tracker.adb:294:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
 tfw_object_tracker.adb:294:7: Replace:296:13
 !X := 1;
-tfw_object_tracker.adb:300:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:300:7: Replace:302:13
+tfw_object_tracker.adb:297:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:297:7: Replace:299:13
 !X := 1;
 tfw_object_tracker.adb:303:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
 tfw_object_tracker.adb:303:7: Replace:305:13
 !X := 1;
-tfw_object_tracker.adb:306:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
-tfw_object_tracker.adb:306:7: Delete:308:13
-tfw_object_tracker.adb:314:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:314:10: Replace:316:16
+tfw_object_tracker.adb:309:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:309:7: Replace:311:13
 !X := 1;
-tfw_object_tracker.adb:320:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
-tfw_object_tracker.adb:320:10: Delete:322:16
-tfw_object_tracker.adb:324:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:324:10: Replace:326:16
+tfw_object_tracker.adb:312:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:312:7: Replace:314:13
 !X := 1;
-tfw_object_tracker.adb:342:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
-tfw_object_tracker.adb:342:7: Delete:344:13
-tfw_object_tracker.adb:355:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:355:7: Replace:362:13
+tfw_object_tracker.adb:315:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+tfw_object_tracker.adb:315:7: Delete:317:13
+tfw_object_tracker.adb:323:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:323:10: Replace:325:16
+!X := 1;
+tfw_object_tracker.adb:329:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+tfw_object_tracker.adb:329:10: Delete:331:16
+tfw_object_tracker.adb:333:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:333:10: Replace:335:16
+!X := 1;
+tfw_object_tracker.adb:351:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+tfw_object_tracker.adb:351:7: Delete:353:13
+tfw_object_tracker.adb:364:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:364:7: Replace:371:13
 !X := 1;
 !         if V1 in 5 .. 15 then        -- Unknown
 !            if V1 in 5 .. 10 then     -- True
 !               X := 2;
 !            end if;
 !         end if;
-tfw_object_tracker.adb:358:13: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:358:13: Replace:360:19
+tfw_object_tracker.adb:367:13: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:367:13: Replace:369:19
 !X := 2;
-tfw_object_tracker.adb:363:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
-tfw_object_tracker.adb:363:7: Delete:365:13
-tfw_object_tracker.adb:373:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:373:10: Replace:375:16
+tfw_object_tracker.adb:372:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+tfw_object_tracker.adb:372:7: Delete:374:13
+tfw_object_tracker.adb:382:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:382:10: Replace:384:16
 !X := 1;
-tfw_object_tracker.adb:384:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:384:7: Replace:386:13
+tfw_object_tracker.adb:393:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:393:7: Replace:395:13
 !X := 1;
-tfw_object_tracker.adb:390:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:390:7: Replace:392:13
+tfw_object_tracker.adb:399:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:399:7: Replace:401:13
 !X := 1;
-tfw_object_tracker.adb:396:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:396:7: Replace:398:13
+tfw_object_tracker.adb:405:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:405:7: Replace:407:13
 !X := 1;
-tfw_object_tracker.adb:400:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
-tfw_object_tracker.adb:400:7: Delete:402:13
-tfw_object_tracker.adb:419:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:419:7: Replace:421:13
+tfw_object_tracker.adb:409:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+tfw_object_tracker.adb:409:7: Delete:411:13
+tfw_object_tracker.adb:428:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:428:7: Replace:430:13
 !X := 1;
-tfw_object_tracker.adb:460:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:460:7: Replace:462:13
+tfw_object_tracker.adb:469:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:469:7: Replace:471:13
 !X := 1;
-tfw_object_tracker.adb:476:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:476:7: Replace:478:13
+tfw_object_tracker.adb:485:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:485:7: Replace:487:13
 !I := 1;
-tfw_object_tracker.adb:482:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:482:10: Replace:484:16
+tfw_object_tracker.adb:491:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:491:10: Replace:493:16
 !I := 1;
-tfw_object_tracker.adb:488:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
-tfw_object_tracker.adb:488:7: Delete:490:13
-tfw_object_tracker.adb:491:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:491:7: Replace:493:13
-!I := 0;
-tfw_object_tracker.adb:496:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
-tfw_object_tracker.adb:496:7: Delete:498:13
+tfw_object_tracker.adb:497:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+tfw_object_tracker.adb:497:7: Delete:499:13
 tfw_object_tracker.adb:500:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
 tfw_object_tracker.adb:500:7: Replace:502:13
 !I := 0;
-tfw_object_tracker.adb:516:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
-tfw_object_tracker.adb:516:7: Delete:517:16
-tfw_object_tracker.adb:518:7: Replace:518:9
+tfw_object_tracker.adb:505:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+tfw_object_tracker.adb:505:7: Delete:507:13
+tfw_object_tracker.adb:509:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:509:7: Replace:511:13
+!I := 0;
+tfw_object_tracker.adb:525:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+tfw_object_tracker.adb:525:7: Delete:526:16
+tfw_object_tracker.adb:527:7: Replace:527:9
 !
-tfw_object_tracker.adb:518:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:520:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
-tfw_object_tracker.adb:522:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
-tfw_object_tracker.adb:524:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
-tfw_object_tracker.adb:526:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:557:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:557:7: Replace:559:13
-!null;
-tfw_object_tracker.adb:563:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:563:7: Replace:565:13
-!null;
-tfw_object_tracker.adb:566:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
-tfw_object_tracker.adb:566:7: Delete:568:13
-tfw_object_tracker.adb:569:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:569:7: Replace:571:13
+tfw_object_tracker.adb:527:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:529:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+tfw_object_tracker.adb:531:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+tfw_object_tracker.adb:533:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+tfw_object_tracker.adb:535:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:566:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:566:7: Replace:568:13
 !null;
 tfw_object_tracker.adb:572:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
 tfw_object_tracker.adb:572:7: Replace:574:13
 !null;
-tfw_object_tracker.adb:578:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
-tfw_object_tracker.adb:578:7: Delete:580:13
-tfw_object_tracker.adb:604:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:604:7: Replace:606:13
+tfw_object_tracker.adb:575:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+tfw_object_tracker.adb:575:7: Delete:577:13
+tfw_object_tracker.adb:578:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:578:7: Replace:580:13
 !null;
-tfw_object_tracker.adb:608:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:608:7: Replace:610:13
+tfw_object_tracker.adb:581:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:581:7: Replace:583:13
 !null;
-tfw_object_tracker.adb:612:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:612:7: Replace:614:13
+tfw_object_tracker.adb:587:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+tfw_object_tracker.adb:587:7: Delete:589:13
+tfw_object_tracker.adb:613:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:613:7: Replace:615:13
 !null;
-tfw_object_tracker.adb:616:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:616:7: Replace:618:13
+tfw_object_tracker.adb:617:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:617:7: Replace:619:13
 !null;
-tfw_object_tracker.adb:620:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:620:7: Replace:622:13
+tfw_object_tracker.adb:621:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:621:7: Replace:623:13
 !null;
-tfw_object_tracker.adb:642:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
-tfw_object_tracker.adb:642:10: Delete:644:16
-tfw_object_tracker.adb:651:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:651:10: Replace:653:16
+tfw_object_tracker.adb:625:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:625:7: Replace:627:13
 !null;
-tfw_object_tracker.adb:668:10: Error: KNOWN_EXCEPTIONS: Explicit dereference raises Constraint_Error (null pointer)
-tfw_object_tracker.adb:669:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:669:10: Replace:671:16
+tfw_object_tracker.adb:629:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:629:7: Replace:631:13
 !null;
-tfw_object_tracker.adb:676:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
-tfw_object_tracker.adb:676:7: Delete:678:13
-tfw_object_tracker.adb:685:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:685:7: Replace:687:13
+tfw_object_tracker.adb:651:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+tfw_object_tracker.adb:651:10: Delete:653:16
+tfw_object_tracker.adb:660:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:660:10: Replace:662:16
 !null;
-tfw_object_tracker.adb:698:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:698:7: Replace:700:13
+tfw_object_tracker.adb:677:14: Error: KNOWN_EXCEPTIONS: Explicit dereference raises Constraint_Error (null pointer)
+tfw_object_tracker.adb:678:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:678:10: Replace:680:16
+!null;
+tfw_object_tracker.adb:685:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+tfw_object_tracker.adb:685:7: Delete:687:13
+tfw_object_tracker.adb:694:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:694:7: Replace:696:13
+!null;
+tfw_object_tracker.adb:717:19: Error: KNOWN_EXCEPTIONS: Explicit dereference raises Constraint_Error (null pointer)
+tfw_object_tracker.adb:718:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:718:10: Replace:720:16
+!null;
+tfw_object_tracker.adb:734:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:734:7: Replace:736:13
 !X := 1;
