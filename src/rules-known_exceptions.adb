@@ -139,7 +139,7 @@ package body Rules.Known_Exceptions is
       Rules_Manager.Enter (Rule_Id);
 
       if Discrete_Static_Expression_Value (Prefix (Expr)) = 0 then  -- null
-         Report (Rule_Id, Contexts (SR_Access), Get_Location (Expr),
+         Report (Rule_Id, Contexts (SR_Access), Get_Next_Token_Location (Prefix (Expr)),
                  (if Expression_Kind (Expr) = An_Explicit_Dereference then "Explicit" else "Implicit")
                   & " dereference raises Constraint_Error (null pointer)");
       end if;

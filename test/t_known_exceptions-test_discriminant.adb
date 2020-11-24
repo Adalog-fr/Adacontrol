@@ -255,8 +255,29 @@ begin
       R3 : Rec3 (Drec3 => A);
       R4 : Rec4 (Drec4 => A);
    begin
-      VF := R3.C.F;
-      VF := R3.D.F;
-      VF := R4.E.F;
+      VF := R3.C.F;   -- Discrim_Error DRec1
+      VF := R3.D.F;   -- Discrim_Error Drec3
+      VF := R4.E.F;   -- Discrim_Error DRec1
+   end;
+
+   -- Check class-wide
+   declare
+      type Untagged is
+         record
+            C1 : Integer;
+         end record;
+      type Tag1 (D : access Untagged) is tagged null record;
+      subtype St1 is Tag1 (null);
+
+      procedure P1 (X : Tag1'Class; Y : St1) is
+      begin
+         I := X.D.all.C1;   -- unknown
+         I := X.D.C1;       -- unknown
+         I := Y.D.all.C1;   -- null access
+         I := Y.D.C1;       -- null access
+      end P1;
+
+   begin
+      null;
    end;
 end Test_Discriminant;
