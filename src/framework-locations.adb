@@ -167,6 +167,38 @@ package body Framework.Locations is
       return Get_End_Location (E (E'Last));
    end Get_End_Location;
 
+   -----------------------------
+   -- Get_Next_Token_Location --
+   -----------------------------
+
+   function Get_Next_Token_Location (E : in Asis.Element) return Location is
+      use Ada.Strings, Ada.Strings.Wide_Fixed;
+      use Asis.Text;
+      Result : Location := Get_End_Location (E);
+      L      : Line_Number := Result.First_Line;
+      C      : Character_Position;
+      Last   : Character_Position;
+   begin
+      Find_Token (Non_Comment_Image (Lines (E, L, L) (L)),
+                  Separators,
+                  From  => Result.First_Column + 1,
+                  Test  => Outside,
+                  First => C,
+                  Last  => Last);
+      while Last = 0 loop
+         L := L + 1;
+         Find_Token (Non_Comment_Image (Lines (E, L, L) (L)),
+                     Separators,
+                     Test  => Outside,
+                     First => C,
+                     Last  => Last);
+      end loop;
+
+      Result.First_Line   := L;
+      Result.First_Column := C;
+      return Result;
+   end Get_Next_Token_Location;
+
    --------------------------------
    -- Get_Previous_Word_Location --
    --------------------------------

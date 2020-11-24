@@ -61,6 +61,9 @@ package Framework.Locations is
    function Get_End_Location (E : in Asis.Element_List) return Location;
    -- Returns location of end of an element or last element of a list
 
+   function Get_Next_Token_Location (E : in Asis.Element) return Location;
+   -- Returns the location of the first token (not space or comment) that immediately follows E
+
    function Get_Previous_Word_Location (E        : in Asis.Element;
                                         Matching : in Wide_String  := "";
                                         Starting : in Search_Start := From_Head;
