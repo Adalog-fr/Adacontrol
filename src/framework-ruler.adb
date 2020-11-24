@@ -223,6 +223,8 @@ package body Framework.Ruler is
    -- Semantic_Traverse --
    -----------------------
 
+   Unwinding_Exception : Boolean;
+
    procedure Pre_Procedure (Element : in     Asis.Element;
                             Control : in out Asis.Traverse_Control;
                             State   : in out Info);
@@ -268,18 +270,21 @@ package body Framework.Ruler is
          end loop;
 
          if not Duplicate then
+            Unwinding_Exception := False;
             Semantic_Traverse_Elements (Pr, The_Control, The_Info);
          end if;
       end loop;
 
       -- Process_Context_Clauses
       for Cc : Asis.Context_Clause of My_CC_List loop
+         Unwinding_Exception := False;
          Semantic_Traverse_Elements (Cc, The_Control, The_Info);
       end loop;
 
       Exit_Context_Clauses (Unit);
 
       -- Process_Unit
+      Unwinding_Exception := False;
       Semantic_Traverse_Elements (My_Declaration, The_Control, The_Info);
 
       Exit_Unit (Unit);
@@ -997,19 +1002,23 @@ package body Framework.Ruler is
       when Framework.Reports.Cancellation =>   -- Too many messages while traversing => propagate silently
          raise;
       when Occur : others =>
-         begin
-            Utilities.Trace ("Exception "                                  --## rule line off No_Trace
-                             & To_Wide_String (Exception_Name (Occur))
-                             & " in Pre_Procedure at "
-                             & Safe_Image (Get_Location (Element)),
-                             Element,
-                             With_Source => True);
-         exception
-            when others =>
-               -- If things are so bad that we can't print the trace, ignore this one so as to get
-               -- the stack trace from the original exception
-               null;
-         end;
+         if not Unwinding_Exception then  -- Trace only first level (the rest is noise)
+            begin
+               Utilities.Trace ("Exception "                                  --## rule line off No_Trace
+                                & To_Wide_String (Exception_Name (Occur))
+                                & " in Pre_Procedure at "
+                                & Safe_Image (Get_Location (Element)),
+                                Element,
+                                With_Source => True);
+
+            exception
+               when others =>
+                  -- If things are so bad that we can't print the trace, ignore this one so as to get
+                  -- the stack trace from the original exception
+                  null;
+            end;
+            Unwinding_Exception := True;
+         end if;
          raise;
    end Pre_Procedure;
 
