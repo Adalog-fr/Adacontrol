@@ -225,6 +225,14 @@ tfw_object_tracker.adb:717:19: Error: KNOWN_EXCEPTIONS: Explicit dereference rai
 tfw_object_tracker.adb:718:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
 tfw_object_tracker.adb:718:10: Replace:720:16
 !null;
-tfw_object_tracker.adb:734:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:734:7: Replace:736:13
+tfw_object_tracker.adb:745:19: Error: KNOWN_EXCEPTIONS: Explicit dereference raises Constraint_Error (null pointer)
+tfw_object_tracker.adb:746:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:746:10: Replace:748:16
+!null;
+tfw_object_tracker.adb:769:19: Error: KNOWN_EXCEPTIONS: Explicit dereference raises Constraint_Error (null pointer)
+tfw_object_tracker.adb:770:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:770:10: Replace:772:16
+!null;
+tfw_object_tracker.adb:786:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:786:7: Replace:788:13
 !X := 1;

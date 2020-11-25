@@ -723,6 +723,58 @@ begin
       null;
    end;
 
+   -- Task and protected types with discriminants
+   declare
+      protected type Prot (D1 : access Integer; D2 : Integer) is
+      end Prot;
+
+      protected body Prot is
+      end Prot;
+
+      subtype Spt1 is Prot;
+      subtype Spt2 is Prot (null, 1);
+
+      procedure P (X : Spt1; Y : Spt2) is
+         J : Integer;
+      begin
+         J := X.D1.all;
+         if X.D2 = 1 then
+            null;
+         end if;
+
+         J := Y.D1.all;     -- Null dereference
+         if Y.D2 = 1 then   -- True
+            null;
+         end if;
+      end P;
+
+      task type TT (D1 : access Integer; D2 : Integer) is end TT;
+
+      task body TT is
+      begin
+         null;
+      end TT;
+
+      subtype Stt1 is TT;
+      subtype Stt2 is TT (null, 1);
+
+      procedure P (X : Stt1; Y : Stt2) is
+         J : Integer;
+      begin
+         J := X.D1.all;
+         if X.D2 = 1 then
+            null;
+         end if;
+
+         J := Y.D1.all;     -- Null dereference
+         if Y.D2 = 1 then   -- True
+            null;
+         end if;
+      end P;
+   begin
+      null;
+   end;
+
    I := 10; -- This assignment to (possibly) fool the exception handler
 exception
       -- check handlers

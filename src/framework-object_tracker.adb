@@ -1473,10 +1473,6 @@ package body Framework.Object_Tracker is
                end;
             end loop;
             return;
-         when A_Task_Type =>
-            -- Due to an ASIS bug, AdaControl crashes on discriminants of a task type
-            -- TBSL: ignore until this is fixed
-            return;
          when A_Fixed_Point_Type
             | A_Floating_Point_Type
             | An_Array_Type
@@ -1514,9 +1510,10 @@ package body Framework.Object_Tracker is
 
          Object_Constraint := Constraining_Definition (Decl);
          if Definition_Kind (Object_Constraint) in
-           A_Type_Definition | A_Private_Type_Definition .. A_Private_Extension_Definition
+           A_Type_Definition | A_Private_Type_Definition .. A_Protected_Definition | Not_A_Definition
          then
             -- Back to the original type => no constraint
+            -- Object_Constraint is Nil_Element (Not_A_Definition) for a task declaration without a definition
             Object_Constraint := Nil_Element;
          else
             Object_Constraint := Subtype_Constraint (Object_Constraint);
