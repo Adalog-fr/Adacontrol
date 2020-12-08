@@ -1421,8 +1421,17 @@ package body Framework.Object_Tracker is
       then -- Variable is volatile
          return;
       end if;
+      if Corresponding_Aspects (Decl, "ADDRESS") /= Nil_Element_List
+        or else not Is_Nil (Attribute_Clause_Expression (An_Address_Attribute, Decl))
+      then -- Variable has address clause
+         return;
+      end if;
+      if Trait_Kind (Decl) = An_Aliased_Trait then  -- Aliased variable, can change at any time
+         return;
+      end if;
 
       Def := Object_Declaration_View (Decl);
+
       if Is_Parameter then
          if Declaration_Kind (Enclosing_Element (Decl))
             not in A_Procedure_Body_Declaration | A_Function_Body_Declaration

@@ -1,5 +1,5 @@
 -- Objective: test proper behaviour of object tracker
-
+with System;
 procedure Tfw_Object_Tracker is
    C_One : constant Integer := 1;
    I     : Integer          := 0;
@@ -773,6 +773,33 @@ begin
       end P;
    begin
       null;
+   end;
+
+   --  Aliased and volatile variables, and variables with address clause (or aspect) are not tracked
+   declare
+      Al : aliased Integer := 0;
+      Vol : access Integer with Volatile;
+      type Ptr is access Integer;
+      Addr : System.Address;
+      V1  : Ptr with Address => Addr, Import, Convention => Ada;
+      V2  : Ptr;
+      for V2'Address use Addr;
+      V3  : Ptr;
+      for V3 use at Addr;
+   begin
+      Vol.all := Al;
+      if Al = 0 then
+         null;
+      end if;
+      if V1 /= null then
+         null;
+      end if;
+      if V2 /= null then
+         null;
+      end if;
+      if V3 /= null then
+         null;
+      end if;
    end;
 
    I := 10; -- This assignment to (possibly) fool the exception handler

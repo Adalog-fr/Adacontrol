@@ -1,15 +1,15 @@
-t_known_exceptions-test_access.adb:10:37: Error: Access_Error: Explicit dereference raises Constraint_Error (null pointer)
-t_known_exceptions-test_access.adb:12:10: Error: Access_Error: Explicit dereference raises Constraint_Error (null pointer)
-t_known_exceptions-test_access.adb:20:10: Error: Access_Error: Explicit dereference raises Constraint_Error (null pointer)
-t_known_exceptions-test_access.adb:22:10: Error: Access_Error: Explicit dereference raises Constraint_Error (null pointer)
-t_known_exceptions-test_access.adb:36:40: Error: Access_Error: Implicit dereference raises Constraint_Error (null pointer)
-t_known_exceptions-test_access.adb:38:11: Error: Access_Error: Implicit dereference raises Constraint_Error (null pointer)
-t_known_exceptions-test_access.adb:38:22: Error: Access_Error: Implicit dereference raises Constraint_Error (null pointer)
-t_known_exceptions-test_access.adb:49:22: Error: Access_Error: Implicit dereference raises Constraint_Error (null pointer)
-t_known_exceptions-test_access.adb:62:37: Error: Access_Error: Implicit dereference raises Constraint_Error (null pointer)
-t_known_exceptions-test_access.adb:64:10: Error: Access_Error: Implicit dereference raises Constraint_Error (null pointer)
-t_known_exceptions-test_access.adb:64:22: Error: Access_Error: Implicit dereference raises Constraint_Error (null pointer)
-t_known_exceptions-test_access.adb:75:10: Error: Access_Error: Implicit dereference raises Constraint_Error (null pointer)
+t_known_exceptions-test_access.adb:10:37: Error: Access_Error: Explicit dereference of IP1 raises Constraint_Error (null pointer)
+t_known_exceptions-test_access.adb:12:10: Error: Access_Error: Explicit dereference of IP1 raises Constraint_Error (null pointer)
+t_known_exceptions-test_access.adb:20:10: Error: Access_Error: Explicit dereference of IP1 raises Constraint_Error (null pointer)
+t_known_exceptions-test_access.adb:22:10: Error: Access_Error: Explicit dereference of IP2 raises Constraint_Error (null pointer)
+t_known_exceptions-test_access.adb:36:40: Error: Access_Error: Implicit dereference of SP1 raises Constraint_Error (null pointer)
+t_known_exceptions-test_access.adb:38:11: Error: Access_Error: Implicit dereference of SP1 raises Constraint_Error (null pointer)
+t_known_exceptions-test_access.adb:38:22: Error: Access_Error: Implicit dereference of SP2 raises Constraint_Error (null pointer)
+t_known_exceptions-test_access.adb:49:22: Error: Access_Error: Implicit dereference of SP1 raises Constraint_Error (null pointer)
+t_known_exceptions-test_access.adb:62:37: Error: Access_Error: Implicit dereference of SP1 raises Constraint_Error (null pointer)
+t_known_exceptions-test_access.adb:64:10: Error: Access_Error: Implicit dereference of SP1 raises Constraint_Error (null pointer)
+t_known_exceptions-test_access.adb:64:22: Error: Access_Error: Implicit dereference of SP2 raises Constraint_Error (null pointer)
+t_known_exceptions-test_access.adb:75:10: Error: Access_Error: Implicit dereference of SP1 raises Constraint_Error (null pointer)
 t_known_exceptions-test_index.adb:21:9: Error: Index_Error: Indexing raises Constraint_Error, value 11 > 10
 t_known_exceptions-test_index.adb:23:9: Error: Index_Error: Indexing raises Constraint_Error, value 2 > 1
 t_known_exceptions-test_index.adb:26:22: Error: Index_Error: Indexing raises Constraint_Error, value -1 < 0
@@ -53,8 +53,8 @@ t_known_exceptions-test_discriminant.adb:132:16: Found: Discrim_Error: Access to
 t_known_exceptions-test_discriminant.adb:132:12: Found: Discrim_Error: Access to component R22 raises Constraint_Error, discriminant D3= 98
 t_known_exceptions-test_discriminant.adb:139:34: Found: Discrim_Error: Access to component B raises Constraint_Error, discriminant D= 97
 t_known_exceptions-test_discriminant.adb:142:16: Found: Discrim_Error: Access to component B raises Constraint_Error, discriminant D= 97
-t_known_exceptions-test_discriminant.adb:169:19: Error: Access_Error: Implicit dereference raises Constraint_Error (null pointer)
-t_known_exceptions-test_discriminant.adb:170:19: Error: Access_Error: Implicit dereference raises Constraint_Error (null pointer)
+t_known_exceptions-test_discriminant.adb:169:19: Error: Access_Error: Implicit dereference of Ptr raises Constraint_Error (null pointer)
+t_known_exceptions-test_discriminant.adb:170:19: Error: Access_Error: Implicit dereference of Ptr raises Constraint_Error (null pointer)
 t_known_exceptions-test_discriminant.adb:183:22: Found: Discrim_Error: Access to component B raises Constraint_Error, discriminant D= 97
 t_known_exceptions-test_discriminant.adb:188:20: Found: Discrim_Error: Access to component B raises Constraint_Error, discriminant D= 97
 t_known_exceptions-test_discriminant.adb:190:20: Found: Discrim_Error: Access to component B raises Constraint_Error, discriminant D= 97
@@ -65,8 +65,8 @@ t_known_exceptions-test_discriminant.adb:258:18: Found: Discrim_Error: Access to
 t_known_exceptions-test_discriminant.adb:259:18: Found: Discrim_Error: Access to component F raises Constraint_Error, discriminant DRec1= 0
 t_known_exceptions-test_discriminant.adb:259:16: Found: Discrim_Error: Access to component D raises Constraint_Error, discriminant Drec3= 0
 t_known_exceptions-test_discriminant.adb:260:18: Found: Discrim_Error: Access to component F raises Constraint_Error, discriminant DRec1= 0
-t_known_exceptions-test_discriminant.adb:276:18: Error: Access_Error: Explicit dereference raises Constraint_Error (null pointer)
-t_known_exceptions-test_discriminant.adb:277:18: Error: Access_Error: Implicit dereference raises Constraint_Error (null pointer)
+t_known_exceptions-test_discriminant.adb:276:18: Error: Access_Error: Explicit dereference of D raises Constraint_Error (null pointer)
+t_known_exceptions-test_discriminant.adb:277:18: Error: Access_Error: Implicit dereference of D raises Constraint_Error (null pointer)
 t_known_exceptions-test_raise_expression.adb:7:44: Error: Exceptions: Raise_Expression executed unconditionally, use "and then" instead
 t_known_exceptions-test_raise_expression.adb:7:40: Replace:7:42
 !and then
