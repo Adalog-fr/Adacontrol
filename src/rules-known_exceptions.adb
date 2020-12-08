@@ -141,7 +141,9 @@ package body Rules.Known_Exceptions is
       if Discrete_Static_Expression_Value (Prefix (Expr)) = 0 then  -- null
          Report (Rule_Id, Contexts (SR_Access), Get_Next_Token_Location (Prefix (Expr)),
                  (if Expression_Kind (Expr) = An_Explicit_Dereference then "Explicit" else "Implicit")
-                  & " dereference raises Constraint_Error (null pointer)");
+                 & " dereference of "
+                 & Extended_Name_Image (Simple_Name (Prefix (Expr)))
+                 & " raises Constraint_Error (null pointer)");
       end if;
    end Process_Dereference;
 
