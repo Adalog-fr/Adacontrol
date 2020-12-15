@@ -501,7 +501,9 @@ package body Rules.Known_Exceptions is
                end if;
             end loop On_Possible_Values;
 
-            if not Possibly_Inside then
+            if not Possibly_Inside and Discr_Value.Imin <= Discr_Value.Imax then
+               -- Note: Discr_Value.Imin > Discr_Value.Imax only if we are in a dead branch, no
+               --       need to issue a message
                if Discr_Value.Imin = Discr_Value.Imax then
                   Report (Rule_Id, Contexts (SR_Discriminant), Get_Location (Selector (Expr)),
                           "Access to component "
