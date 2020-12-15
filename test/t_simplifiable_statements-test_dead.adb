@@ -54,6 +54,18 @@ begin
          null;
    end case;
 
+   I := 1;
+   case I is
+      when 1 =>
+         null;
+      when 2 =>                                    -- choices cover no value
+         null;
+      when 3 .. 10 =>                              -- choices cover no value
+         null;
+      when others =>
+         null;
+   end case;
+
    if S'Length = 0 then                            -- always false
       I := 1;
    end if;

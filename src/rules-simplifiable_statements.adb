@@ -912,6 +912,13 @@ package body Rules.Simplifiable_Statements is
                Count_Values :
                for PE : Asis.Element of Case_Statement_Alternative_Choices (CP) loop
                   Spurious_Values := False;
+                  if Definition_Kind (PE) = An_Others_Choice then
+                     -- Not handled here, equivalent to check Case_Statement (Others_Span, min 1)
+                     -- Note that it is necessarily the last path
+                     Count := 1; -- or whatever /= 0
+                     exit Count_Values;
+                  end if;
+
                   if Definition_Kind (PE) = A_Discrete_Range then
                      if Discrete_Range_Kind (PE) = A_Discrete_Subtype_Indication
                        and then not Is_Nil (Corresponding_Static_Predicates
@@ -936,29 +943,25 @@ package body Rules.Simplifiable_Statements is
                         Count := 1; -- or whatever /= 0
                         exit Count_Values;
                      end if;
-                     if Select_Min /= Not_Static and then Select_Min > Bounds (1) then
-                        Bounds (1)      := Select_Min;
-                        Spurious_Values := True;
-                     end if;
-                     if Select_Max /= Not_Static and then Select_Max < Bounds (2) then
-                        Bounds (2)      := Select_Max;
-                        Spurious_Values := True;
-                     end if;
-                     if Bounds (2) >= Bounds (1) then -- beware of null ranges
-                        Count := Count + Bounds (2) - Bounds (1) + 1;
-                     end if;
-
-                  elsif Definition_Kind (PE) = An_Others_Choice then
-                     -- Not handled here, equivalent to check Case_Statement (Others_Span, min 1)
-                     Count := 1; -- or whatever /= 0
-                     exit Count_Values;
-
                   elsif Element_Kind (PE) = An_Expression then   -- It's not a discrete range => it's a real expression
-                     Count := Count + 1;
-
+                     Bounds (1) := Discrete_Static_Expression_Value (PE);
+                     Bounds (2) := Bounds (1);
                   else
                      Failure ("Unexpected path kind:", PE);
                   end if;
+
+                  if Select_Min /= Not_Static and then Select_Min > Bounds (1) then
+                     Bounds (1)      := Select_Min;
+                     Spurious_Values := True;
+                  end if;
+                  if Select_Max /= Not_Static and then Select_Max < Bounds (2) then
+                     Bounds (2)      := Select_Max;
+                     Spurious_Values := True;
+                  end if;
+                  if Bounds (2) >= Bounds (1) then -- beware of null ranges
+                     Count := Count + Bounds (2) - Bounds (1) + 1;
+                  end if;
+
                end loop Count_Values;
 
                if Count = 0 then
@@ -992,17 +995,17 @@ package body Rules.Simplifiable_Statements is
                   Report (Rule_Id,
                           Usage (Stmt_Dead),
                           Get_Location (CP),
-                          "choices cover no value of case expression");
+                          "choice(s) cover no value of case expression");
                elsif Spurious_Values then
                   Report (Rule_Id,
                           Usage (Stmt_Dead),
                           Get_Location (CP),
-                          "some choices not covering any value of case expression");
+                          "some choice(s) not covering any value of case expression");
                elsif Count = 0 then
                   Report (Rule_Id,
                           Usage (Stmt_Dead),
                           Get_Location (CP),
-                          "choices cover no value");
+                          "choice(s) cover no value");
                   Framework.Reports.Fixes.Delete (CP);
                end if;
             end;
