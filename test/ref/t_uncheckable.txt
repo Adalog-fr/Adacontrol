@@ -1,9 +1,6 @@
 t_uncheckable-allocators.adb:8:14: Error: Uncheckable: in rule ALLOCATORS: Possible false negative: Unable to determine the designated type of the allocator
 t_uncheckable-allocators.adb:11:17: Error: Uncheckable: in rule ALLOCATORS: Possible false negative: Unable to determine the designated type of the allocator
 t_uncheckable-allocators.adb:12:21: Error: Uncheckable: in rule ALLOCATORS: Possible false negative: Unable to determine the designated type of the allocator
-t_uncheckable-case_statement.adb:15:15: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (others_span) Could not evaluate bounds of expression
-t_uncheckable-case_statement.adb:19:15: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (others_span) Could not evaluate bounds of expression
-t_uncheckable-case_statement.adb:24:15: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (others_span) Could not evaluate bounds of expression
 t_uncheckable-case_statement.adb:37:9: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (values) Expression is of a subtype with static predicate
 t_uncheckable-case_statement.adb:37:9: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (others_span) Expression is of a subtype with static predicate
 t_uncheckable-case_statement.adb:44:12: Error: Uncheckable: in rule CASE_STATEMENT: Possible false negative: (others_span) Use of subtype with static predicate

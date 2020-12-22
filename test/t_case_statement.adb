@@ -114,13 +114,13 @@ begin
       subtype Int2 is Parent range 1 .. Parent (V);
       I2 : Int2;
    begin
-      case I1 is                                      -- Min_Paths check, count
+      case I1 is                                      -- Values, Values_Others, Min_Paths check, count
          when 1..3 => null;
-         when others => null;                         -- Min_Others covers 7, search
+         when others => null;                         -- Min_Others covers 17 (static), search
       end case;
-      case I2 is                                      -- Min_Paths check, count
+      case I2 is                                      -- Values, Values_Others, Min_Paths check, count
          when 1 .. 3 => null;
-         when others => null;                         -- Min_Others covers 17, search
+         when others => null;                         -- Min_Others covers 17 (static), search
       end case;
    end;
 

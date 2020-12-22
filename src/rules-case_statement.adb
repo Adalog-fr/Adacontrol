@@ -29,7 +29,9 @@ with
 
 -- Asis
 with
+  Asis.Declarations,
   Asis.Elements,
+  Asis.Expressions,
   Asis.Statements;
 
 -- Adalog
@@ -144,7 +146,8 @@ package body Rules.Case_Statement is
    ------------------
 
    procedure Check_Report (Subrule_Name : Subrules;
-                           Value        : Biggest_Natural;
+                           Min_Value    : Extended_Biggest_Natural;
+                           Max_Value    : Extended_Biggest_Natural;
                            Message      : Wide_String;
                            Elem         : Asis.Element;
                            Elem_Cat     : Categories)
@@ -152,64 +155,72 @@ package body Rules.Case_Statement is
       use Ada.Strings.Wide_Unbounded;
       use Framework.Locations, Framework.Reports;
    begin
-      if Rule_Used (Subrule_Name, Elem_Cat) (Check)
-        and then Value < Bounds (Subrule_Name, Elem_Cat, Check).Min
-      then
-         Report (Rule_Id,
-                 To_Wide_String (Labels (Subrule_Name, Elem_Cat, Check)),
-                 Check,
-                 Get_Location (Elem),
-                 "too few " & Message
-                 & " (" & Biggest_Int_Img (Value) & ')');
-      elsif Rule_Used (Subrule_Name, Elem_Cat) (Search)
-        and then Value < Bounds (Subrule_Name, Elem_Cat, Search).Min
-      then
-         Report (Rule_Id,
-                 To_Wide_String (Labels (Subrule_Name, Elem_Cat, Search)),
-                 Search,
-                 Get_Location (Elem),
-                 "too few " & Message
-                 & " (" & Biggest_Int_Img (Value) & ')');
+      if Min_Value /= Not_Static then
+         if Rule_Used (Subrule_Name, Elem_Cat) (Check)
+           and then Min_Value < Bounds (Subrule_Name, Elem_Cat, Check).Min
+         then
+            Report (Rule_Id,
+                    To_Wide_String (Labels (Subrule_Name, Elem_Cat, Check)),
+                    Check,
+                    Get_Location (Elem),
+                    "too few " & Message
+                    & " (" & Biggest_Int_Img (Min_Value)
+                    & " < " & Biggest_Int_Img (Bounds (Subrule_Name, Elem_Cat, Check).Min) & ')');
+         elsif Rule_Used (Subrule_Name, Elem_Cat) (Search)
+           and then Min_Value < Bounds (Subrule_Name, Elem_Cat, Search).Min
+         then
+            Report (Rule_Id,
+                    To_Wide_String (Labels (Subrule_Name, Elem_Cat, Search)),
+                    Search,
+                    Get_Location (Elem),
+                    "too few " & Message
+                    & " (" & Biggest_Int_Img (Min_Value)
+                    & " < " & Biggest_Int_Img (Bounds (Subrule_Name, Elem_Cat, Search).Min) & ')');
+         end if;
+
+         if Rule_Used (Subrule_Name, Elem_Cat) (Count)
+           and then Min_Value < Bounds (Subrule_Name, Elem_Cat, Count).Min
+         then
+            Report (Rule_Id,
+                    To_Wide_String (Labels (Subrule_Name, Elem_Cat, Count)),
+                    Count,
+                    Get_Location (Elem),
+                    "");
+         end if;
       end if;
 
-      if Rule_Used (Subrule_Name, Elem_Cat) (Count)
-        and then Value < Bounds (Subrule_Name, Elem_Cat, Count).Min
-      then
-         Report (Rule_Id,
-                 To_Wide_String (Labels (Subrule_Name, Elem_Cat, Count)),
-                 Count,
-                 Get_Location (Elem),
-                 "");
-      end if;
+      if Max_Value /= Not_Static then
+         if Rule_Used (Subrule_Name, Elem_Cat) (Check)
+           and then Max_Value > Bounds (Subrule_Name, Elem_Cat, Check).Max
+         then
+            Report (Rule_Id,
+                    To_Wide_String (Labels (Subrule_Name, Elem_Cat, Check)),
+                    Check,
+                    Get_Location (Elem),
+                    "too many " & Message
+                    & " (" & Biggest_Int_Img (Max_Value)
+                    & " > " & Biggest_Int_Img (Bounds (Subrule_Name, Elem_Cat, Check).Max) & ')');
+         elsif Rule_Used (Subrule_Name, Elem_Cat) (Search)
+           and then Max_Value > Bounds (Subrule_Name, Elem_Cat, Search).Max
+         then
+            Report (Rule_Id,
+                    To_Wide_String (Labels (Subrule_Name, Elem_Cat, Search)),
+                    Search,
+                    Get_Location (Elem),
+                    "too many " & Message
+                    & " (" & Biggest_Int_Img (Max_Value)
+                    & " > " & Biggest_Int_Img (Bounds (Subrule_Name, Elem_Cat, Search).Max) & ')');
+         end if;
 
-      if Rule_Used (Subrule_Name, Elem_Cat) (Check)
-        and then Value > Bounds (Subrule_Name, Elem_Cat, Check).Max
-      then
-         Report (Rule_Id,
-                 To_Wide_String (Labels (Subrule_Name, Elem_Cat, Check)),
-                 Check,
-                 Get_Location (Elem),
-                 "too many " & Message
-                 & " (" & Biggest_Int_Img (Value) & ')');
-      elsif Rule_Used (Subrule_Name, Elem_Cat) (Search)
-        and then Value > Bounds (Subrule_Name, Elem_Cat, Search).Max
-      then
-         Report (Rule_Id,
-                 To_Wide_String (Labels (Subrule_Name, Elem_Cat, Search)),
-                 Search,
-                 Get_Location (Elem),
-                 "too many " & Message
-                 & " (" & Biggest_Int_Img (Value) & ')');
-      end if;
-
-      if Rule_Used (Subrule_Name, Elem_Cat) (Count)
-        and then Value > Bounds (Subrule_Name, Elem_Cat, Count).Max
-      then
-         Report (Rule_Id,
-                 To_Wide_String (Labels (Subrule_Name, Elem_Cat, Count)),
-                 Count,
-                 Get_Location (Elem),
-                 "");
+         if Rule_Used (Subrule_Name, Elem_Cat) (Count)
+           and then Max_Value > Bounds (Subrule_Name, Elem_Cat, Count).Max
+         then
+            Report (Rule_Id,
+                    To_Wide_String (Labels (Subrule_Name, Elem_Cat, Count)),
+                    Count,
+                    Get_Location (Elem),
+                    "");
+         end if;
       end if;
    end Check_Report;
 
@@ -218,6 +229,9 @@ package body Rules.Case_Statement is
    ----------------------------
 
    procedure Process_Case_Statement (Statement : in Asis.Statement) is
+   -- Case completeness is based on RM-staticness, better do the same in this procedure.
+   -- The object tracker is so clever that otherwise, it could result in strange things like negative number
+   -- of values covered by "when others"...
       use Asis.Elements, Asis.Statements;
       use Framework.Locations, Framework.Reports;
 
@@ -245,7 +259,7 @@ package body Rules.Case_Statement is
                                   "(others_span) Use of subtype with static predicate");
                      raise Non_Evaluable;
                   end if;
-                  Temp := Discrete_Constraining_Lengths (PE) (1);
+                  Temp := Discrete_Constraining_Lengths (PE, RM_Static => True) (1);
                   if Temp = Not_Static then
                      -- it IS static, but the evaluator cannot evaluate it...
                      -- unless it is of a generic formal type
@@ -269,9 +283,35 @@ package body Rules.Case_Statement is
          return Count;
       end Count_Non_Others_Choices;
 
-      procedure Process_Min_Others_Range is
+      function Case_Expression_Length (Case_Expr : Asis.Expression;
+                                       Wanted    : Expression_Info) return Extended_Biggest_Natural
+      is
+      -- Number of values covered by the case expression, taking into account the type when not static
+      -- The object evaluator does this better, but here we are RM_Static
+         use Asis.Declarations, Asis.Expressions;
+
+         Result : Extended_Biggest_Natural;
+         Checked_Subtype : Asis.Declaration := A4G_Bugs.Corresponding_Expression_Type (Case_Expr);
+      begin
+         loop
+            if Declaration_Kind (Checked_Subtype) = A_Formal_Type_Declaration then
+               return Not_Static;
+            end if;
+            Result := Discrete_Constraining_Lengths (Checked_Subtype, Wanted => Wanted, RM_Static => True) (1);
+            exit when Result /= Not_Static or else Declaration_Kind (Checked_Subtype) in A_Type_Declaration;
+            Checked_Subtype := Corresponding_Name_Declaration (Subtype_Simple_Name
+                                                               (Type_Declaration_View
+                                                                  (Checked_Subtype)));
+         end loop;
+         return Result;
+      end Case_Expression_Length;
+
+      procedure Process_Min_Others_Range (Case_Expr : Asis.Expression) is
          Case_Paths   : constant Path_List := Statement_Paths (Statement);
-         Subtype_Span : Extended_Biggest_Int;
+         Min_Subtype_Span : Extended_Biggest_Int;
+         Max_Subtype_Span : Extended_Biggest_Int;
+         Non_Others_Count : Biggest_Natural;
+
       begin
          -- Don't waste time if there is no "when others" choice (must be last)
          if Definition_Kind (Case_Statement_Alternative_Choices
@@ -280,37 +320,24 @@ package body Rules.Case_Statement is
             return;
          end if;
 
-         if not Is_Nil (Corresponding_Static_Predicates (Case_Expression (Statement))) then
+         if not Is_Nil (Corresponding_Static_Predicates (Case_Expr)) then
             Uncheckable (Rule_Id,
                          False_Negative,
-                         Get_Location (Case_Expression (Statement)),
+                         Get_Location (Case_Expr),
                          "(others_span) Expression is of a subtype with static predicate");
             return;
          end if;
 
-         Subtype_Span := Discrete_Constraining_Lengths (A4G_Bugs.Corresponding_Expression_Type
-                                                        (Case_Expression (Statement))) (1);
-         if Subtype_Span = Not_Static then
-            Subtype_Span := Discrete_Constraining_Lengths (A4G_Bugs.Corresponding_First_Subtype
-                                                           (A4G_Bugs.Corresponding_Expression_Type
-                                                            (Case_Expression (Statement))))(1);
-            if Subtype_Span = Not_Static then
-               -- Hmmm... this one IS static, so there is something we can't evaluate
-               -- or it is from a generic formal type
-               -- give up
-               Uncheckable (Rule_Id,
-                            False_Negative,
-                            Get_Location (Case_Expression (Statement)),
-                            "(others_span) Could not evaluate bounds of expression");
-               return;
-            end if;
-         end if;
+         Min_Subtype_Span := Case_Expression_Length (Case_Expr, Minimum);
+         Max_Subtype_Span := Case_Expression_Length (Case_Expr, Maximum);
+         Non_Others_Count := Count_Non_Others_Choices (Case_Paths);
 
          Check_Report (Others_Span,
-                       Value    => Subtype_Span - Count_Non_Others_Choices (Case_Paths),
-                       Message  => "values covered by ""others"" in case statement",
-                       Elem     => Case_Paths (Case_Paths'Last),
-                       Elem_Cat => Case_Cat);
+                       Min_Value => Extended_Biggest_Int'Max (Max_Subtype_Span - Non_Others_Count, 0),
+                       Max_Value => Extended_Biggest_Int'Max (Min_Subtype_Span - Non_Others_Count, 0),
+                       Message   => "values covered by ""others"" in case statement",
+                       Elem      => Case_Paths (Case_Paths'Last),
+                       Elem_Cat  => Case_Cat);
 
       exception
          when Non_Evaluable =>
@@ -321,13 +348,15 @@ package body Rules.Case_Statement is
       -- max_values is the number of values covered by the subtype
       -- of the case selector
       --
-      procedure Process_Max_Values is
-         Subtype_Span : Extended_Biggest_Int;
-         Case_Paths   : constant Path_List := Statement_Paths (Statement);
-         Has_Others   : constant Boolean   := Definition_Kind (Case_Statement_Alternative_Choices
-                                                               (Case_Paths (Case_Paths'Last)) (1)) = An_Others_Choice;
+      procedure Process_Max_Values (Case_Expr : Asis.Expression) is
+         Case_Paths       : constant Path_List := Statement_Paths (Statement);
+         Min_Subtype_Span : Extended_Biggest_Int;
+         Max_Subtype_Span : Extended_Biggest_Int;
+         Has_Others       : constant Boolean := Definition_Kind (Case_Statement_Alternative_Choices
+                                                                 (Case_Paths (Case_Paths'Last)) (1)) = An_Others_Choice;
+
       begin
-         if not Is_Nil (Corresponding_Static_Predicates (Case_Expression (Statement))) then
+         if not Is_Nil (Corresponding_Static_Predicates (Case_Expr)) then
             Uncheckable (Rule_Id,
                          False_Negative,
                          Get_Location (Case_Expression (Statement)),
@@ -335,24 +364,22 @@ package body Rules.Case_Statement is
             return;
          end if;
 
-         Subtype_Span := Discrete_Constraining_Lengths (A4G_Bugs.Corresponding_Expression_Type
-                                                        (Case_Expression (Statement))) (1);
-         if Subtype_Span = Not_Static then
-            return;
-         end if;
-
+         Min_Subtype_Span := Case_Expression_Length (Case_Expr, Wanted => Minimum);
+         Max_Subtype_Span := Case_Expression_Length (Case_Expr, Wanted => Maximum);
          Check_Report (Values,
-                       Value    => Subtype_Span,
-                       Message  => "values for subtype of selector in case statement",
-                       Elem     => Statement,
-                       Elem_Cat => Case_Cat);
+                       Min_Value => Max_Subtype_Span,
+                       Max_Value => Min_Subtype_Span,
+                       Message   => "values for subtype of selector in case statement",
+                       Elem      => Statement,
+                       Elem_Cat  => Case_Cat);
 
          if Has_Others then
             Check_Report (Values_If_Others,
-                          Value    => Subtype_Span,
-                          Message  => "values for subtype of selector in case statement with ""others""",
-                          Elem     => Statement,
-                          Elem_Cat => Case_Cat);
+                          Min_Value => Max_Subtype_Span,
+                          Max_Value => Min_Subtype_Span,
+                          Message   => "values for subtype of selector in case statement with ""others""",
+                          Elem      => Statement,
+                          Elem_Cat  => Case_Cat);
          end if;
 
       exception
@@ -361,30 +388,34 @@ package body Rules.Case_Statement is
       end Process_Max_Values;
 
       procedure Process_Min_Paths is
+         Path_Number : constant Extended_Biggest_Int := Statement_Paths (Statement)'Length;
       begin
          Check_Report (Paths,
-                       Value    => Statement_Paths (Statement)'Length,
-                       Message  => "paths in case statement",
-                       Elem     => Statement,
-                       Elem_Cat => Case_Cat);
+                       Min_Value => Path_Number,
+                       Max_Value => Path_Number,
+                       Message   => "paths in case statement",
+                       Elem      => Statement,
+                       Elem_Cat  => Case_Cat);
       end Process_Min_Paths;
 
+      Case_Expr : Asis.Expression;
    begin  -- Process_Case_Statement
       if Rule_Used = (Subrules => (Discrete_Categories => (Control_Kinds => False))) then
          return;
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      Case_Cat := Matching_Category (Case_Expression (Statement),
-                                     From_Cats          => Discrete_Set,
-                                     Follow_Derived     => True,
-                                     Privacy            => Follow_User_Private,
-                                     Separate_Extension => False);
+      Case_Expr := Case_Expression (Statement);
+      Case_Cat  := Matching_Category (Case_Expr,
+                                      From_Cats          => Discrete_Set,
+                                      Follow_Derived     => True,
+                                      Privacy            => Follow_User_Private,
+                                      Separate_Extension => False);
 
       if   Rule_Used (Values, Case_Cat)           /= (Control_Kinds => False)
         or Rule_Used (Values_If_Others, Case_Cat) /= (Control_Kinds => False)
       then
-         Process_Max_Values;
+         Process_Max_Values (Case_Expr);
       end if;
 
       if Rule_Used (Paths, Case_Cat) /= (Control_Kinds => False) then
@@ -392,7 +423,7 @@ package body Rules.Case_Statement is
       end if;
 
       if Rule_Used (Others_Span, Case_Cat) /= (Control_Kinds => False) then
-         Process_Min_Others_Range;
+         Process_Min_Others_Range (Case_Expr);
       end if;
    end Process_Case_Statement;
 
@@ -404,8 +435,9 @@ package body Rules.Case_Statement is
       use Asis.Elements, Asis.Statements;
       use Framework.Locations, Framework.Reports, Utilities;
 
-      Nb_Val   : Extended_Biggest_Natural;
-      Case_Cat : constant Categories := Matching_Category (Case_Expression (Enclosing_Element (Path)),
+      Min_Values : Extended_Biggest_Natural;
+      Max_Values : Extended_Biggest_Natural;
+      Case_Cat   : constant Categories := Matching_Category (Case_Expression (Enclosing_Element (Path)),
                                                            From_Cats          => Discrete_Set,
                                                            Follow_Derived     => True,
                                                            Privacy            => Follow_User_Private,
@@ -427,23 +459,15 @@ package body Rules.Case_Statement is
                  or else Is_Nil (Corresponding_Static_Predicates (Subtype_Simple_Name (Choice)))
                then
                   -- Normal case
-                  Nb_Val := Discrete_Constraining_Lengths (Choice) (1);
-                  if Nb_Val = Not_Static then
-                     -- This was supposed to be static, but for some reason we can't evaluate it
-                     -- Maybe it is a generic formal type
-                     -- Give up
-                     Uncheckable (Rule_Id,
-                                  False_Negative,
-                                  Get_Location (Choice),
-                                  "(range_span) Could not evaluate discrete range");
-                     return;
-                  end if;
+                  Min_Values := Discrete_Constraining_Lengths (Choice, Wanted => Minimum, RM_Static => True) (1);
+                  Max_Values := Discrete_Constraining_Lengths (Choice, Wanted => Maximum, RM_Static => True) (1);
 
                   Check_Report (Range_Span,
-                                Value    => Nb_Val,
-                                Message  => "values in choice range",
-                                Elem     => Choice,
-                                Elem_Cat => Case_Cat);
+                                Min_Value => Min_Values,
+                                Max_Value => Max_Values,
+                                Message   => "values in choice range",
+                                Elem      => Choice,
+                                Elem_Cat  => Case_Cat);
                else
                   Uncheckable (Rule_Id,
                                False_Negative,
