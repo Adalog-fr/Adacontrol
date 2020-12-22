@@ -647,11 +647,60 @@ begin
       end if;
    end;
 
-   I := 10; -- This assignment to (possibly) fool the exception handler
+
+   -- Blocks with/without exception handlers
+   declare
+      Ok : Boolean;
+   begin
+      begin
+         Ok := True;
+      end;
+
+      null;
+
+      begin
+         Ok := True;
+      exception
+         when Constraint_Error =>
+            Ok := False;
+      end;
+      if Ok then       -- Unknown
+         null;
+      end if;
+
+      begin
+         Ok := True;
+         -- Assume exception raised here
+         Ok := False;
+      exception
+         when Constraint_Error =>
+            null;
+      end;
+      if Ok then       -- Unknown
+         null;
+      end if;
+
+      begin
+         Ok := True;
+         begin
+            Ok := True;
+            -- Assume exception raised here
+            Ok := False;
+         exception
+            when Constraint_Error =>
+               null;
+         end;
+         Ok := False;
+      end;
+
+      
+   end;
+
+   I := 10;         -- This assignment to (possibly) fool the exception handler
 exception
       -- check handlers
    when Constraint_Error =>
-      if I > 3 then             -- Unknown
+      if I > 3 then -- Unknown
          X := 1;
       end if;
       I := 5;

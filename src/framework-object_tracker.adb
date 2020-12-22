@@ -65,8 +65,9 @@ package body Framework.Object_Tracker is
    -- The value associated to a tracked variable is a stack (LIFO) of Value_Descr. The Value_Descr keeps info
    -- about:
    --   - The path associated to this state
-   --   - The constraint associated to the declaration of the object (always obeyed)
-   --   - The constraint associated to the current path (obeyed until the variable is assigned within the path)
+   --   - The constraint associated to the declaration of the object (always obeyed, f.e. the subtype constraint)
+   --   - The constraint associated to the current path (obeyed until the variable is assigned within the path, f.e.
+   --     the constraint that results from being in a path of a case statement)
    --   - The value of the variable (if it has been assigned in this path)
    --   - Whether the variable has been assigned in this path
    --
@@ -1013,7 +1014,7 @@ package body Framework.Object_Tracker is
    --   - A_Defining_Name
    -- Note: Var cannot be a reference to a discriminant (even through renamings), since discriminants
    --       are not allowed as LHS of assignments.
-      use Asis.Declarations, Asis.Elements, Asis.Expressions;
+      use Asis.Declarations, Asis.Elements, Asis.Expressions, Asis.Statements;
       Good_Var             : Asis.Expression := Var;
       Good_Expr            : Asis.Expression;
       Current_Unit         : Asis.Declaration;
@@ -1080,8 +1081,11 @@ package body Framework.Object_Tracker is
          return;
       end if;
 
-      -- Blocks have no effect on tracking, attach the update to the innermost existing path
-      while Statement_Kind (Good_Path) = A_Block_Statement loop
+      -- If a variable is modified in a block with no exception handler, it should not invalidate the status
+      -- of variables in the enclosing path, since there is only one possible path. Of course, this does not apply
+      -- to blocks WITH exception handlers!
+      -- Therefore, we ignore these blocks and attach the variable to the enclosing path.
+      while Statement_Kind (Good_Path) = A_Block_Statement and then Is_Nil (Block_Exception_Handlers (Good_Path)) loop
          Good_Path := Enclosing_Element (Good_Path);
       end loop;
 
@@ -1767,7 +1771,7 @@ package body Framework.Object_Tracker is
       --     (for the latters, see Post_Process_Path)
    begin
       case Statement_Kind (Stmt) is
-         when A_Loop_Statement | A_While_Loop_Statement | A_For_Loop_Statement =>
+         when A_Loop_Statement | A_While_Loop_Statement | A_For_Loop_Statement | A_Block_Statement =>
             Clear_Invalidated_Path (Stmt);
             Clear_Path (Stmt);
          when others =>
