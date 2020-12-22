@@ -945,7 +945,7 @@ package body Rules.Simplifiable_Statements is
                      end if;
                   elsif Element_Kind (PE) = An_Expression then   -- It's not a discrete range => it's a real expression
                      Bounds (1) := Discrete_Static_Expression_Value (PE);
-                     Bounds (2) := Bounds (1);
+                     Bounds (2) := Bounds (1);                   --## rule line off Assignments ## no aggregate possible
                   else
                      Failure ("Unexpected path kind:", PE);
                   end if;
@@ -959,7 +959,7 @@ package body Rules.Simplifiable_Statements is
                      Spurious_Values := True;
                   end if;
                   if Bounds (2) >= Bounds (1) then -- beware of null ranges
-                     Count := Count + Bounds (2) - Bounds (1) + 1;
+                     Count := Count + (Bounds (2) - Bounds (1)) + 1;  -- Don't remove parentheses, possible overflow
                   end if;
 
                end loop Count_Values;
