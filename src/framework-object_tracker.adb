@@ -1103,12 +1103,13 @@ package body Framework.Object_Tracker is
                      LHS       : constant Discriminated_Variable_Descr := Fetch (First (LHS_Queue));
                      RHS       : constant Discriminated_Variable_Descr := Fetch (First (RHS_Queue));
                   begin
-                     if Is_Equal (LHS.Attached_Path, RHS.Attached_Path) then
-                        Replace (First (LHS_Queue), RHS);
-                     else
-                        Prepend (LHS_Queue, RHS);
-                     end if;
-                     Discriminated_Object_Table.Store (Good_Var, LHS_Queue);
+                     for D in LHS.Discriminants'Range loop
+                        Update_Variable (Good_Path, Good_Var, LHS.Discriminants (D).Discrim_Name,
+                                         Min    => RHS.Discriminants (D).Value.Assigned_Min,
+                                         Max    => RHS.Discriminants (D).Value.Assigned_Max,
+                                         Target => Assigned);
+
+                     end loop;
                   end;
                else
                   Make_Discriminants_Unknown (Good_Var);
