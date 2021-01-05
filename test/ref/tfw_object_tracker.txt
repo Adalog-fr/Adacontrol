@@ -221,23 +221,27 @@ tfw_object_tracker.adb:685:7: Delete:687:13
 tfw_object_tracker.adb:694:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
 tfw_object_tracker.adb:694:7: Replace:696:13
 !null;
-tfw_object_tracker.adb:717:19: Error: KNOWN_EXCEPTIONS: Explicit dereference of D1 raises Constraint_Error (null pointer)
-tfw_object_tracker.adb:718:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:718:10: Replace:720:16
+tfw_object_tracker.adb:725:15: Error: KNOWN_EXCEPTIONS: Access to component F raises Constraint_Error, discriminant D= 0
+tfw_object_tracker.adb:725:22: Error: KNOWN_EXCEPTIONS: Access to component F raises Constraint_Error, discriminant D= 0
+tfw_object_tracker.adb:726:15: Error: KNOWN_EXCEPTIONS: Access to component J raises Constraint_Error, discriminant Bool= 1
+tfw_object_tracker.adb:726:22: Error: KNOWN_EXCEPTIONS: Access to component J raises Constraint_Error, discriminant Bool= 1
+tfw_object_tracker.adb:767:19: Error: KNOWN_EXCEPTIONS: Explicit dereference of D1 raises Constraint_Error (null pointer)
+tfw_object_tracker.adb:768:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:768:10: Replace:770:16
 !null;
-tfw_object_tracker.adb:745:19: Error: KNOWN_EXCEPTIONS: Explicit dereference of D1 raises Constraint_Error (null pointer)
-tfw_object_tracker.adb:746:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:746:10: Replace:748:16
+tfw_object_tracker.adb:795:19: Error: KNOWN_EXCEPTIONS: Explicit dereference of D1 raises Constraint_Error (null pointer)
+tfw_object_tracker.adb:796:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:796:10: Replace:798:16
 !null;
-tfw_object_tracker.adb:769:19: Error: KNOWN_EXCEPTIONS: Explicit dereference of D1 raises Constraint_Error (null pointer)
-tfw_object_tracker.adb:770:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:770:10: Replace:772:16
+tfw_object_tracker.adb:819:19: Error: KNOWN_EXCEPTIONS: Explicit dereference of D1 raises Constraint_Error (null pointer)
+tfw_object_tracker.adb:820:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:820:10: Replace:822:16
 !null;
-tfw_object_tracker.adb:814:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:814:7: Replace:816:13
+tfw_object_tracker.adb:864:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:864:7: Replace:866:13
 !null;
-tfw_object_tracker.adb:853:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
-tfw_object_tracker.adb:853:7: Delete:855:13
-tfw_object_tracker.adb:866:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
-tfw_object_tracker.adb:866:7: Replace:868:13
+tfw_object_tracker.adb:903:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
+tfw_object_tracker.adb:903:7: Delete:905:13
+tfw_object_tracker.adb:916:7: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
+tfw_object_tracker.adb:916:7: Replace:918:13
 !X := 1;

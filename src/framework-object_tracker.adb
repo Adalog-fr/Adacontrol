@@ -121,14 +121,14 @@ package body Framework.Object_Tracker is
    -- For discriminated variables:
    type Discriminant_Descr is
       record
-         Discrim_Name  : Asis.Defining_Name;
-         Value         : Value_Descr;
+         Discrim_Name     : Asis.Defining_Name;
+         Assigned_In_Path : Boolean;
+         Value            : Value_Descr;
       end record;
    type Discriminant_Descr_Table  is array (ASIS_Integer range <>) of Discriminant_Descr;
    type Discriminated_Variable_Descr (Nb_Discr : Asis.ASIS_Positive) is
       record
          Attached_Path    : Asis.Element;  -- The path or statement or body that contains the assignment or constraint
-         Assigned_In_Path : Boolean;
          Discriminants    : Discriminant_Descr_Table (1 .. Nb_Discr);
       end record;
    package Discriminated_Descr_List   is new Linear_Queue (Discriminated_Variable_Descr);
@@ -302,9 +302,9 @@ package body Framework.Object_Tracker is
             Element : constant Discriminated_Variable_Descr := Fetch (First (Discriminated_Queue));
          begin
             Discr_Index   := Discriminant_Index (Element.Discriminants, Good_Discr);
-            Value         := Element.Discriminants (Discr_Index).Value;
             Var_Path      := Element.Attached_Path;
-            Path_Assigned := Element.Assigned_In_Path and Is_Equal (For_Path, Var_Path);
+            Value         := Element.Discriminants (Discr_Index).Value;
+            Path_Assigned := Element.Discriminants (Discr_Index).Assigned_In_Path and Is_Equal (For_Path, Var_Path);
          end;
       end if;
 
@@ -357,9 +357,9 @@ package body Framework.Object_Tracker is
          declare
             Var_Descr : Discriminated_Variable_Descr := Fetch (First (Discriminated_Queue));
          begin
-            Var_Descr.Discriminants (Discr_Index).Value := Value;
-            Var_Descr.Attached_Path                     := For_Path;
-            Var_Descr.Assigned_In_Path                  := Path_Assigned or Target = Assigned;
+            Var_Descr.Discriminants (Discr_Index).Value            := Value;
+            Var_Descr.Attached_Path                                := For_Path;
+            Var_Descr.Discriminants (Discr_Index).Assigned_In_Path := Path_Assigned or Target = Assigned;
             if Is_Equal (For_Path, Var_Path) then
                Replace (First (Discriminated_Queue),  Var_Descr);
             else
@@ -815,10 +815,10 @@ package body Framework.Object_Tracker is
 
             declare
                Descr_Table : constant Discriminated_Variable_Descr := Fetch (First (Var_Queue));
+               Discr_Index : constant Asis.ASIS_Natural := Discriminant_Index (Descr_Table.Discriminants, Good_Discr);
             begin
-               Descriptor    := Descr_Table.Discriminants (Discriminant_Index
-                                                           (Descr_Table.Discriminants, Good_Discr)).Value;
-               Path_Assigned := Descr_Table.Assigned_In_Path;
+               Descriptor    := Descr_Table.Discriminants (Discr_Index).Value;
+               Path_Assigned := Descr_Table.Discriminants (Discr_Index).Assigned_In_Path;
                Var_Path      := Descr_Table.Attached_Path;
             end;
          end;
@@ -1098,7 +1098,7 @@ package body Framework.Object_Tracker is
                   -- Variable_1 := Variable_2;
                   declare
                      use Discriminated_Descr_List;
-                     LHS_Queue :          Queue := Discriminated_Object_Table.Fetch (Good_Var);
+                     LHS_Queue : constant Queue := Discriminated_Object_Table.Fetch (Good_Var);
                      RHS_Queue : constant Queue := Discriminated_Object_Table.Fetch (Good_Expr);
                      LHS       : constant Discriminated_Variable_Descr := Fetch (First (LHS_Queue));
                      RHS       : constant Discriminated_Variable_Descr := Fetch (First (RHS_Queue));
@@ -1127,9 +1127,9 @@ package body Framework.Object_Tracker is
                      -- and in the same order as LHS
                      Update_Variable (Good_Path, Good_Var, LHS.Discriminants (D).Discrim_Name,
                                       Min    => Discrete_Static_Expression_Value (Component_Expression (Rec_Assocs (D)),
-                                        Minimum),
+                                                                                  Minimum),
                                       Max    => Discrete_Static_Expression_Value (Component_Expression (Rec_Assocs (D)),
-                                        Maximum),
+                                                                                  Maximum),
                                       Target => Assigned);
                   end loop;
                end;
@@ -1559,9 +1559,10 @@ package body Framework.Object_Tracker is
                         else
                            Initial_Value := Discrete_Static_Expression_Value(Initialization_Expression (Discr_Decl));
                         end if;
-                        Var_Descr.Discriminants (Discr_Inx) := (First_Defining_Name (Discr_Name),
-                                                                Build_Descriptor (Object_Declaration_View (Discr_Decl),
-                                                                                  Initial_Value));
+                        Var_Descr.Discriminants (Discr_Inx) :=
+                          (Discrim_Name     => First_Defining_Name (Discr_Name),
+                           Assigned_In_Path => False,
+                           Value            => Build_Descriptor (Object_Declaration_View (Discr_Decl), Initial_Value));
                      else
                         -- Constraint from the object declaration
                         declare
@@ -1571,10 +1572,11 @@ package body Framework.Object_Tracker is
                         begin
                            Initial_Value := Discrete_Static_Expression_Value (Discriminant_Expression
                                                                               (Discr_Associations (Discr_Inx)));
-                           Var_Descr.Discriminants (Discr_Inx) := (First_Defining_Name (Discr_Name),
-                                                                   Build_Descriptor
-                                                                     (Object_Declaration_View (Discr_Decl),
-                                                                      Initial_Value));
+                           Var_Descr.Discriminants (Discr_Inx) :=
+                             (Discrim_Name     => First_Defining_Name (Discr_Name),
+                              Assigned_In_Path => False,
+                              Value            => Build_Descriptor (Object_Declaration_View (Discr_Decl),
+                                                                    Initial_Value));
                         end;
                      end if;
                   end loop;

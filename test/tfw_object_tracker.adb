@@ -696,6 +696,56 @@ begin
       end if;
    end;
 
+   -- Several discriminants, complicated case
+   declare
+      type Enum is (A, B, C);
+      type Rec (Bool : Boolean := True; D : Enum := A) is
+         record
+            case Bool is
+               when True =>
+                  case D is
+                     when A =>
+                        I : Integer;
+                     when B | C =>
+                        F : Float;
+                  end case;
+               when False =>
+                  J : Integer;
+            end case;
+         end record;
+      procedure Proc (V : out Rec) is
+      begin
+         V := (True, B, 1.0);
+      end Proc;
+      V : Rec;
+      X : Integer;
+   begin
+      case X is
+         when 1 =>
+            V.F := V.F;               -- Constraint_Error
+            V.J := V.J;               -- Constraint_Error
+         when others =>
+            null;
+      end case;
+
+      case X is
+         when 1 =>
+            Proc (V);
+         when 2 =>
+            null;
+         when others =>
+            null;
+      end case;
+
+      case X is
+         when 1 =>
+            V.F := V.F;               -- OK (unknown)
+            V.J := V.J;               -- OK (unknown)
+         when others =>
+            null;
+      end case;
+   end;
+
    -- Private type with discriminants
    declare
       package Pack is
