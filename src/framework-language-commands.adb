@@ -139,7 +139,7 @@ package body Framework.Language.Commands is
       begin
          if Failure_Occurred and then Exception_Identity (Occur) = Scope_Manager.Scope_Manager_Failure'Identity then
             -- Presumably, a consequence of previous failure
-            User_Message ("Unit " & Units_List.Current_Unit & " abandonned due to previous failure");
+            User_Message ("Internal error: unit " & Units_List.Current_Unit & " abandoned due to previous failure");
             -- Exit_Option.Value cannot be On, since the first failure would have stopped execution
             return;
          end if;
