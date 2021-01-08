@@ -102,7 +102,7 @@ procedure Ptree is
 
       Put_Line ("Options:");
       Put_Line ("   -h      prints this help message (only version number if followed by ""version""");
-      Put_Line ("   -p file specify an emacs ada-mode project file (.adp)");
+      Put_Line ("   -p file specify a project file (.gpr or .adp)");
       Put_Line ("   -s      process specifications only");
       Put_Line ("   -S      print span of each element");
    end Print_Help;
@@ -149,7 +149,7 @@ procedure Ptree is
       end if;
 
       Pos_Colon1 := Index (S (Unit_First .. S'Last), ":");
-      if Pos_Colon1 = 0 then
+      if Pos_Colon1 = 0 then        -- <file>
          Unit_Name := To_Unbounded_Wide_String (Make_Unit_Name (S (Unit_First .. S'Last)));
          return;
       end if;
@@ -157,17 +157,21 @@ procedure Ptree is
       Unit_Name  := To_Unbounded_Wide_String (Make_Unit_Name (S (Unit_First .. Pos_Colon1-1)));
 
       Pos_Colon2 := Index (S (Pos_Colon1 + 1 .. S'Last), ":");
-      if Pos_Colon2 = 0 then
+      if Pos_Colon2 = 0 then                  -- <file>:<line>[-<line>]
          Pos_Dash := Index (S (Pos_Colon1 + 1 .. S'Last), "-");
-         if Pos_Dash = 0 then
+         if Pos_Dash = 0 then                 -- <file>:<line>
             First_Line := Line_Number'Wide_Value (S (Pos_Colon1 + 1 .. S'Last));
             Last_Line  := First_Line;
          else
-            if Pos_Dash /= Pos_Colon1 + 1 then
+            if Pos_Dash = Pos_Colon1 + 1 then  -- <file>:-<line>
+               First_Line := 1;
+            else
                First_Line := Line_Number'Wide_Value (S (Pos_Colon1 + 1 .. Pos_Dash - 1));
             end if;
-            if Pos_Dash /= S'Last then
-               Last_Line  := Line_Number'Wide_Value (S (Pos_Dash   + 1 .. S'Last));
+            if Pos_Dash = S'Last then          -- <file>:<line>-
+               Last_Line := Asis.Text.Line_Number'Last;
+            else                               -- <file>:<line>-<line>
+               Last_Line := Line_Number'Wide_Value (S (Pos_Dash + 1 .. S'Last));
             end if;
          end if;
       else
@@ -177,11 +181,19 @@ procedure Ptree is
       end if;
    end Parse_Parameter;
 
+
    --------------------------------------------------------------------------
    -- The analyzer                                                         --
    --------------------------------------------------------------------------
 
-   subtype Info is Natural;
+   type Info is
+      record
+         Depth : Natural;
+         Top_Active_Element : Asis.Element;
+      end record;
+   -- Depth is the current nesting of syntactic elements
+   -- Top_Active_Element is the first encountered element that needs to be printed, everything inside it must also
+   --    be printed.
 
    Sep : constant Wide_String := Asis.Text.Delimiter_Image;
 
@@ -258,35 +270,43 @@ procedure Ptree is
       use Ada.Wide_Text_IO, Asis.Text, Ada.Strings, Ada.Strings.Wide_Fixed;
       The_Span : constant Span := A4G_Bugs.Element_Span (Element);
    begin
-      State := State + 1;
+      State.Depth := State.Depth + 1;
 
-      -- Chech if in range
-      if The_Span.First_Line > Last_Line or The_Span.Last_Line < First_Line then
-         return;
-      elsif First_Column /= 0 and then
-        (The_Span.First_Line = First_Line
-            and (The_Span.First_Column > First_Column or The_Span.Last_Column < First_Column))
-      then
-         return;
+      if Is_Nil (State.Top_Active_Element) then
+         if First_Column = 0 then -- <line 1>[-<line 2]
+            if   The_Span.First_Line not in First_Line .. Last_Line
+              or The_Span.Last_Line  not in First_Line .. Last_Line
+            then
+               return;
+            end if;
+         else   -- <line>:<column>
+            if The_Span.First_Line /= First_Line
+              or else First_Column not in The_Span.First_Column .. The_Span.Last_Column
+            then
+               return;
+            end if;
+         end if;
+         State.Top_Active_Element := Element;
       end if;
 
-      for I in Info range 1..State-1 loop
+      for I in Natural range 1..State.Depth-1 loop
          Put ("| ");
       end loop;
 
       Put ("+-");
       Put (Element_Kinds'Wide_Image (Element_Kind (Element)));
-      Put (": ");
+      Put (':');
       declare
          Source : constant Wide_String := Element_Image (Element);
          Start  : Natural := 1;
          Stop   : Natural;
          Is_First_Line : Boolean := True;
+         Offset : constant Natural := Index_Non_Blank (Source) - 1;
       begin
          loop
             Stop := Index (Source(Start..Source'Last), Sep);
             if not Is_First_Line then
-               for I in Info range 1..State loop
+               for I in Natural range 1..State.Depth loop
                   Put ("| ");
                end loop;
             end if;
@@ -295,13 +315,17 @@ procedure Ptree is
             else
                Set_Col (Col_Base + (Col - Col_Base + Col_Step) / Col_Step * Col_Step);
             end if;
-            if Stop = 0 then
+            if Stop = 0 then   -- last line
                if Is_First_Line then
                   Put (Trim (Source (Start..Source'Last), Both));
                   Put_Span (The_Span);
                   Put_Kind (Element);
                else
-                  Put (Source (Start..Source'Last));
+                  if Source (Start .. Start + Offset - 1) = (Start .. Start + Offset - 1 => ' ') then
+                     Put (Source (Start + Offset .. Source'Last));
+                  else  -- badly indented, give up
+                     Put (Source (Start .. Source'Last));
+                  end if;
                end if;
 
                New_Line;
@@ -313,7 +337,11 @@ procedure Ptree is
                Put_Span (The_Span);
                Put_Kind (Element);
             else
-               Put (Source (Start .. Stop - 1));
+               if Source (Start .. Start + Offset -1) = (Start .. Start + Offset -1 => ' ') then
+                  Put (Source (Start + Offset .. Stop - 1));
+               else  -- badly indented, give up
+                  Put (Source (Start .. Stop - 1));
+               end if;
             end if;
             Start := Stop + Sep'Length;
 
@@ -330,7 +358,10 @@ procedure Ptree is
    is
       pragma Unreferenced (Element, Control);
    begin
-      State := State - 1;
+      State.Depth := State.Depth - 1;
+      if Is_Equal (State.Top_Active_Element, Element) then
+         State.Top_Active_Element := Nil_Element;
+      end if;
    end Post_Procedure;
 
    procedure Traverse is new Asis.Iterator.Traverse_Element
@@ -340,7 +371,7 @@ procedure Ptree is
    My_Unit        : Compilation_Unit;
    My_Declaration : Declaration;
    The_Control    : Traverse_Control := Continue;
-   The_Info       : Info := 0;
+   The_Info       : Info := (Depth => 0, Top_Active_Element => Nil_Element);
 
    use Ada.Characters.Handling, Ada.Strings.Wide_Unbounded;
    use Implementation_Options, Project_File, Utilities;
