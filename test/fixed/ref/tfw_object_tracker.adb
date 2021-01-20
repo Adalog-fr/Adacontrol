@@ -83,6 +83,28 @@ begin
       
    end;
 
+   -- Check strings
+   declare
+      function F return String is
+      begin
+         return "abc";
+      end F;
+      C : constant String := "xyz";
+      V : String := "abc";
+   begin
+      if F & C = "abc" then
+         null;
+      elsif V & C = "abc" then
+         null;
+      end if;
+
+      null;
+
+      null;
+
+      
+   end;
+
    -- Check pointers
    declare
       type Ptr is access Integer;

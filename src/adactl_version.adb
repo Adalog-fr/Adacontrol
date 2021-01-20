@@ -32,12 +32,12 @@ function Adactl_Version return Wide_String is
    Version : constant Wide_String := "1.22b10";
 
 begin
-   -- Gnat warns that the following condition is always false/true, but
+   -- Gnat (and AdaControl) warn that the following condition is always false/true, but
    -- this is intended
    pragma Warnings (Off);
-   if Framework.Specific_Plugs.Specific_Version = "" then
+   if Framework.Specific_Plugs.Specific_Version = "" then  --## Rule Line Off Simplifiable_Statements
       return Version;
-   else
+   else                                                    --## Rule Line Off Simplifiable_Statements
       return Version & '-' & Framework.Specific_Plugs.Specific_Version;
    end if;
 end Adactl_Version;
