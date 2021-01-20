@@ -2,6 +2,15 @@
 == V1.22b10 ==
 ==============
 
+General:
+--------
+Bug fixes
+Improve static evaluation of string constants
+
+Ptre:
+-----
+improve output and handling of line/col parameter
+
 =============
 == V1.22b9 ==
 =============
