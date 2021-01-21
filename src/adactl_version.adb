@@ -29,7 +29,7 @@ with
    Framework.Specific_Plugs;
 function Adactl_Version return Wide_String is
 
-   Version : constant Wide_String := "1.22b10";
+   Version : constant Wide_String := "1.22b11";
 
 begin
    -- Gnat (and AdaControl) warn that the following condition is always false/true, but
