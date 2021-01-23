@@ -338,7 +338,7 @@ package body Rules.Style.Keyword is
                   State := Skipping;
                elsif Line (I) = '"' then
                   -- beware of '"'
-                  if I /= Line'First and then Line (I - 1) /= ''' then
+                  if I = Line'First or else Line (I - 1) /= ''' then
                      State := In_Quotes;
                   end if;
                elsif Line (I) in '0' .. '9' then
