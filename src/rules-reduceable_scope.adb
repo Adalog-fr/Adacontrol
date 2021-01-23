@@ -627,6 +627,9 @@ package body Rules.Reduceable_Scope is
                      when A_Generic_Instantiation
                         | A_Task_Type_Declaration
                         | A_Single_Task_Declaration
+                        | A_Protected_Type_Declaration
+                        | A_Single_Protected_Declaration
+                        | A_Protected_Body_Declaration
                         =>
                         return False;
                      when others =>
@@ -1040,7 +1043,11 @@ package body Rules.Reduceable_Scope is
             when A_Function_Declaration | An_Expression_Function_Declaration | A_Function_Body_Declaration =>
                return "function " & Defining_Name_Image (Names (Elem)(1));
             when A_Package_Declaration | A_Package_Body_Declaration =>
-               return "package " & Defining_Name_Image (Names (Elem)(1));
+               return "package " & Defining_Name_Image (Names (Elem) (1));
+            when A_Task_Type_Declaration | A_Single_Task_Declaration | A_Task_Body_Declaration =>
+               return "task " & Defining_Name_Image (Names (Elem) (1));
+            when A_Protected_Type_Declaration | A_Single_Protected_Declaration | A_Protected_Body_Declaration =>
+               return "protected " & Defining_Name_Image (Names (Elem) (1));
             when others =>
                -- Including Not_A_Declaration
                null;
