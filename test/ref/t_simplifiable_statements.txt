@@ -95,11 +95,13 @@ t_simplifiable_statements-test_if_not.adb:39:4: Delete:40:11
 t_simplifiable_statements-test_loop.adb:5:4: Error: SIMPLIFIABLE_STATEMENTS: while loop has True condition
 t_simplifiable_statements-test_loop.adb:5:4: Delete:5:14
 t_simplifiable_statements-test_loop.adb:8:4: Error: SIMPLIFIABLE_STATEMENTS: while loop has True condition
-t_simplifiable_statements-test_loop.adb:8:4: Delete:8:13
+t_simplifiable_statements-test_loop.adb:8:4: Delete:8:15
 t_simplifiable_statements-test_loop.adb:11:4: Error: SIMPLIFIABLE_STATEMENTS: while loop is never executed
 t_simplifiable_statements-test_loop.adb:11:4: Delete:13:12
 t_simplifiable_statements-test_loop.adb:14:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
-t_simplifiable_statements-test_loop.adb:17:4: Error: SIMPLIFIABLE_STATEMENTS: simple loop can be changed to "while"
+t_simplifiable_statements-test_loop.adb:23:4: Error: SIMPLIFIABLE_STATEMENTS: simple loop can be changed to "while"
+t_simplifiable_statements-test_loop.adb:31:4: Error: SIMPLIFIABLE_STATEMENTS: simple loop can be changed to "while"
+t_simplifiable_statements-test_loop.adb:47:4: Error: SIMPLIFIABLE_STATEMENTS: simple loop can be changed to "while"
 t_simplifiable_statements-test_null.adb:8:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
 t_simplifiable_statements-test_null.adb:8:4: Delete:9:11
 t_simplifiable_statements-test_null.adb:6:7: Error: SIMPLIFIABLE_STATEMENTS: unnecessary null statement
@@ -296,11 +298,16 @@ t_simplifiable_statements-test_if_not.adb:39:4: Delete:40:11
 t_simplifiable_statements-test_loop.adb:5:4: Error: SIMPLIFIABLE_STATEMENTS: while loop has True condition
 t_simplifiable_statements-test_loop.adb:5:4: Delete:5:14
 t_simplifiable_statements-test_loop.adb:8:4: Error: SIMPLIFIABLE_STATEMENTS: while loop has True condition
-t_simplifiable_statements-test_loop.adb:8:4: Delete:8:13
+t_simplifiable_statements-test_loop.adb:8:4: Delete:8:15
 t_simplifiable_statements-test_loop.adb:11:4: Error: SIMPLIFIABLE_STATEMENTS: while loop is never executed
 t_simplifiable_statements-test_loop.adb:11:4: Delete:13:12
 t_simplifiable_statements-test_loop.adb:14:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
-t_simplifiable_statements-test_loop.adb:17:4: Error: SIMPLIFIABLE_STATEMENTS: simple loop can be changed to "while"
+t_simplifiable_statements-test_loop.adb:17:4: Error: SIMPLIFIABLE_STATEMENTS: while loop can be replaced with a direct for loop
+t_simplifiable_statements-test_loop.adb:23:4: Error: SIMPLIFIABLE_STATEMENTS: simple loop can be changed to "while"
+t_simplifiable_statements-test_loop.adb:31:4: Error: SIMPLIFIABLE_STATEMENTS: simple loop can be changed to "while"
+t_simplifiable_statements-test_loop.adb:39:4: Error: SIMPLIFIABLE_STATEMENTS: simple loop can be changed to "while"
+t_simplifiable_statements-test_loop.adb:47:4: Error: SIMPLIFIABLE_STATEMENTS: simple loop can be changed to "while"
+t_simplifiable_statements-test_loop.adb:58:4: Error: SIMPLIFIABLE_STATEMENTS: simple loop can be changed to "while"
 t_simplifiable_statements-test_null.adb:8:4: Error: SIMPLIFIABLE_STATEMENTS: empty else path
 t_simplifiable_statements-test_null.adb:8:4: Delete:9:11
 t_simplifiable_statements-test_null.adb:6:7: Error: SIMPLIFIABLE_STATEMENTS: unnecessary null statement

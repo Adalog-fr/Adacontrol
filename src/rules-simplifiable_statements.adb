@@ -2,7 +2,7 @@
 --  Rules.Simplifiable_Statements - Package body                    --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
---  of Air Navigation (EUROCONTROL) and Adalog 2004-2020.           --
+--  of Air Navigation (EUROCONTROL) and Adalog 2004-2021.           --
 --  The Ada Controller is  free software; you can  redistribute  it --
 --  and/or modify it under  terms of the GNU General Public License --
 --  as published by the Free Software Foundation; either version 2, --
@@ -61,12 +61,13 @@ package body Rules.Simplifiable_Statements is
    use Subrules_Flags_Utilities;
 
    type Usage_Flags is array (True_Subrules) of Boolean;
-   Not_Used   : constant Usage_Flags := (others => False);
-   Rule_Used  : Usage_Flags := Not_Used;
-   Save_Used  : Usage_Flags;
-   Usage      : array (Subrules) of Basic_Rule_Context;
-   No_Exit    : Boolean := False;
-   Full_Range : Boolean := False;
+   Not_Used    : constant Usage_Flags := (others => False);
+   Rule_Used   : Usage_Flags := Not_Used;
+   Save_Used   : Usage_Flags;
+   Usage       : array (Subrules) of Basic_Rule_Context;
+   No_Exit_LFW : Boolean := False;  -- Loop_For_While
+   No_Exit_WFF : Boolean := False;  -- While_For_For
+   Full_Range  : Boolean := False;
 
    type While_For_Expression_Kind is (Any, No_Function, Static);
    package Expression_Kind_Type is new Discrete_Type (While_For_Expression_Kind);
@@ -79,6 +80,8 @@ package body Rules.Simplifiable_Statements is
    While_For_Expression : aliased Expression_Kind_Type .Object := (Value => Any);
    Acceptable_Dead_Case : aliased Acceptable_Kind_Type .Object := (Value => None);
 
+   Not_Changeable : exception;
+
    ----------
    -- Help --
    ----------
@@ -90,7 +93,7 @@ package body Rules.Simplifiable_Statements is
       User_Message  ("Control Ada statements that can be made simpler");
       User_Message;
       Help_On_Flags ("Parameter(s): [no_exit] [full_range]");
-      User_Message  ("no_exit can be given with ""all"" and ""while_for_for""");
+      User_Message  ("no_exit can be given with ""all"", ""loop_for_while"", and ""while_for_for""");
       User_Message  ("full_range can be given with ""all"" and ""for_in_for_for_of""");
       User_Message;
       User_Message ("Variables:");
@@ -123,13 +126,16 @@ package body Rules.Simplifiable_Statements is
                if Rule_Used /= Not_Used then
                   Parameter_Error (Rule_Id, "some statements already given");
                end if;
-               No_Exit    := No_Exit_Given;
-               Full_Range := Full_Range_Given;
-               Rule_Used  := (others => True);
-               Usage      := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
+               No_Exit_WFF := No_Exit_Given;
+               No_Exit_LFW := No_Exit_Given;
+               Full_Range  := Full_Range_Given;
+               Rule_Used   := (others => True);
+               Usage       := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
             else
-               if Subrule = Stmt_While_For_For then
-                  No_Exit := No_Exit_Given;
+               if Subrule = Stmt_Loop_For_While then
+                  No_Exit_LFW := No_Exit_Given;
+               elsif Subrule = Stmt_While_For_For then
+                  No_Exit_WFF := No_Exit_Given;
                elsif No_Exit_Given then
                   Parameter_Error (Rule_Id, "no_exit allowed only with while_for_for");
                end if;
@@ -156,10 +162,11 @@ package body Rules.Simplifiable_Statements is
          if Rule_Used /= Not_Used then
             Parameter_Error (Rule_Id, "some statements already given");
          end if;
-         No_Exit    := False;
-         Full_Range := False;
-         Rule_Used  := (others => True);
-         Usage      := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
+         No_Exit_LFW := False;
+         No_Exit_WFF := False;
+         Full_Range  := False;
+         Rule_Used   := (others => True);
+         Usage       := (others => Basic.New_Context (Ctl_Kind, Ctl_Label));
       end if;
    end Add_Control;
 
@@ -173,7 +180,8 @@ package body Rules.Simplifiable_Statements is
       case Action is
          when Clear =>
             Rule_Used            := Not_Used;
-            No_Exit              := False;
+            No_Exit_LFW          := False;
+            No_Exit_WFF          := False;
             Acceptable_Indexings := (Value => 0);
             Acceptable_Dead_Case := (Value => None);
             While_For_Expression := (Value => Any);
@@ -1036,7 +1044,6 @@ package body Rules.Simplifiable_Statements is
          Var  : Asis.Expression;
          type Direction is (Up, Down, Indeterminate);
          Loop_Dir : Direction;
-         Not_Changeable : exception;
 
          procedure Check_Expression (Test_Expr : Asis.Expression) is
             procedure Check_Function_Call (Expr : Asis.Expression) is
@@ -1197,7 +1204,7 @@ package body Rules.Simplifiable_Statements is
                      end;
 
                   when An_Exit_Statement =>
-                     if No_Exit and then Is_Equal (Corresponding_Loop_Exited (S), The_Loop) then
+                     if No_Exit_WFF and then Is_Equal (Corresponding_Loop_Exited (S), The_Loop) then
                         raise Not_Changeable;
                      end if;
 
@@ -1657,15 +1664,56 @@ package body Rules.Simplifiable_Statements is
             if Rule_Used (Stmt_Loop_For_While) then
                declare
                   Loop_Stmts : constant Asis.Statement_List := Loop_Statements (Stmt);
+                  procedure Check_Exit (Outer_Stmt : Asis.Statement) is
+                  begin
+                     case Statement_Kind (Outer_Stmt) is
+                        when An_If_Statement    -- Statements with paths
+                           | A_Case_Statement
+                           | A_Selective_Accept_Statement
+                           | A_Timed_Entry_Call_Statement
+                           | A_Conditional_Entry_Call_Statement
+                           | An_Asynchronous_Select_Statement
+                           =>
+                           for P : Asis.Path of Statement_Paths (Outer_Stmt) loop
+                              for S : Asis.Statement of Thick_Queries.Statements (P) loop
+                                 Check_Exit (S);
+                              end loop;
+                           end loop;
+                        when A_Loop_Statement     -- Statements with statements
+                           | A_While_Loop_Statement
+                           | A_For_Loop_Statement
+                           | A_Block_Statement
+                           =>
+                           for S : Asis.Statement of Thick_Queries.Statements (Outer_Stmt) loop
+                              Check_Exit (S);
+                           end loop;
+                        when An_Exit_Statement =>
+                           if Is_Equal (Corresponding_Loop_Exited (Outer_Stmt), Stmt) then
+                              raise Not_Changeable;
+                           end if;
+                        when others =>
+                           null;
+                     end case;
+                  end Check_Exit;
+
                begin
                   if Statement_Kind (Loop_Stmts (Loop_Stmts'First)) = An_Exit_Statement
                     and then Is_Equal (Stmt, Corresponding_Loop_Exited (Loop_Stmts (Loop_Stmts'First)))
                   then
+                     if No_Exit_LFW then
+                        -- We know damn well that the first statement is an exit statement...
+                        for S : Asis.Statement of Loop_Stmts (Loop_Stmts'First + 1 .. Loop_Stmts'Last) loop
+                           Check_Exit (S);    -- Raises Not_Changeable if there is an exit for this loop
+                        end loop;
+                     end if;
                      Report (Rule_Id,
                              Usage (Stmt_Loop_For_While),
                              Get_Location (Stmt),
                              "simple loop can be changed to ""while""");
                   end if;
+               exception
+                  when Not_Changeable =>
+                     null;
                end;
             end if;
 

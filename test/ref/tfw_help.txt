@@ -756,7 +756,7 @@ Parameter(s): [no_exit] [full_range] all               | block         |
                                      loop_for_while    | nested_path   |
                                      null              | true_if       |
                                      unnecessary_if    | while_for_for
-no_exit can be given with "all" and "while_for_for"
+no_exit can be given with "all", "loop_for_while", and "while_for_for"
 full_range can be given with "all" and "for_in_for_for_of"
 
 Variables:
@@ -1121,7 +1121,7 @@ Parameter(s): [no_exit] [full_range] all               | block         |
                                      loop_for_while    | nested_path   |
                                      null              | true_if       |
                                      unnecessary_if    | while_for_for
-no_exit can be given with "all" and "while_for_for"
+no_exit can be given with "all", "loop_for_while", and "while_for_for"
 full_range can be given with "all" and "for_in_for_for_of"
 
 Variables:

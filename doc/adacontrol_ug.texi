@@ -8978,12 +8978,15 @@ various ways without changing the meaning of the program.
 @subsection Syntax
 @example
 <control_kind> simplifiable_statements [(<subrule> @{, <subrule>@})];
-<subrule> ::= [no_exit] [full_range] all      |
-              block          | dead           | [full_range] for_in_for_for_of |
-              for_for_slice  | handler        | if                             |
-              if_for_case    | if_not         | loop                           |
-              loop_for_while | nested_path    | null                           |
-              true_if        | unnecessary_if | [no_exit] while_for_for
+<subrule> ::= [no_exit] [full_range] all     |
+              block                          | dead                  |
+              [full_range] for_in_for_for_of | for_for_slice         |
+              handler                        | if                    |
+              if_for_case                    | if_not                |
+              loop                           |
+              [no_exit] loop_for_while       | nested_path           |
+              null                           | true_if               |
+              unnecessary_if                 | [no_exit] while_for_for
 @end example
 @subsection Action
 The parameters are subrule keywords:
@@ -9139,7 +9142,9 @@ is statically known to be @code{True}, and can thus be changed to simple loops.
 @item
 ``loop_for_while'': controls simple loop statements whose first
 statement is an @code{@b{exit}} (for the same loop), and which can
-therefore be turned into a @code{while} loop.
+therefore be turned into a @code{while} loop. If the ``no_exit''
+modifier is given, the loop is not controlled if it includes another
+@code{@b{exit}} statement that applies to it.
 @item
 ``nested_path'': controls paths from @code{@b{if}} statements that
 can be moved outside. This happens if the @code{@b{if}} has only

@@ -10,7 +10,7 @@ check style (casing_keyword, lowercase);
 check max_nesting (7);
 check parameter_aliasing (certain);
 check simplifiable_expressions;
-check simplifiable_statements;
+check simplifiable_statements (no_exit all);
 check statements (untyped_for);
 check max_blank_lines (2);
 check characters (control, trailing_space);

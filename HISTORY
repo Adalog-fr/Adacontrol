@@ -2,6 +2,12 @@
 == V1.22b11 ==
 ==============
 
+Changes to existing rules:
+--------------------------
+
+Simplifiable_Statements: add the no_exit modifier to the
+   loop_for_while subrule
+
 ==============
 == V1.22b10 ==
 ==============
