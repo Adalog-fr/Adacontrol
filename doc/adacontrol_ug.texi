@@ -22,7 +22,7 @@
 @end direntry
 
 @ifnottex
-@node Top, Introduction, (dir), (dir)
+@node Top
 @top AdaControl User Guide
 @end ifnottex
 
@@ -7279,7 +7279,7 @@ Example:
 @end example
 
 It is possible to put several pattern strings or identifiers on the same line,
-separated by spaces of tabs. The file can contain Ada-like comments (starting with
+separated by spaces or tabs. The file can contain Ada-like comments (starting with
 `@code{--}'', up to the end of line).
 
 @subsection Fixes
