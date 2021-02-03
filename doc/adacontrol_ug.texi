@@ -7345,11 +7345,12 @@ identifier.  Use ``^'' and ``$'' to match the beginning (resp. end) of
 the name, or both.
 
 A constant is considered static for the purpose of
-``Regular_Static_Constant'' and ``Regular_Nonstatic_Constant'' if it
-is of a discrete type initialized by a static expression, or if it is
-an aggregate whose components all have static values. This is
-different from the official definition of ``static'' in the language,
-but corresponds to what most users would expect.
+``Regular_Static_Constant'' and ``Regular_Nonstatic_Constant'' if it is
+of a discrete type initialized by a static expression, or if it is an
+aggregate whose components all have static values. Staticness here is
+defined as ``RM_Static'' (@pxref{Rules reference}). This is different
+from the official definition of ``static'' in the language, but
+corresponds to what most users would expect.
 
 ``class_type'' is applicable to subtypes that designate a class-wide
 type. Similarly, ``access_to_class_type'' is applicable to access

@@ -773,7 +773,7 @@ package body Rules.Naming_Convention is
             null;
       end Check;
 
-         use Asis, Asis.Definitions;
+      use Asis, Asis.Definitions;
    begin    -- Process_Defining_Name
       if not Rule_Used then
          return;
@@ -1214,7 +1214,7 @@ package body Rules.Naming_Convention is
                         Check (Name_Str,
                                (K_All, K_Constant, K_Regular_Constant, K_Regular_Nonstatic_Constant),
                                Object_Type => Object_Declaration_View (Original_Decl));
-                     elsif Is_Static_Expression (Initialization_Expression (Decl)) then
+                     elsif Is_Static_Expression (Initialization_Expression (Decl), RM_Static => True) then
                         Check (Name_Str,
                                (K_All, K_Constant, K_Regular_Constant, K_Regular_Static_Constant),
                                Object_Type => Object_Declaration_View (Decl));
@@ -1236,7 +1236,7 @@ package body Rules.Naming_Convention is
                         -- Good_Decl can be Nil_Element if the constant is completed by pragma Import
                         -- Considered non static, since anything can happen on the other side...
                         if not Is_Nil (Good_Decl)
-                          and then Is_Static_Expression (Initialization_Expression (Good_Decl))
+                          and then Is_Static_Expression (Initialization_Expression (Good_Decl), RM_Static => True)
                         then
                            Check (Name_Str,
                                   (K_All, K_Constant, K_Regular_Constant, K_Regular_Static_Constant),
