@@ -1414,12 +1414,12 @@ package body Rules.Declarations is
             end if;
 
          when An_Object_Renaming_Declaration
-           | An_Exception_Renaming_Declaration
-           | A_Package_Renaming_Declaration
-           | A_Procedure_Renaming_Declaration
-           | A_Generic_Package_Renaming_Declaration
-           | A_Generic_Procedure_Renaming_Declaration
-           =>
+            | An_Exception_Renaming_Declaration
+            | A_Package_Renaming_Declaration
+            | A_Procedure_Renaming_Declaration
+            | A_Generic_Package_Renaming_Declaration
+            | A_Generic_Procedure_Renaming_Declaration
+            =>
             if Declaration_Kind (Element) = A_Procedure_Renaming_Declaration
               and then (Rule_Used (D_Renaming_As_Declaration) or Rule_Used (D_Renaming_As_Body))
             then
@@ -1436,7 +1436,7 @@ package body Rules.Declarations is
                Do_Report (D_Not_Operator_Renaming, Element);
             end if;
 
-            if Rule_Used (D_Non_Identical_Renaming)
+            if   Rule_Used (D_Non_Identical_Renaming)
               or Rule_Used (D_Library_Unit_Renaming)
               or Rule_Used (D_Synonym_Renaming)
             then
@@ -1455,7 +1455,7 @@ package body Rules.Declarations is
                         exit;
                      when A_Selected_Component =>
                         Target_Entity := Selector (Target_Entity);
-                     when A_Type_Conversion =>
+                     when A_Type_Conversion | A_Qualified_Expression =>
                         Target_Entity := Converted_Or_Qualified_Expression (Target_Entity);
                      when An_Identifier | An_Operator_Symbol | An_Enumeration_Literal =>
                         if   To_Upper (Defining_Name_Image (Names (Element) (1)))

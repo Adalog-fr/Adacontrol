@@ -1202,7 +1202,7 @@ package body Rules.Improper_Initialization is
                                     Check_Object_Use (Expr, Global_Map);
                                     exit;
                                  end if;
-                              when A_Type_Conversion =>
+                              when A_Type_Conversion | A_Qualified_Expression =>
                                  Expr := Converted_Or_Qualified_Expression (Expr);
                               when others =>
                                  -- Remember, this is An_Object_Renaming_Declaration. Hence:

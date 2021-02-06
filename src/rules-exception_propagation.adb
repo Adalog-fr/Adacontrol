@@ -294,8 +294,8 @@ package body Rules.Exception_Propagation is
                   -- Can only be a renaming of a /value/ attribute here
                   -- (for /functions/ attributes, we would have found A_Function_Call)
                   exit;
-               when A_Type_Conversion =>
-                  -- Allowed for tagged types
+               when A_Type_Conversion | A_Qualified_Expression =>
+                  -- Conversion is allowed for tagged types, qualification for anything
                   -- There can be no variables or function calls in the prefix, but the
                   -- converted expression can be pretty much anything.
                   Expr := Converted_Or_Qualified_Expression (Expr);

@@ -1858,9 +1858,9 @@ package body Rules.Style is
       Rules_Manager.Enter (Rule_Id);
 
       Target := Renamed_Entity (Ren);
-      if Expression_Kind (Target) = A_Type_Conversion then
+      while Expression_Kind (Target) in A_Type_Conversion | A_Qualified_Expression loop
          Target := Converted_Or_Qualified_Expression (Target);
-      end if;
+      end loop;
       if Expression_Kind (Target) = A_Selected_Component then
          Target := Selector (Target);
       end if;
