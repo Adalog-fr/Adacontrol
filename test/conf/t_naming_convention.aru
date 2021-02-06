@@ -1,9 +1,12 @@
 -- Rules in String_Matching_Gnat syntax:
+
+-- all
 Too_short   : check naming_convention (all,     file "t_naming_convention_1.pat"); -- "...."
 Standard    : check naming_convention (all, not file "t_naming_convention_2.pat"); -- integer
 Global_Only : check naming_convention (global all, not "^l_");
 Local_Only  : check naming_convention (local  all, not "^g_");
 
+-- Types
 Types     : check naming_convention (type, "^T_", "_T$");
 Enum_T    : check naming_convention   (Enumeration_Type, "_enum$");
 Tasks     : check naming_convention   (task_type, "_task$");
@@ -19,7 +22,9 @@ Access_C  : check naming_convention     (Access_to_class_type, "_class$");
 Access_SP : check naming_convention     (Access_to_sp_type, "_sp$");
 access_Ta : check naming_convention     (access_to_task_type, "_task$");
 
+-- Variables
 Title_Case: check naming_convention (variable, case_sensitive "^[A-Z][a-z0-9]*(_[A-Z0-9][a-z0-9]*)*$");
+Not_Const : check naming_convention (variable, not "^C_", not "^Const_");
 Bool_Var  : check naming_convention     (others standard.boolean variable, "^Is_", "^Has_");
 Not_Bool  : check naming_convention     (variable, not "^Is_", not "^Has_");
 Discr     : check naming_convention     (Discriminant, "^D_");
@@ -28,16 +33,20 @@ Rec_F     : check naming_convention     (Record_field, "^rf_");
 Enum_Var  : check naming_convention     (root ()        procedure_formal_out, "^E_");
 Int_Var   : check naming_convention     (root range mod procedure_formal_out, "^I_");
 
+-- Constants
 Const1    : check naming_convention (root constant, "^C_");
 Const2    : Check naming_convention (constant, "^Const_");
 Stat_Const: check naming_convention (regular_static_constant, "_Static$");
 Enums     : check naming_convention   (root Enumeration, "^Enum_");
 
+-- Labels
 Label     : check naming_convention (label, not "_");
 
+-- Statements
 Stmt      : check naming_convention (stmt_name, not "ock$");
 Loop      : check naming_convention   (loop_name, "^G_");
 
+-- Subprograms and tasks
 Procs     : check naming_convention (procedure, not "_Gen$");
 Protect   : check naming_convention   (protected_procedure, "^protec_");
 Task_E    : check naming_convention (task_entry, "^task_");
@@ -46,19 +55,24 @@ Wide_F    : check naming_convention (standard.wide_string      function, "^Wide_
 W_Wide_F  : check naming_convention (standard.wide_wide_string function, "^Wide_Wide_");
 Non_Wide_F: check naming_convention (function, not "^Wide_");
 
+-- Generics
 Generics1 : check naming_convention (generic, "_Gen$");
 Generics2 : check naming_convention   (others generic_sp, "^SP_");
 Generics3 : check naming_convention     (generic_procedure, "^proc_");
 
+-- Exceptions
 Exc_Ren   : check naming_convention (exception_renaming, "excR$");
 
 
 -- Rules given in String_Matching_Portable syntax:
+
+-- -- all
 -- Too_short   : check naming_convention (all, "????*");
 -- Standard    : check naming_convention (all, not integer);
 -- Global_Only : check naming_convention (all, global not "l_*");
 -- Local_Only  : check naming_convention (all, local  not "g_*");
 
+-- -- types
 -- Types     : check naming_convention (type, "T_*", "*_T");
 -- Enum_T    : check_naming_convention   (Enumerated_Type, "*_enum");
 -- Tasks     : check naming_convention   (task_type, "_task");
@@ -74,27 +88,34 @@ Exc_Ren   : check naming_convention (exception_renaming, "excR$");
 -- Access_SP : check naming_convention   (Access_to_sp_type, "*_sp");
 -- access_Ta : check naming_convention   (access_to_task_type, "*_task");
 
+-- -- variables
 -- Bool_Var  : check naming_convention     (standard.boolean variable, "Is_*", "Has_*");
 -- Not_Bool  : check naming_convention     (variable, not "Is_*", not "Has_*");
 -- Discr     : check naming_convention     (Discriminant, "D_*");
 -- Protec_F  : check naming_convention     (protected_field, "pf_*");
 -- Rec_F     : check naming_convention     (Record_field, "rf_*");
 
+-- -- constants
 -- Const1    : check naming_convention (root constant, "C_*");
 -- Const2    : Check naming_convention (constant, "Const_*");
 -- Enums     : check naming_convention   (root Enumeration, "Enum_*");
 
+-- -- labels
 -- Label     : check naming_convention (label, not "*_*");
 
+-- -- statements
 -- Stmt      : check naming_convention (stmt_name, not "*ock");
 -- Loop      : check naming_convention   (loop_name, "G_*");
 
+-- -- subprograms and tasks
 -- Procs     : check naming_convention (procedure, not "*_Gen");
 -- Protect   : check naming_convention   (protected_procedure, "protec_*");
 -- Task_E    : check naming_convention (task_entry, "task_*");
 
+-- -- generics
 -- Generics1 : check naming_convention (generic, "*_Gen");
 -- Generics2 : check naming_convention   (others generic_sp, "SP_*");
 -- Generics3 : check naming_convention     (generic_procedure, "proc_*");
 
+-- -- exceptions
 -- Exc_Ren   : check naming_convention (exception_renaming, "*excR");

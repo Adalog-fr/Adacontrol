@@ -37,7 +37,6 @@ with
   Asis.Declarations,
   Asis.Definitions,
   Asis.Elements,
-  Asis.Exceptions,
   Asis.Expressions,
   Asis.Limited_Views,
   Asis.Statements;
@@ -534,13 +533,11 @@ package body Rules.Naming_Convention is
    procedure Process_Defining_Name (Name : in Asis.Defining_Name) is
       use Asis.Declarations, Asis.Elements, Asis.Expressions, Asis.Statements;
       use Thick_Queries, Utilities;
-
-      Decl : Asis.Declaration;
-      -- The declaration on which we base the classification
+      Decl          : Asis.Declaration; -- The declaration on which we base the classification
 
       -- Applicable rules must be given in Set in order of decreasing generality
-      -- For objects (constants and variables), Object_Type is an identifier or definition of its type,
-      -- For other elements, it is Nil_Element
+      -- For objects (constants and variables) and functions, Object_Type is an identifier or definition of its type,
+      --     otherwise, it is Nil_Element
       procedure Check (Name_Str        : in Wide_String;
                        Set             : in Key_Set;
                        Object_Category : in Categories   := Cat_Any;
@@ -783,12 +780,45 @@ package body Rules.Naming_Convention is
       declare
          Name_Str      : constant Wide_String := Defining_Name_Image (Name);
          Renamed       : Asis.Element := Nil_Element;
-         Renamed_T     : Asis.Element;
          Original_Decl : Asis.Declaration; -- The (true) enclosing declaration of Name;
                                            -- it can differ from decl in cases like renaming
          Decl_Kind     : Asis.Declaration_Kinds;
          Def           : Asis.Definition;
          Accessed      : Asis.Element;
+
+         function Accessed_Kind (Expr : Asis.Expression) return Asis.Declaration_Kinds is
+         -- Expr is an expression of an access type
+         -- Finds the Declaration_Kind of the accessed element
+            Renamed_T : Asis.Definition;
+         begin
+            Renamed_T := Thick_Queries.Corresponding_Expression_Type_Definition (Expr);
+            if Definition_Kind (Renamed_T) = An_Access_Definition then
+               -- anonymous access type
+               -- 2005 can occur in many declarations...
+               case Access_Definition_Kind (Renamed_T) is
+                  when Not_An_Access_Definition =>
+                     Failure ("Process_Defining_Name: Not an access definition", Renamed_T);
+                  when An_Anonymous_Access_To_Variable =>
+                     return A_Variable_Declaration;
+                  when An_Anonymous_Access_To_Constant =>
+                     return A_Constant_Declaration;
+                  when others =>
+                     Failure ("Process_Defining_Name: Unexpected dereference", Expr);
+               end case;
+            else
+               -- regular access type
+               case Access_Type_Kind (Renamed_T) is
+                  when A_Pool_Specific_Access_To_Variable
+                     | An_Access_To_Variable
+                     =>
+                     return A_Variable_Declaration;
+                  when An_Access_To_Constant =>
+                     return A_Constant_Declaration;
+                  when others =>
+                     Failure ("Process_Defining_Name: Unexpected named dereference", Expr);
+               end case;
+            end if;
+         end Accessed_Kind;
 
       begin
          Decl := Enclosing_Element (Name);
@@ -830,25 +860,15 @@ package body Rules.Naming_Convention is
             when A_Declaration =>  ----------------------------------------------- Declarations
                Decl_Kind := Declaration_Kind (Decl);
 
-               begin
-                  if Decl_Kind in A_Full_Type_Declaration
-                    and then Declaration_Kind (Corresponding_Type_Partial_View (Decl))
-                              in A_Private_Type_Declaration .. A_Private_Extension_Declaration
-                  then
-                     -- This declaration is a full declaration of a private type.
-                     -- It does not follow the rules for its own kind, but the ones for private
-                     -- types (which are checked for the private declaration)
-                     return;
-                  end if;
-               exception
-                  when Asis.Exceptions.ASIS_Failed =>
-                     -- A4G BUG in Gnat/GPL, Gnat/GAP, fixed in 5.04 and above
-                     -- Corresponding_Type_Declaration fails for types declared in child units
-                     -- and separate units.
-                     -- Apparently, this does not happen for full declarations of private types,
-                     -- therefore we can ignore the problem
-                     A4G_Bugs.Trace_Bug ("Rules.Naming_Convention.Process_Defining_Name: ASIS_Failed");
-               end;
+               if Decl_Kind in A_Full_Type_Declaration
+                 and then Declaration_Kind (Corresponding_Type_Partial_View (Decl))
+                       in A_Private_Type_Declaration .. A_Private_Extension_Declaration
+               then
+                  -- This declaration is a full declaration of a private type.
+                  -- It does not follow the rules for its own kind, but the ones for private
+                  -- types (which are checked for the private declaration)
+                  return;
+               end if;
 
                case Decl_Kind is
                   when A_Renaming_Declaration =>
@@ -867,16 +887,24 @@ package body Rules.Naming_Convention is
                                  loop
                                     case Expression_Kind (Renamed) is
                                        when A_Selected_Component =>
-                                          Renamed := Selector (Renamed);
+                                          Renamed := Selector (Renamed);  -- Because fields have their own convention
                                        when A_Slice
                                           | An_Indexed_Component
                                             =>
-                                          Renamed := Prefix (Renamed);
+                                          Renamed := Prefix (Renamed);    -- Going up to check variable or constant
+
+                                          -- Beware! It might be an implicit dereference
+                                          if Is_Access_Expression (Renamed) then
+                                             Decl_Kind := Accessed_Kind (Renamed);
+                                             Decl := Nil_Element;  -- Renamed element declaration is unknown (dynamic)
+                                             exit Going_Up_Renamings;
+                                          end if;
                                        when A_Function_Call =>
                                           Decl      := Nil_Element;  -- Renamed element declaration is unknown (dynamic)
                                           Decl_Kind := A_Constant_Declaration;
                                           exit Going_Up_Renamings;
-                                       when A_Type_Conversion =>
+                                       when A_Type_Conversion
+                                          | A_Qualified_Expression =>
                                           Renamed := Converted_Or_Qualified_Expression (Renamed);
                                        when An_Identifier
                                           | An_Enumeration_Literal
@@ -884,38 +912,7 @@ package body Rules.Naming_Convention is
                                             =>
                                           exit;
                                        when An_Explicit_Dereference =>
-                                          Renamed_T := Thick_Queries.Corresponding_Expression_Type_Definition
-                                                        (Prefix (Renamed));
-                                          if Definition_Kind (Renamed_T) = An_Access_Definition then
-                                             -- anonymous access type
-                                             -- 2005 can occur in many declarations...
-                                             Decl := Enclosing_Element (Renamed);
-                                             case Access_Definition_Kind (Renamed_T) is
-                                                when Not_An_Access_Definition =>
-                                                   Failure ("Process_Defining_Name: Not an access definition",
-                                                            Renamed);
-                                                when An_Anonymous_Access_To_Variable =>
-                                                   Decl_Kind := A_Variable_Declaration;
-                                                when An_Anonymous_Access_To_Constant =>
-                                                   Decl_Kind := A_Constant_Declaration;
-                                                when others =>
-                                                   Failure ("Process_Defining_Name: Unexpected anonymous dereference",
-                                                            Renamed);
-                                             end case;
-                                          else
-                                             -- regular access type
-                                             case Access_Type_Kind (Renamed_T) is
-                                                when A_Pool_Specific_Access_To_Variable
-                                                   | An_Access_To_Variable
-                                                   =>
-                                                   Decl_Kind := A_Variable_Declaration;
-                                                when An_Access_To_Constant =>
-                                                   Decl_Kind := A_Constant_Declaration;
-                                                when others =>
-                                                   Failure ("Process_Defining_Name: Unexpected named dereference",
-                                                            Renamed);
-                                             end case;
-                                          end if;
+                                          Decl_Kind := Accessed_Kind (Prefix (Renamed));
                                           Decl := Nil_Element;  -- Renamed element declaration is unknown (dynamic)
                                           exit Going_Up_Renamings;
 
@@ -1195,17 +1192,9 @@ package body Rules.Naming_Convention is
                      Check (Name_Str, (K_All, K_Constant, K_Enumeration), Object_Category => Cat_Enum);
 
                   when A_Variable_Declaration =>  ------------------------ Constants, Variables, Parameters
-                     if Is_Nil (Decl) then
-                     -- Decl is Nil_Element in the case of a renaming of a dereference => dynamic
-                     -- but Decl_Kind is correct
-                        Check (Name_Str,
-                               (K_All, K_Variable, K_Regular_Variable),
-                               Object_Type => Object_Declaration_View (Original_Decl));
-                     else
-                        Check (Name_Str,
-                               (K_All, K_Variable, K_Regular_Variable),
-                               Object_Type => Object_Declaration_View (Decl));
-                     end if;
+                     Check (Name_Str,
+                            (K_All, K_Variable, K_Regular_Variable),
+                            Object_Type => Object_Declaration_View (Original_Decl));
 
                   when A_Constant_Declaration =>
                      -- Decl is Nil_Element in the case of a renaming of a dereference => dynamic
@@ -1217,11 +1206,11 @@ package body Rules.Naming_Convention is
                      elsif Is_Static_Expression (Initialization_Expression (Decl), RM_Static => True) then
                         Check (Name_Str,
                                (K_All, K_Constant, K_Regular_Constant, K_Regular_Static_Constant),
-                               Object_Type => Object_Declaration_View (Decl));
+                               Object_Type => Object_Declaration_View (Original_Decl));
                      else
                         Check (Name_Str,
                                (K_All, K_Constant, K_Regular_Constant, K_Regular_Nonstatic_Constant),
-                               Object_Type => Object_Declaration_View (Decl));
+                               Object_Type => Object_Declaration_View (Original_Decl));
                      end if;
 
                   when A_Deferred_Constant_Declaration =>
@@ -1348,15 +1337,15 @@ package body Rules.Naming_Convention is
                           =>
                            Check (Name_Str,
                                   (K_All, K_Constant, K_Sp_Formal_In),
-                                  Object_Type => Object_Declaration_View (Decl));
+                                   Object_Type => Object_Declaration_View (Original_Decl));
                         when An_Out_Mode =>
                            Check (Name_Str,
                                   (K_All, K_Variable, K_Procedure_Formal_Out),
-                                  Object_Type => Object_Declaration_View (Decl));
+                                  Object_Type => Object_Declaration_View (Original_Decl));
                         when An_In_Out_Mode =>
                            Check (Name_Str,
                                   (K_All, K_Variable, K_Procedure_Formal_In_Out),
-                                  Object_Type => Object_Declaration_View (Decl));
+                                  Object_Type => Object_Declaration_View (Original_Decl));
                         when Not_A_Mode =>
                            Failure ("Unexpected mode: " & Mode_Kinds'Wide_Image (Mode_Kind (Decl)));
                      end case;
@@ -1368,11 +1357,11 @@ package body Rules.Naming_Convention is
                           =>
                            Check (Name_Str,
                                   (K_All, K_Constant, K_Generic_Formal_In),
-                                  Object_Type => Object_Declaration_View (Decl));
+                                  Object_Type => Object_Declaration_View (Original_Decl));
                         when An_In_Out_Mode =>
                            Check (Name_Str,
                                   (K_All, K_Variable, K_Generic_Formal_In_Out),
-                                  Object_Type => Object_Declaration_View (Decl));
+                                  Object_Type => Object_Declaration_View (Original_Decl));
                         when An_Out_Mode
                           | Not_A_Mode
                           =>
@@ -1382,7 +1371,7 @@ package body Rules.Naming_Convention is
                   when A_Discriminant_Specification =>
                      Check (Name_Str,
                             (K_All, K_Variable, K_Field, K_Discriminant),
-                            Object_Type => Object_Declaration_View (Decl));
+                            Object_Type => Object_Declaration_View (Original_Decl));
 
                   when A_Component_Declaration =>
                      -- We must determine whether it is declared within a record or protected type

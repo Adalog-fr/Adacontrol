@@ -8,10 +8,10 @@ package body T_naming_convention is
    C_1       : constant := 1; -- OK, too short for "all" but rule is root
    My_Max    : constant := 2; --## RULE LINE OFF const1 ## (OK, disabled)
 
-   Xxx   : Integer;                       -- Too_short
-   Xxxx  : Integer;                       -- OK
-   C_Xxx : constant Integer := Xxx;
-   C_Xxx_Static : constant Integer := 1+2;
+   Xxx       : Integer;                      -- Too_short
+   Xxxx      : Integer;                      -- OK
+   C_Xxx     : constant Integer := Xxx;      -- OK
+   C_Xxx_Static : constant Integer := 1 + 2; -- OK
 
    -- Casing
    X_Yz : Integer; --OK
@@ -30,48 +30,48 @@ package body T_naming_convention is
    type T_Enum is (Enum_A, Enum_B, Enum_C); -- OK
    type T_Enum_Bad is (A, B, C);
    type T_Tagged_Bad is tagged null record;
-   type T_Tagged is tagged null record; --OK
+   type T_Tagged is tagged null record;     -- OK
    subtype T_Class_Bad is T_Tagged'Class;
-   subtype T_Class is T_Tagged'Class; --OK
+   subtype T_Class is T_Tagged'Class;       -- OK
 
-   type Int_Type is range 1..10;
-   type T_Int is range 1..10; -- OK
-   type Int_T is range 1..10; -- OK
-   Integer : Float;
+   type Int_Type is range 1 .. 10;
+   type T_Int is range 1 .. 10;             -- OK
+   type Int_T is range 1 .. 10;             -- OK
+   Integer      : Float;
 
    type Mod_Bad is mod 255;
-   type T_Good_Mod is mod 255;
+   type T_Good_Mod is mod 255;              -- OK
 
-   type T_Rec           -- OK
-     (D_Bool : Boolean; -- OK
+   type T_Rec                               -- OK
+     (D_Bool : Boolean;                     -- OK
       Bad_2  : Boolean)
-   is
-     record
-        Field    : Boolean;
-        Rf_Field : Boolean; -- OK
-        case D_Bool is
-           when True =>
-              True_F1  : Boolean;
-              Rf_True1 : Boolean; --OK
-           when False =>
-              case Bad_2 is
-                 when True =>
-                    True_F2  : Boolean;
-                    Rf_True2 : Boolean; --OK
-                 when False =>
-                    null;
-              end case;
-        end case;
-     end record;
-
-   type T_Rec_2_Tagged is new T_Tagged with --OK
+     is
       record
          Field    : Boolean;
-         Rf_Field : Boolean; -- OK
+         Rf_Field : Boolean;                -- OK
+         case D_Bool is
+            when True =>
+               True_F1  : Boolean;
+               Rf_True1 : Boolean;          -- OK
+            when False =>
+               case Bad_2 is
+                  when True =>
+                     True_F2  : Boolean;
+                     Rf_True2 : Boolean;    -- OK
+                  when False =>
+                     null;
+               end case;
+         end case;
       end record;
 
-   type T_Good_Interface is interface; --OK
-   type T_Bad_Interf is interface;
+   type T_Rec_2_Tagged is new T_Tagged with -- OK
+      record
+         Field    : Boolean;
+         Rf_Field : Boolean;                -- OK
+      end record;
+
+   type T_Good_Interface is interface;      -- OK
+   type T_Bad_Interf     is interface;
 
    -- Procedure with a spec:
    procedure Bad1_Gen (BadParam: Float);
@@ -87,22 +87,22 @@ package body T_naming_convention is
    end;
 
    -- Functions
-   function Wide_Body return Character is          -- Non_Wide_F
+   function Wide_Body return Character is                            -- Non_Wide_F
    begin
       return '1';
    end Wide_Body;
 
-   function Wide_Wide_Body return Character is     -- Non_Wide_F
+   function Wide_Wide_Body return Character is                       -- Non_Wide_F
    begin
       return '1';
    end Wide_Wide_Body;
 
-   function Wide_Wide_Image (C_X : Float) return Wide_String is -- Wide_F
+   function Wide_Wide_Image (C_X : Float) return Wide_String is      -- Wide_F
    begin
       return Float'Wide_Image (C_X);
    end Wide_Wide_Image;
 
-   function Wide_Image (C_X : Float) return Wide_String is          -- OK
+   function Wide_Image (C_X : Float) return Wide_String is           -- OK
    begin
       return Float'Wide_Image (C_X);
    end Wide_Image;
@@ -119,10 +119,10 @@ package body T_naming_convention is
 
    -- Package
    package Pack is
-      type Priv_T is private; -- OK
+      type Priv_T is private;                                  -- OK
       type Bad_Priv_T is private;
 
-      type T_Access_Priv_Regular is access Priv_T; -- OK
+      type T_Access_Priv_Regular is access Priv_T;             -- OK
       type T_Access_Priv_Reg is access Priv_T;
    private
       type Priv_T is new Mod_Bad; -- OK
@@ -130,14 +130,14 @@ package body T_naming_convention is
 
       -- Incomplete types
       type T_Incomplete;
-      type T_Incomplete_Mod; --OK
+      type T_Incomplete_Mod;                                   --OK
       type T_access_Incomplete_Reg is access T_Incomplete;
       type T_access_Incomplete_Regular is access T_Incomplete; --OK
    end Pack;
 
    package body Pack is
       type T_Incomplete is mod 10;
-      type T_Incomplete_Mod is mod 10; -- OK
+      type T_Incomplete_Mod is mod 10;                         -- OK
    end Pack;
 
    -- Generics
@@ -156,10 +156,10 @@ package body T_naming_convention is
    end;
 
    procedure New_Gen is new Gen_Proc;
-   procedure New_Proc is new Proc_Gen; -- OK
+   procedure New_Proc is new Proc_Gen;                         -- OK
 
    generic procedure Ren_Gen_Proc renames Gen_Proc;
-   generic procedure Proc_Ren_Gen renames Proc_Gen; --OK
+   generic procedure Proc_Ren_Gen renames Proc_Gen;            --OK
    procedure Ren_Bad1_Gen (OtherName: Float) renames Bad1_Gen;
    procedure Ren_Bad2_Gen (OtherName: Float);
    procedure Ren_Bad2_Gen (OtherName: Float) renames Bad2_Gen; -- Rename as body
@@ -219,27 +219,31 @@ package body T_naming_convention is
    type T_Access_Sub_Task is access T_Sub_New_Task; -- OK
 
    -- Renaming:
-   Enum_Ren_A : T_Enum renames Enum_A; -- OK
+   Enum_Ren_A     : T_Enum renames Enum_A;                           -- OK
    Bad_Enum_Ren_A : T_Enum renames Enum_A;
    type T_Access_String_Regular is access all String;
    type T_Access_String_Const_Regular is access constant String;
-   Var_Access1 : T_Access_String_Regular := new String'("Hello");
-   Var : aliased String := "Hello";
-   Var_Access2 : T_Access_String_Regular := Var'Access;
-   Const : aliased constant String := "Hello";
-   Const_Access : T_Access_String_Const_Regular := Const'Access;
+   Var_Access1    : T_Access_String_Regular := new String'("Hello"); -- OK
+   Var            : aliased String := "Hello";
+   Var_Access2    : T_Access_String_Regular := Var'Access;           -- OK
+   Const          : aliased constant String := "Hello";
+   C_Other_Static : String renames Const;                            -- OK
+   Is_Var         : String renames String'(Var);
+   Const_Access   : T_Access_String_Const_Regular := Const'Access;
+   C_Imp_Deref    : Character renames Const_Access (1);              -- OK
+   Imp_Deref      : Character renames Const_Access (1);              -- OK
 
-   Ren1 : String renames Var_Access1.all;          -- OK
-   R1 : String renames Var_Access1.all;
-   Ren2 : String renames Var_Access2.all;          -- OK
-   R2 : String renames Var_Access2.all;
-   C_R3 : String renames Const_Access.all;         -- OK
+   Ren1 : String renames Var_Access1.all;                            -- OK
+   R1   : String renames Var_Access1.all;
+   Ren2 : String renames Var_Access2.all;                            -- OK
+   R2   : String renames Var_Access2.all;
+   C_R3 : String renames Const_Access.all;                           -- OK
    Ren3 : String renames Const_Access.all;
-   C_R4_Static : String renames Const;             -- OK
-   C_R5_Static : Character renames C_R4_Static(1); -- OK
-   Ren5_Static : Character renames C_R4_Static(1);
-   C_R6 : Character renames Ren3(1);               -- OK
-   Ren6 : Character renames Ren3(1);
+   C_R4_Static : String renames Const;                               -- OK
+   C_R5_Static : Character renames C_R4_Static (1);                  -- OK
+   Ren5_Static : Character renames C_R4_Static (1);
+   C_R6 : Character renames Ren3 (1);                                -- OK
+   Ren6 : Character renames Ren3 (1);
 
    type Obj_T is
       record
@@ -253,11 +257,11 @@ package body T_naming_convention is
    Obj_C  : T_3;
 
    C1    : Character renames Obj_A.Rf_1 (1);
-   Rf_C1 : Character renames Obj_A.Rf_1 (1); -- OK
+   Rf_C1 : Character renames Obj_A.Rf_1 (1);     -- OK
    C2    : Character renames Obj_B.Rf_1 (1);
-   Rf_C2 : Character renames Obj_B.Rf_1 (1);
+   Rf_C2 : Character renames Obj_B.Rf_1 (1);     -- OK
    C3    : Character renames Obj_C.Rf_1 (1);
-   Rf_C3 : Character renames Obj_C.Rf_1 (1);
+   Rf_C3 : Character renames Obj_C.Rf_1 (1);     -- OK
 
    CE      : exception renames Constraint_Error;
    CE_ExcR : exception renames Constraint_Error; -- OK
