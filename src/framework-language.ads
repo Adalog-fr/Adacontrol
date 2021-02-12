@@ -171,6 +171,13 @@ package Framework.Language is
       -- If Required and no modifier given, Syntax_Error
       -- If not Required and no modifier given, returns Default
 
+      procedure Get_Negatable_Modifier (Modifier : out Modifiers;
+                                        Negated  : out Boolean;
+                                        Found    : out Boolean;
+                                        Expected : in Modifier_Set);
+      -- Gets a modifier from those allowed by Expected, optionally preceded by "not".
+
+
       function Image (Item : Modifiers; In_Case : Utilities.Casing := Utilities.Upper_Case) return Wide_String;
 
       type Modifier_Getter is access procedure (Modifier : out Modifier_Set;

@@ -48,9 +48,11 @@ package body Framework.Language.Scanner is
    -- just marks the token as delayed, actual scanning of token will take
    -- place at the first call to Current_Token.
 
-   The_Token     : Token;
-   Token_Delayed : Boolean := True;
-   String_Token  : Boolean;
+   The_Token      : Token;
+   Previous_Token : Token;
+   Token_Delayed  : Boolean := True;
+   Token_Backed   : Boolean := False;
+   String_Token   : Boolean;
 
    Origin_Is_String : Boolean := False;
    Cur_Char         : Wide_Character;
@@ -348,6 +350,12 @@ package body Framework.Language.Scanner is
    begin   -- Actual_Next_Token
       Token_Delayed := False;
 
+      if Token_Backed then
+         Token_Backed := False;
+         return;
+      end if;
+      Previous_Token := The_Token;
+
       if The_Token.Kind = Eof then
          -- Eof found => stay there
          return;
@@ -509,6 +517,10 @@ package body Framework.Language.Scanner is
 
    function Current_Token return Token is
    begin
+      if Token_Backed then
+         return Previous_Token;
+      end if;
+
       if Token_Delayed then
          Actual_Next_Token (String_Token);
       end if;
@@ -521,13 +533,28 @@ package body Framework.Language.Scanner is
 
    procedure Next_Token (Force_String : Boolean := False; No_Delay : Boolean := False) is
    begin
-      if No_Delay then
+      if Token_Backed then
+         Token_Backed := False;
+      elsif No_Delay then
          Actual_Next_Token (Force_String);
       else
          Token_Delayed := True;
          String_Token  := Force_String;
       end if;
    end Next_Token;
+
+   ----------------
+   -- Back_Token --
+   ----------------
+
+   procedure Back_Token is
+   begin
+      if Token_Backed then
+         Utilities.Failure ("Doule Back_Token");
+      end if;
+
+      Token_Backed := True;
+   end Back_Token;
 
    ----------------
    -- Set_Prompt --

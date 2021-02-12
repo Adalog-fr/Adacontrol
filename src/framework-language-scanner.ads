@@ -106,6 +106,10 @@ private package Framework.Language.Scanner is
    -- If Force_String, take all characters until the next space or semi-colon as a string token
    -- If No_Delay, do it immediately
 
+   procedure Back_Token;
+   -- Back up by one token
+   -- Cannot be called twice in a row
+
    function Reference_Dir return Wide_String;
    -- Returns the reference directory (i.e. the directory part of the current rules file,
    -- or "" if there is no rules files (or if it has no directory part)

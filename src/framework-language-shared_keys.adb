@@ -140,20 +140,19 @@ package body Framework.Language.Shared_Keys is
 
    function Get_Places_Set_Modifiers (Rule_Id : Wide_String; Allow_All : Boolean := True) return  Places_Set is
       use Scope_Places_Utilities;
-      Result   : Places_Set := No_Places;
-      Loc      : Scope_Places;
-      Found    : Boolean;
-      Presence : Boolean;
+      Result  : Places_Set := No_Places;
+      Loc     : Scope_Places;
+      Found   : Boolean;
+      Negated : Boolean;
    begin
       loop
-         Presence := not Get_Modifier ("NOT");
-         Get_Modifier (Loc, Found, Expected => (S_All => Allow_All, others => True));
+         Get_Negatable_Modifier (Loc, Negated, Found, Expected => (S_All => Allow_All, others => True));
          exit when not Found;
-         if Loc = S_All and not Presence then
+         if Loc = S_All and Negated then
             Parameter_Error (Rule_Id, """all"" cannot be specified with ""not""");
          end if;
          Result.Specified (Loc) := True;
-         Result.Presence  (Loc) := Presence;
+         Result.Presence  (Loc) := not Negated;
       end loop;
 
       if Result = No_Places then

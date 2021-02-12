@@ -1505,6 +1505,19 @@ package body Framework.Language is
          end if;
       end Get_Modifier;
 
+      procedure Get_Negatable_Modifier (Modifier : out Modifiers;
+                                        Negated  : out Boolean;
+                                        Found    : out Boolean;
+                                        Expected : in Modifier_Set)
+      is
+      begin
+         Negated := Get_Modifier ("NOT");
+         Get_Modifier (Modifier, Found, Expected);
+         if not Found and Negated then
+            Back_Token;
+         end if;
+      end Get_Negatable_Modifier;
+
       function Get_Modifier_Set (No_Parameter : Boolean         := False;
                                  Expected     : Modifier_Set    := Full_Set;
                                  Getter       : Modifier_Getter := null)
