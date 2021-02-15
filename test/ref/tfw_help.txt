@@ -171,27 +171,24 @@ Parameter(s): {<location>} [ignore "<pattern>"] <decl>
         float_type                      | formal_function                   |
         formal_package                  | formal_procedure                  |
         formal_type                     | function                          |
-        function_call_renaming          | function_instantiation            |
-        generic                         | generic_function                  |
-        generic_package                 | generic_procedure                 |
-        handlers                        | incomplete_type                   |
-        in_out_generic_parameter        | in_out_parameter                  |
-        initialized_protected_component | initialized_record_component      |
-        initialized_variable            | instantiation                     |
-        integer_type                    | interface_type                    |
-        library_unit_renaming           | limited_private_type              |
+        function_instantiation          | generic                           |
+        generic_function                | generic_package                   |
+        generic_procedure               | handlers                          |
+        incomplete_type                 | in_out_generic_parameter          |
+        in_out_parameter                | initialized_protected_component   |
+        initialized_record_component    | initialized_variable              |
+        instantiation                   | integer_type                      |
+        interface_type                  | limited_private_type              |
         modular_type                    | multiple_names                    |
         multiple_protected_entries      | name_defaulted_formal_function    |
         name_defaulted_formal_procedure | named_number                      |
         no_spec_function                | no_spec_procedure                 |
-        non_binary_modular_type         | non_identical_operator_renaming   |
-        non_identical_renaming          | non_joint_ce_ne_handler           |
+        non_binary_modular_type         | non_joint_ce_ne_handler           |
         non_limited_private_type        | non_ravenscar_task                |
-        not_operator_renaming           | null_defaulted_formal_procedure   |
-        null_extension                  | null_ordinary_record_type         |
-        null_procedure                  | null_procedure_body               |
-        null_procedure_declaration      | null_tagged_type                  |
-        operator                        | operator_renaming                 |
+        null_defaulted_formal_procedure | null_extension                    |
+        null_ordinary_record_type       | null_procedure                    |
+        null_procedure_body             | null_procedure_declaration        |
+        null_tagged_type                | operator                          |
         ordinary_fixed_type             | ordinary_fixed_type_no_small      |
         ordinary_fixed_type_with_small  | ordinary_record_type              |
         ordinary_record_variable        | out_parameter                     |
@@ -203,13 +200,11 @@ Parameter(s): {<location>} [ignore "<pattern>"] <decl>
         protected_type                  | protected_variable                |
         record_type                     | relay_function                    |
         relay_package                   | relay_procedure                   |
-        renaming                        | renaming_as_body                  |
-        renaming_as_declaration         | scalar_variable                   |
-        self_calling_function           | self_calling_procedure            |
-        separate                        | signed_type                       |
-        single_array                    | single_protected                  |
-        single_task                     | subtype                           |
-        synonym_renaming                | tagged_incomplete_type            |
+        scalar_variable                 | self_calling_function             |
+        self_calling_procedure          | separate                          |
+        signed_type                     | single_array                      |
+        single_protected                | single_task                       |
+        subtype                         | tagged_incomplete_type            |
         tagged_private_type             | tagged_type                       |
         tagged_variable                 | task                              |
         task_discriminant               | task_entry                        |

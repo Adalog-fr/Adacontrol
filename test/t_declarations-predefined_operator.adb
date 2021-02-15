@@ -1,5 +1,5 @@
 separate (T_Declarations)
-procedure Predefined_Operator is         -- nested procedure, local_procedure
+procedure Predefined_Operator is         -- not library procedure, local_procedure
    type Int is new Integer;              -- derived_type
    type Bool is new Boolean;             -- derived type
    type ArrB is array (1 .. 10) of Bool; -- constrained_array_type, array, anonymous_subtype_declaration

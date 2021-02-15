@@ -1,25 +1,25 @@
 with Unchecked_Deallocation, Unchecked_Conversion;
 with Ada.Finalization;
 package X_Declarations is
-   function ItoF is new Unchecked_Conversion (Integer, Float);           -- Nested_Function_Instantiation
+   function ItoF is new Unchecked_Conversion (Integer, Float);           -- Not library Function_Instantiation
    type A_Integer is access Integer;                                     -- Access_Type
 
-   package Pack is                                                       -- Nested_Package
-      procedure Free is new Unchecked_Deallocation (Integer, A_Integer); -- Nested_Procedure_Instantiation
+   package Pack is                                                       -- Not library Package
+      procedure Free is new Unchecked_Deallocation (Integer, A_Integer); -- Not library Procedure_Instantiation
    end Pack;
 
-   generic                                                               -- Generic, Nested_Generic_Package, empty_visible_part
-   package Gen_Pack is
+   generic                                                               -- Not library Generic_Package, Generic
+   package Gen_Pack is                                                   -- empty_visible_part
    end Gen_Pack;
 
-   package Inst is new Gen_Pack;                                         -- Nested_Package_Instantiation
+   package Inst is new Gen_Pack;                                         -- Not library Package_Instantiation
 
-   Arr : array (1..10) of Integer;                                       -- Array, single_array, variable, constrained_array_variable
+   Arr : array (1..10) of Integer;                                       -- variable, single_array, constrained_array_variable, Array, uninitialized_variable, anonymous_subtype_declaration
 
-   package Af renames Ada.Finalization;                                 -- not_operator_renaming, non_identical_renaming, library_unit_renaming, renaming
-   type Cont1 is new Ada.Finalization.Controlled with null record;      -- controlled_type
-   type Cont2 is new Af.Limited_Controlled with                         -- controlled_type
+   package Af renames Ada.Finalization;
+   type Cont1 is new Ada.Finalization.Controlled with null record;      -- controlled_type, null_extension, extension, tagged_type, record_type
+   type Cont2 is new Af.Limited_Controlled with                         -- controlled_type, extension, tagged_type, record_type
       record
-         I : Integer;                                                   -- Uninitialized_record_field
+         I : Integer;                                                   -- Uninitialized_record_component
       end record;
 end X_Declarations;

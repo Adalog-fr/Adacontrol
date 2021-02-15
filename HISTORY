@@ -8,6 +8,8 @@ renaming_declarations
 
 Changes to existing rules:
 --------------------------
+Declarations: removed subrules related to renamings, now handled by
+   renaming_declarations
 
 Simplifiable_Statements: add the no_exit modifier to the
    loop_for_while subrule

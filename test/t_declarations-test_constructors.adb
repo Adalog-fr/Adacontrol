@@ -1,6 +1,6 @@
 separate (T_declarations)
-procedure Test_Constructors is                            -- not_library_procedure, local_procedure
-   package X_Declarations_Constructors is                 -- not_library_package
+procedure Test_Constructors is                            -- not library_procedure, local_procedure
+   package X_Declarations_Constructors is                 -- not library_package
       type T is tagged record                             -- tagged_type, record_type
          I : Integer;                                     -- uninitialized_record_component
       end record;
@@ -9,7 +9,7 @@ procedure Test_Constructors is                            -- not_library_procedu
       function Fun2 (I : T) return Integer;
       function Fun3 (I : Integer) return T;               -- constructor
       function Fun4 return T;                             -- constructor
-      function Bar  (J : Integer) return T renames Fun3;  -- renaming_as_declaration, renaming, constructor, not_operator_renaming, not_identical_renaming, synonym_renaming
+      function Bar  (J : Integer) return T renames Fun3;  -- constructor
       function Foo  (K : Integer) return T is ((I => K)); -- expression_function, constructor
 
       type D is new T with null record;                   -- null_extension, extension, tagged_type, record_type

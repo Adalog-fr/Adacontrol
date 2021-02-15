@@ -2,7 +2,7 @@
 --  Rules.Declarations - Package body                               --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
---  of Air Navigation (EUROCONTROL) and Adalog 2004-2005.           --
+--  of Air Navigation (EUROCONTROL) and Adalog 2004-2021.           --
 --  The Ada Controller is  free software; you can  redistribute  it --
 --  and/or modify it under  terms of the GNU General Public License --
 --  as published by the Free Software Foundation; either version 2, --
@@ -87,7 +87,7 @@ package body Rules.Declarations is
 
       D_Fixed_Type,                        D_Float_Type,                        D_Formal_Function,
       D_Formal_Package,                    D_Formal_Procedure,                  D_Formal_Type,
-      D_Function,                          D_Function_Call_Renaming,            D_Function_Instantiation,
+      D_Function,                          D_Function_Instantiation,
 
       D_Generic,                           D_Generic_Function,                  D_Generic_Package,
       D_Generic_Procedure,
@@ -98,21 +98,20 @@ package body Rules.Declarations is
       D_Initialized_Protected_Component,   D_Initialized_Record_Component,      D_Initialized_Variable,
       D_Instantiation,                     D_Integer_Type,                      D_Interface_Type,
 
-      D_Library_Unit_Renaming,             D_Limited_Private_Type,
+      D_Limited_Private_Type,
 
       D_Modular_Type,                      D_Multiple_Names,                    D_Multiple_Protected_Entries,
 
       D_Name_Defaulted_Formal_Function,    D_Name_Defaulted_Formal_Procedure,   D_Named_Number,
       D_No_Spec_Function,                  D_No_Spec_Procedure,                 D_Non_Binary_Modular_Type,
-      D_Non_Identical_Operator_Renaming,   D_Non_Identical_Renaming,            D_Non_Joint_CE_NE_Handler,
-      D_Non_Limited_Private_Type,          D_Non_Ravenscar_Task,                D_Not_Operator_Renaming,
+      D_Non_Joint_CE_NE_Handler,           D_Non_Limited_Private_Type,          D_Non_Ravenscar_Task,
       D_Null_Defaulted_Formal_Procedure,   D_Null_Extension,                    D_Null_Ordinary_Record_Type,
       D_Null_Procedure,                    D_Null_Procedure_Body,               D_Null_Procedure_Declaration,
       D_Null_Tagged_Type,
 
-      D_Operator,                          D_Operator_Renaming,                 D_Ordinary_Fixed_Type,
-      D_Ordinary_Fixed_Type_No_Small,      D_Ordinary_Fixed_Type_With_Small,    D_Ordinary_Record_Type,
-      D_Ordinary_Record_Variable,          D_Out_Parameter,
+      D_Operator,                          D_Ordinary_Fixed_Type,               D_Ordinary_Fixed_Type_No_Small,
+      D_Ordinary_Fixed_Type_With_Small,    D_Ordinary_Record_Type,              D_Ordinary_Record_Variable,
+      D_Out_Parameter,
 
       D_Package,                           D_Package_Instantiation,             D_Package_Statements,
       D_Predefined_Operator,               D_Private_Extension,                 D_Procedure,
@@ -120,13 +119,11 @@ package body Rules.Declarations is
       D_Protected_Entry,                   D_Protected_Type,                    D_Protected_Variable,
 
       D_Record_Type,                       D_Relay_Function,                    D_Relay_Package,
-      D_Relay_Procedure,                   D_Renaming,                          D_Renaming_As_Body,
-      D_Renaming_As_Declaration,
+      D_Relay_Procedure,
 
       D_Scalar_Variable,                   D_Self_Calling_Function,             D_Self_Calling_Procedure,
       D_Separate,                          D_Signed_Type,                       D_Single_Array,
       D_Single_Protected,                  D_Single_Task,                       D_Subtype,
-      D_Synonym_Renaming,
 
       D_Tagged_Incomplete_Type,            D_Tagged_Private_Type,               D_Tagged_Type,
       D_Tagged_Variable,                   D_Task,                              D_Task_Discriminant,
@@ -393,8 +390,6 @@ package body Rules.Declarations is
    procedure Process_Declaration (Element : in Asis.Element) is
       use Asis, Asis.Elements, Asis.Expressions, Asis.Declarations, Asis.Definitions;
       use Framework.Locations, Thick_Queries, Utilities;
-
-      Target_Entity : Asis.Name;
 
       procedure Check_Abstract is
       begin
@@ -1335,163 +1330,9 @@ package body Rules.Declarations is
             =>
             Do_Report (D_Separate, Element);
 
-         when A_Function_Renaming_Declaration
-           | A_Generic_Function_Renaming_Declaration
-              =>
-            if Declaration_Kind (Element) = A_Function_Renaming_Declaration
-              and then (Rule_Used (D_Renaming_As_Declaration) or Rule_Used (D_Renaming_As_Body))
-            then
-               if Is_Equal (Element, Corresponding_Declaration (Element)) then
-                  Do_Report ((D_Renaming, D_Renaming_As_Declaration), Element);
-               else
-                  Do_Report ((D_Renaming, D_Renaming_As_Body), Element);
-               end if;
-            else
-               Do_Report (D_Renaming, Element);
-            end if;
-
-            if Declaration_Kind (Element) = A_Function_Renaming_Declaration
-              and then Rule_Used (D_Constructor)
-            then
+         when A_Function_Renaming_Declaration =>
+            if Rule_Used (D_Constructor) then
                Check_Constructor (Element);
-            end if;
-
-
-            if   Rule_Used (D_Not_Operator_Renaming)
-              or Rule_Used (D_Non_Identical_Renaming)
-              or Rule_Used (D_Operator_Renaming)
-              or Rule_Used (D_Non_Identical_Operator_Renaming)
-              or Rule_Used (D_Library_Unit_Renaming)
-              or Rule_Used (D_Synonym_Renaming)
-            then
-               Target_Entity := Simple_Name (Renamed_Entity (Element));
-
-               case Expression_Kind (Target_Entity) is
-                  when An_Explicit_Dereference
-                     | An_Attribute_Reference
-                     | A_Character_Literal
-                       =>
-                     Do_Report (D_Not_Operator_Renaming, Element);
-                     -- Cannot be identical name
-                     Do_Report (D_Non_Identical_Renaming, Element);
-                  when An_Operator_Symbol =>
-                     Do_Report (D_Operator_Renaming, Element);
-                     if   To_Upper (Defining_Name_Image (Names (Element) (1)))
-                       /= To_Upper (Name_Image (Target_Entity))
-                     then
-                        Do_Report ((D_Non_Identical_Renaming, D_Non_Identical_Operator_Renaming),
-                                   Element);
-                     end if;
-                  when An_Identifier
-                     | An_Enumeration_Literal
-                       =>
-                     Do_Report (D_Not_Operator_Renaming, Element);
-                     if   To_Upper (Defining_Name_Image (Names (Element) (1)))
-                       /= To_Upper (Name_Image (Target_Entity))
-                     then
-                        Do_Report (D_Non_Identical_Renaming, Element);
-                     end if;
-
-                     if Is_Nil (Enclosing_Element (Corresponding_Name_Declaration (Target_Entity))) then
-                        Do_Report (D_Library_Unit_Renaming, Element);
-                     end if;
-
-                     declare
-                        Good_Rename : Asis.Declaration := Element;
-                     begin
-                        if Declaration_Kind (Element) = A_Function_Renaming_Declaration then
-                           Good_Rename := Corresponding_Declaration (Element);
-                        end if;
-                        if Is_Equal (Enclosing_Element (Corresponding_Name_Declaration (Target_Entity)),
-                                     Enclosing_Element (Good_Rename))
-                        then
-                           Do_Report (D_Synonym_Renaming, Element);
-                        end if;
-                     end;
-                  when others =>
-                     Failure ("Not a function name in function renaming");
-               end case;
-            end if;
-
-         when An_Object_Renaming_Declaration
-            | An_Exception_Renaming_Declaration
-            | A_Package_Renaming_Declaration
-            | A_Procedure_Renaming_Declaration
-            | A_Generic_Package_Renaming_Declaration
-            | A_Generic_Procedure_Renaming_Declaration
-            =>
-            if Declaration_Kind (Element) = A_Procedure_Renaming_Declaration
-              and then (Rule_Used (D_Renaming_As_Declaration) or Rule_Used (D_Renaming_As_Body))
-            then
-               if Is_Equal (Element, Corresponding_Declaration (Element)) then
-                  Do_Report ((D_Renaming, D_Renaming_As_Declaration), Element);
-               else
-                  Do_Report ((D_Renaming, D_Renaming_As_Body), Element);
-               end if;
-            else
-               Do_Report (D_Renaming, Element);
-            end if;
-
-            if Rule_Used (D_Not_Operator_Renaming) then
-               Do_Report (D_Not_Operator_Renaming, Element);
-            end if;
-
-            if   Rule_Used (D_Non_Identical_Renaming)
-              or Rule_Used (D_Library_Unit_Renaming)
-              or Rule_Used (D_Synonym_Renaming)
-            then
-               Target_Entity := Renamed_Entity (Element);
-               loop
-                  case Expression_Kind (Target_Entity) is
-                     when An_Explicit_Dereference
-                        | An_Indexed_Component
-                        | A_Slice
-                        | An_Attribute_Reference
-                        | A_Function_Call
-                        | A_Character_Literal
-                          =>
-                        -- Always triggered
-                        Do_Report (D_Non_Identical_Renaming, Element);
-                        exit;
-                     when A_Selected_Component =>
-                        Target_Entity := Selector (Target_Entity);
-                     when A_Type_Conversion | A_Qualified_Expression =>
-                        Target_Entity := Converted_Or_Qualified_Expression (Target_Entity);
-                     when An_Identifier | An_Operator_Symbol | An_Enumeration_Literal =>
-                        if   To_Upper (Defining_Name_Image (Names (Element) (1)))
-                          /= To_Upper (Name_Image (Target_Entity))
-                        then
-                           Do_Report (D_Non_Identical_Renaming, Element);
-                        end if;
-
-                        if Is_Nil (Enclosing_Element (Corresponding_Name_Declaration (Target_Entity))) then
-                           Do_Report (D_Library_Unit_Renaming, Element);
-                        end if;
-
-                        declare
-                           Good_Rename : Asis.Declaration := Element;
-                        begin
-                           if Declaration_Kind (Element) = A_Procedure_Renaming_Declaration then
-                              Good_Rename := Corresponding_Declaration (Element);
-                           end if;
-                           if Is_Equal (Enclosing_Element (Corresponding_Name_Declaration (Target_Entity)),
-                                        Enclosing_Element (Good_Rename))
-                           then
-                              Do_Report (D_Synonym_Renaming, Element);
-                           end if;
-                        end;
-
-                        exit;
-                     when others =>
-                        Failure ("Not a name in renaming");
-                  end case;
-               end loop;
-            end if;
-
-            if Rule_Used (D_Function_Call_Renaming)
-              and then Expression_Kind (Asis.Declarations.Renamed_Entity (Element)) = A_Function_Call
-            then
-               Do_Report (D_Function_Call_Renaming, Element);
             end if;
 
          when A_Formal_Function_Declaration =>

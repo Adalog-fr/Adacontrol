@@ -1,6 +1,6 @@
 separate (T_Declarations)
-procedure Test_Self_Sp is                       -- self_calling_procedure, nested procedure, local procedure
-   function F (X : Integer) return Integer is   -- self_calling_function, no_spec_function
+procedure Test_Self_Sp is                       -- not library procedure, local procedure, self_calling_procedure
+   function F (X : Integer) return Integer is   -- no_spec_function, self_calling_function
    begin
       return F (X);
    end;
@@ -10,12 +10,12 @@ procedure Test_Self_Sp is                       -- self_calling_procedure, neste
       return Ok_Recurs (X);
    end Ok_Recurs;
 
-   function G (X : Integer) return Integer is   -- relay_function, no_spec_function
+   function G (X : Integer) return Integer is   -- no_spec_function, relay_function
    begin
       return F (X);
    end;
 
-   procedure P is                               -- nested procedure, local procedure, relay_procedure, no_spec_procedure
+   procedure P is                               -- not library procedure, local procedure, no_spec_procedure, relay_procedure
    begin
       Test_Self_Sp;
    end P;

@@ -1,5 +1,5 @@
 separate (T_Declarations)
-procedure Test_Anonymous_Subtype is            -- nested_procedure, local_procedure
+procedure Test_Anonymous_Subtype is            -- not library procedure, local_procedure
    subtype Int is Integer range 1 .. 10;       -- subtype
    subtype IntOK is Integer;                   -- subtype, unconstrained_subtype
    subtype Ws is Wide_String (1 .. 200);       -- subtype, anonymous_subtype_declaration
@@ -30,20 +30,20 @@ procedure Test_Anonymous_Subtype is            -- nested_procedure, local_proced
 
    AA_A : access Integer;                                         -- Variable, Uninitialized_Variable, Anonymous_access_variable
    AA_B : constant access Integer := new Integer'(1);             -- Constant, Anonymous_access_constant
-   AA_C : array (1..10) of access procedure;                      -- Variable, Single_Array, Constrained_Array_Variable, Array, Uninitiaized_Variable, Anonymous_Subtype_Declaration, Anonymous_access_component
+   AA_C : array (1..10) of access procedure;                      -- Variable, Single_Array, Constrained_Array_Variable, Array, Uninitiaized_Variable, Anonymous_access_component, Anonymous_Subtype_Declaration
 
-   type AA_T is array (1..10) of access function return Integer;  -- Constrained_Array_Type, Array, Anonymous_Subtype_Declaration, Anonymous_access_component
+   type AA_T is array (1..10) of access function return Integer;  -- Constrained_Array_Type, Array, Anonymous_access_component, Anonymous_Subtype_Declaration
    type AA_U (D : access Integer) is                              -- Ordinary_Record_Type, Record_Type, Discriminant, Anonymous_Access_Discriminant
       record
          F : access Integer;                                      -- Uninitialized_Record_Component, Anonymous_access_component
       end record;
 
-   procedure AA_P (X : access Integer) is                         -- Nested_Procedure, Local_Procedure, Anonymous_access_parameter, no_spec_procedure
+   procedure AA_P (X : access Integer) is                         -- Not Library Procedure, Local_Procedure, no_spec_procedure, Anonymous_access_parameter
    begin
       null;                                                       -- null_procedure_body, Null_Procedure
    end AA_P;
 
-   generic                                        -- nested_generic_procedure, generic
+   generic                                        -- not library generic_procedure, generic
       C : access Integer;                         -- anonymous_access_constant
       V : in out access Integer;                  -- in_out_generic_parameter, anonymous_access_variable
       F : access function return Integer;         -- anonymous_access_constant
@@ -57,9 +57,9 @@ procedure Test_Anonymous_Subtype is            -- nested_procedure, local_proced
       return X;
    end F;
 
-   function G(X : access Integer) return access Integer renames F;  -- renaming_as_declaration, renaming, not_operator_renaming, non_identical_renaming, anonymous_access_parameter, synonym_renaming
+   function G(X : access Integer) return access Integer renames F;  -- anonymous_access_parameter
 
-   generic                                                   -- nested_generic_function, generic
+   generic                                                   -- not library generic_function, generic
    function H (X : access Integer) return access Integer;    -- anonymous access_parameter
    function H (X : access Integer) return access Integer is  -- OK (message on spec)
    begin

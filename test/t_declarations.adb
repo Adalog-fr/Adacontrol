@@ -6,7 +6,7 @@ procedure T_declarations is     -- library procedure, no_spec_procedure
    procedure Test_Anonymous_Subtype is separate;   -- separate, no_spec_procedure
    procedure Test_Self_SP;                         -- not_library_procedure, local_procedure
    procedure Test_Self_SP           is separate;   -- separate
-   procedure Test_Constructors      is separate;   -- constructors
+   procedure Test_Constructors      is separate;   -- separate, no_spec_procedure
 
    type I1 is range 1 .. 10;      -- signed_type, integer_type
    type I2 is mod 128;            -- binary_modular_type, modular_type, integer_type
@@ -25,7 +25,7 @@ procedure T_declarations is     -- library procedure, no_spec_procedure
      entry E (I : Integer := 1);  -- task_entry, defaulted_parameter
    end T1;
    task body T1 is
-      procedure P is              -- task_body procedure, not library procedure, local procedure, no_spec_procedure
+      procedure P is              -- not library procedure, task_body procedure, local procedure, no_spec_procedure
       begin
          null;                    -- null_procedure_body, null_procedure
       end;
@@ -54,7 +54,7 @@ procedure T_declarations is     -- library procedure, no_spec_procedure
 
    protected P1 is                                     -- single_protected, protected_variable, protected
       entry E1 (I : out Integer; J : in out Integer);  -- protected_entry, out_parameter, in_out_parameter
-      entry E2;                                        -- protected_entry, multiple_protected_entries
+      entry E2;                                        -- multiple_protected_entries, protected_entry
    end P1;
    protected body P1 is
       entry E1 (I : out Integer; J : in out Integer) when True  is --out_parameter, in_out_parameter
@@ -72,7 +72,7 @@ procedure T_declarations is     -- library procedure, no_spec_procedure
 
    protected type P2 (X : Integer := 0) is  -- protected_type, protected, protected_discriminant, defaulted_discriminant, discriminant
       entry E1;                             -- protected_entry
-      entry E2;                             -- protected_entry, multiple_protected_entries
+      entry E2;                             -- multiple_protected_entries, protected_entry
    private
       I : Integer;                          -- uninitialized_protected_component
       J : Integer := 0;                     -- initialized_protected_component
@@ -88,7 +88,7 @@ procedure T_declarations is     -- library procedure, no_spec_procedure
       end E2;
    end P2;
 
-   VP2 : P2 (0);           -- variable, protected_variable, anonymous subtype_declarations
+   VP2 : P2 (0);           -- variable, protected_variable, anonymous_subtype_declarations
 
    E : exception;         -- exception
    NN1 : constant := 1;   -- named_number
@@ -133,7 +133,7 @@ procedure T_declarations is     -- library procedure, no_spec_procedure
          I : Integer;      -- uninitialized_record_component
          J : Integer := 0; -- initialized_record_component
       end record;
-   Vclass : Rec1'Class          := Rec1'(null record);        -- variable, tagged_variable, class_wide_variable
+   Vclass : Rec1'Class          := Rec1'(null record);        -- variable, class_wide_variable, tagged_variable
    Cclass : constant Rec1'Class := Rec1'(null record);        -- constant, class_wide_constant
    VRec1  : Rec1;                                             -- variable, tagged_variable, uninitialized_variable
    VRec3  : Rec3;                                             -- variable, ordinary_record_variable, uninitialized_variable
@@ -148,7 +148,7 @@ procedure T_declarations is     -- library procedure, no_spec_procedure
    subtype Subarr22 is Arr2 (1 .. 3);                         -- subtype, anonymous_subtype_declaration
    subtype Subarr23 is Subarr22;                              -- subtype, unconstrained_subtype
    type Arr4 is new Subarr22;                                 -- derived_type
-   VArr1 : array (1 .. 10) of Character;                      -- anonymous_subtype_declaration, variable, single_array, constrained_array_variable, array, uninitialized_variable
+   VArr1 : array (1 .. 10) of Character;                      -- variable, single_array, constrained_array_variable, array, uninitialized_variable, anonymous_subtype_declaration
    Varr2 : Arr2 := (1, 2, 3);                                 -- variable, unconstrained_array_variable, array, initialized_variable
    Carr1 : constant Arr2 := Varr2;                            -- constant, unconstrained_array_constant, array
    Varr3 : array (Positive range <>) of Integer := (1, 2, 3); -- variable, single_array, unconstrained_array_variable, array, initialized_variable
@@ -188,12 +188,12 @@ procedure T_declarations is     -- library procedure, no_spec_procedure
       type Ext1 is new Rec1 with private;           -- Private_Extension
       type Abs1 is abstract tagged private;         -- Tagged_Private_Type, Non_Limited_Private_Type, Abstract_Type
       type Abs2 is abstract tagged limited private; -- Tagged_Private_Type, Limited_Private_Type, Abstract_Type
-      type Int1 is interface;
-      procedure P (X : Abs1) is abstract;           -- Public Procedure, Not Library Procedure, Local Procedure, Abstract_Procedure
+      type Int1 is interface;                       -- Interface_Type
+      procedure P (X : Abs1) is abstract;           -- Not Library Procedure, Public Procedure, Local Procedure, Abstract_Procedure
       function  F (Y : Abs2) return Integer is abstract;   -- Abstract_Function
       function  "+" (L : Abs1) return Integer is abstract; -- Operator, Abstract_Operator, Abstract_Function
       Deferred : constant Priv1;                    -- Constant, Deferred_Constant
-      procedure P_As_Body;                          -- Public Procedure, Not Library Procedure, Local Procedure
+      procedure P_As_Body;                          -- Not Library Procedure, Public Procedure, Local Procedure
       function  F_As_Body return Integer;
       function F_Expr (I : Integer) return Integer is -- Expression_Function
           (I+1);
@@ -209,8 +209,8 @@ procedure T_declarations is     -- library procedure, no_spec_procedure
          record
             X : Integer;                            -- Uninitialized_Record_component
          end record;
-      procedure Proc1;                              -- Private Procedure, Not Library Procedure, Local Procedure
-      Deferred : constant Priv1 := 0;
+      procedure Proc1;                              -- Not Library Procedure, Private Procedure, Local Procedure
+      Deferred : constant Priv1 := 0;               -- Constant
    end Pack2;
    package body Pack2 is
       type Abs3 is abstract new Abs2 with null record;   -- Null_Extension, Extension, Tagged_Type, Record_Type, Abstract_Type
@@ -218,7 +218,7 @@ procedure T_declarations is     -- library procedure, no_spec_procedure
       begin
          null;                                           -- null_procedure_body, Null_Procedure
       end Proc1;
-      procedure Proc2 is                                 -- Own procedure, not library procedure, local procedure, no_spec_procedure
+      procedure Proc2 is                                 -- not library procedure, Own procedure, local procedure, no_spec_procedure
       begin
          declare
             procedure Proc3 is                           -- Not Library Procedure, Local Procedure, Block Procedure, no_spec_procedure
@@ -229,12 +229,12 @@ procedure T_declarations is     -- library procedure, no_spec_procedure
             null;
          end;
       end Proc2;
-      procedure P_As_Body renames Test_Self_SP;          -- renaming_as_body, renaming, not_operator_renaming, non_identical_renaming
+      procedure P_As_Body renames Test_Self_SP;
       function F_Hidden return Integer is                -- No_Spec_Function
       begin
          return 0;
       end F_Hidden;
-      function  F_As_Body return Integer renames F_Hidden; -- renaming_as_body, renaming, not_operator_renaming, non_identical_renaming
+      function  F_As_Body return Integer renames F_Hidden;
    begin                                                   -- package_statements
       null;
    exception                                               -- handlers
@@ -244,16 +244,12 @@ procedure T_declarations is     -- library procedure, no_spec_procedure
          null;
    end Pack2;
 
-   package Pack3 renames Pack2;                          -- renaming, not_operator_renaming, non_identical_renaming, synonym_renaming
-   generic package Generic_Elementary_Functions          -- renaming, Not_Operator_Renaming, library_unit_renaming
-      renames Ada.Numerics.Generic_Elementary_Functions;
-
    function "+" (L : Arr2) return Arr2 is                -- operator #00046, no_spec_function
    begin
       return L;
    end "+";
 
-   function "+" (X, Y : Integer) return Integer is       -- operator, predefined_operator, multiple_names, no_spec_function
+   function "+" (X, Y : Integer) return Integer is       -- operator, predefined_operator, no_spec_function, multiple_names
    begin
       return I : Integer := 1 do
          I := I + 1;
@@ -272,10 +268,6 @@ procedure T_declarations is     -- library procedure, no_spec_procedure
       return 1;
    end "-";
 
-   function F1  (X, Y : Integer) return Integer renames "+";            -- renaming_as_declaration, renaming, operator_renaming, non_identical_operator_renaming, non_identical_renaming, multiple_names
-   function F2  (X, Y : Integer) return Integer renames Standard."+";   -- renaming_as_declaration, renaming, operator_renaming, non_identical_operator_renaming, non_identical_renaming, multiple_names
-   function "*" (X, Y : Integer) return Integer renames Standard."*";   -- renaming_as_declaration, renaming, operator_renaming, multiple_names
-
    generic                                                                    -- Not Library Generic_Package, generic
       Global : in out Integer;                                                -- in_out_generic_parameter
       type T1 is private;                                                     -- formal type
@@ -290,7 +282,7 @@ procedure T_declarations is     -- library procedure, no_spec_procedure
       with package EF is new Ada.Numerics.Generic_Elementary_Functions (<>);  -- formal_package
    package Test_Formals is private end;                                       -- empty_visible_part, empty_private_part
    package body Test_Formals is
-      procedure Inner is begin null; end;                                     -- in_generic procedure, own procedure, not library procedure, local procedure, null_procedure_body, null_procedure, no_spec_function
+      procedure Inner is begin null; end;                                     -- not library procedure, in_generic procedure, own procedure, local procedure, no_spec_procedure, null_procedure_body, null_procedure
       type Acc_T1 is access T1;                                               -- access_formal_type, access_type
       type Acc_T2 is access T2;                                               -- access_unknown_discriminated_type, access_formal_type, access_type;
    begin
@@ -302,15 +294,7 @@ procedure T_declarations is     -- library procedure, no_spec_procedure
    V_Int1 : Int1;                                                       -- variable, scalar_variable, uninitialized_variable
    V_Int2 : Int2 range 1..10;                                           -- variable, scalar_variable, uninitialized_variable, anonymous_subtype_declaration
 
-   Arr : Integer renames X_Declarations.Arr (1);                        -- not_operator_renaming, non_identical_renaming, renaming
-   function Succ (X : Integer) return Integer renames Integer'Succ;     -- renaming_as_declaration, renaming, not_operator_renaming, non_identical_renaming
-   function "/" (X, Y : Integer) return Integer renames Standard."+";   -- renaming_as_declaration, renaming, operator_renaming, non_identical_operator_renaming, non_identical_renaming, multiple_names
-
-   procedure Predefined_Operator is separate;                           -- separate, no_spec_function
-
-   Renf1 : Integer renames Succ (1);                                    -- renaming, not_operator_renaming, non_identical_renaming, function_call_renaming
-   Renf2 : Integer renames "+"(1,2);                                    -- renaming, not_operator_renaming, non_identical_renaming, function_call_renaming
-
+   procedure Predefined_Operator is separate;                           -- separate, no_spec_procedure
 
    type Al1 is array (Int1) of aliased Character;                       -- constrained_array_type, array, aliased_array_component
    type Al2 is array (Positive range <>) of aliased Character;          -- unconstrained_array_type, array, aliased_array_component
@@ -335,8 +319,8 @@ procedure T_declarations is     -- library procedure, no_spec_procedure
       return False;
    end "=";
 begin
-   begin
-      null;                                                             -- null_procedure_body, null_procedure
+   begin                                                                -- null_procedure_body, null_procedure
+      null;
    exception                                                            -- handlers
       when Constraint_Error | Numeric_Error =>
          null;
