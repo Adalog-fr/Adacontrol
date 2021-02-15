@@ -13,3 +13,10 @@ Ex:
 @example
 @end example
 
+@subsection Variables
+
+@subsection Fixes
+
+@subsection Tips
+
+@subsection Limitations
