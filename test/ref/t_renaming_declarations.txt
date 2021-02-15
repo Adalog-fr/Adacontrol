@@ -1,0 +1,108 @@
+t_renaming_declarations.adb:55:4: Error: Obj: object renaming
+t_renaming_declarations.adb:55:4: Error: Synonym: synonym object renaming
+t_renaming_declarations.adb:55:4: Error: Global_All: not block object renaming
+t_renaming_declarations.adb:56:4: Error: Obj: object renaming
+t_renaming_declarations.adb:56:4: Error: Synonym: synonym object renaming
+t_renaming_declarations.adb:56:4: Error: Global_All: not block object renaming
+t_renaming_declarations.adb:57:4: Error: Obj: object renaming
+t_renaming_declarations.adb:57:4: Error: Synonym: synonym object renaming
+t_renaming_declarations.adb:57:4: Error: Ren_Ren: renaming object renaming
+t_renaming_declarations.adb:57:4: Error: Global_All: not block object renaming
+t_renaming_declarations.adb:58:4: Error: Call: function_call renaming
+t_renaming_declarations.adb:58:4: Error: Global_All: not block function_call renaming
+t_renaming_declarations.adb:59:4: Error: Obj: object renaming
+t_renaming_declarations.adb:59:4: Error: Synonym: synonym object renaming
+t_renaming_declarations.adb:59:4: Error: Global_All: not block object renaming
+t_renaming_declarations.adb:60:4: Error: Obj: object renaming
+t_renaming_declarations.adb:60:4: Error: Synonym: synonym object renaming
+t_renaming_declarations.adb:60:4: Error: Global_All: not block object renaming
+t_renaming_declarations.adb:61:4: Error: Obj: object renaming
+t_renaming_declarations.adb:61:4: Error: Synonym: synonym object renaming
+t_renaming_declarations.adb:61:4: Error: Global_All: not block object renaming
+t_renaming_declarations.adb:62:4: Error: Obj: object renaming
+t_renaming_declarations.adb:62:4: Error: Synonym: synonym object renaming
+t_renaming_declarations.adb:62:4: Error: Ren_Ren: renaming object renaming
+t_renaming_declarations.adb:62:4: Error: Global_All: not block object renaming
+t_renaming_declarations.adb:63:4: Error: Obj: object renaming
+t_renaming_declarations.adb:63:4: Error: Synonym: synonym object renaming
+t_renaming_declarations.adb:63:4: Error: Global_All: not block object renaming
+t_renaming_declarations.adb:64:4: Error: Obj: object renaming
+t_renaming_declarations.adb:64:4: Error: Synonym: synonym object renaming
+t_renaming_declarations.adb:64:4: Error: Global_All: not block object renaming
+t_renaming_declarations.adb:65:4: Error: Obj: object renaming
+t_renaming_declarations.adb:65:4: Error: Synonym: synonym object renaming
+t_renaming_declarations.adb:65:4: Error: Global_All: not block object renaming
+t_renaming_declarations.adb:66:4: Error: Obj: object renaming
+t_renaming_declarations.adb:66:4: Error: Synonym: synonym object renaming
+t_renaming_declarations.adb:66:4: Error: Global_All: not block object renaming
+t_renaming_declarations.adb:67:4: Error: Call: function_call renaming
+t_renaming_declarations.adb:67:4: Error: Global_All: not block function_call renaming
+t_renaming_declarations.adb:68:4: Error: Obj: object renaming
+t_renaming_declarations.adb:68:4: Error: Global_All: not block object renaming
+t_renaming_declarations.adb:69:4: Error: Obj: object renaming
+t_renaming_declarations.adb:69:4: Error: Global_All: not block object renaming
+t_renaming_declarations.adb:70:4: Error: Obj: object renaming
+t_renaming_declarations.adb:70:4: Error: Global_All: not block object renaming
+t_renaming_declarations.adb:71:4: Error: Obj: object renaming
+t_renaming_declarations.adb:71:4: Error: Global_All: not block object renaming
+t_renaming_declarations.adb:72:13: Error: Not_as_op: not as_operator function renaming
+t_renaming_declarations.adb:72:13: Error: Synonym: synonym function renaming
+t_renaming_declarations.adb:72:13: Error: Global_All: not block function renaming
+t_renaming_declarations.adb:73:13: Error: As_op: as_operator function renaming
+t_renaming_declarations.adb:73:13: Error: Synonym: synonym function renaming
+t_renaming_declarations.adb:73:13: Error: Global_All: not block function renaming
+t_renaming_declarations.adb:74:13: Error: Not_identical_op: not identical operator function renaming
+t_renaming_declarations.adb:74:13: Error: As_op: as_operator function renaming
+t_renaming_declarations.adb:74:13: Error: Op: operator function renaming
+t_renaming_declarations.adb:74:13: Error: Global_All: not block function renaming
+t_renaming_declarations.adb:75:13: Error: As_op: as_operator function renaming
+t_renaming_declarations.adb:75:13: Error: Op: operator function renaming
+t_renaming_declarations.adb:75:13: Error: Global_All: not block function renaming
+t_renaming_declarations.adb:76:13: Error: Not_as_op: not as_operator function renaming
+t_renaming_declarations.adb:76:13: Error: Global_All: not block function renaming
+t_renaming_declarations.adb:78:14: Error: As_proc_spec: not as_body procedure renaming
+t_renaming_declarations.adb:78:14: Error: Synonym: synonym procedure renaming
+t_renaming_declarations.adb:78:14: Error: Global_All: not block procedure renaming
+t_renaming_declarations.adb:79:14: Error: As_proc_body: as_body procedure renaming
+t_renaming_declarations.adb:79:14: Error: Synonym: synonym procedure renaming
+t_renaming_declarations.adb:79:14: Error: Global_All: not block procedure renaming
+t_renaming_declarations.adb:80:14: Error: As_proc_spec: not as_body procedure renaming
+t_renaming_declarations.adb:80:14: Error: Synonym: synonym procedure renaming
+t_renaming_declarations.adb:80:14: Error: Ren_Ren: renaming procedure renaming
+t_renaming_declarations.adb:80:14: Error: Global_All: not block procedure renaming
+t_renaming_declarations.adb:82:12: Error: Local_pack: not library_unit package renaming
+t_renaming_declarations.adb:82:12: Error: Synonym: synonym package renaming
+t_renaming_declarations.adb:82:12: Error: Global_All: not block package renaming
+t_renaming_declarations.adb:83:12: Error: Local_pack: not library_unit package renaming
+t_renaming_declarations.adb:83:12: Error: Synonym: synonym package renaming
+t_renaming_declarations.adb:83:12: Error: Ren_Ren: renaming package renaming
+t_renaming_declarations.adb:83:12: Error: Global_All: not block package renaming
+t_renaming_declarations.adb:84:12: Error: Libr_pack: library_unit package renaming
+t_renaming_declarations.adb:84:12: Error: Global_All: not block package renaming
+t_renaming_declarations.adb:87:7: Error: Obj: object renaming
+t_renaming_declarations.adb:87:7: Error: Local_All: block object renaming
+t_renaming_declarations.adb:89:16: Error: Not_identical_op: not identical operator function renaming
+t_renaming_declarations.adb:89:16: Error: Op_not_as_op: not as_operator operator function renaming
+t_renaming_declarations.adb:89:16: Error: Not_as_op: not as_operator function renaming
+t_renaming_declarations.adb:89:16: Error: Op: operator function renaming
+t_renaming_declarations.adb:89:16: Error: Local_All: block function renaming
+t_renaming_declarations.adb:90:7: Error: Exc: exception renaming
+t_renaming_declarations.adb:90:7: Error: Local_All: block exception renaming
+t_renaming_declarations.adb:91:7: Error: Exc: exception renaming
+t_renaming_declarations.adb:91:7: Error: Synonym: synonym exception renaming
+t_renaming_declarations.adb:91:7: Error: Ren_Ren: renaming exception renaming
+t_renaming_declarations.adb:91:7: Error: Local_All: block exception renaming
+t_renaming_declarations.adb:93:25: Error: Ren_Gen: generic procedure renaming
+t_renaming_declarations.adb:93:25: Error: Local_All: block procedure renaming
+t_renaming_declarations.adb:94:25: Error: Ren_Gen: generic procedure renaming
+t_renaming_declarations.adb:94:25: Error: Synonym: synonym procedure renaming
+t_renaming_declarations.adb:94:25: Error: Ren_Ren: renaming procedure renaming
+t_renaming_declarations.adb:94:25: Error: Local_All: block procedure renaming
+t_renaming_declarations.adb:95:25: Error: Not_as_op: not as_operator function renaming
+t_renaming_declarations.adb:95:25: Error: Local_All: block function renaming
+t_renaming_declarations.adb:96:23: Error: Ren_Gen: generic package renaming
+t_renaming_declarations.adb:96:23: Error: Libr_pack: library_unit package renaming
+t_renaming_declarations.adb:96:23: Error: Local_All: block package renaming
+x_renaming_declarations.ads:2:9: Error: Libr_pack: library_unit package renaming
+x_renaming_declarations.ads:2:9: Error: Lib_As_Lib: library library_unit package renaming
+x_renaming_declarations.ads:2:9: Error: Global_All: not block package renaming

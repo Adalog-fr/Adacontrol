@@ -1,0 +1,24 @@
+Global_All : check renaming_declarations (not block all);
+Local_All  : check renaming_declarations (block all);
+Ren_Ren    : check renaming_declarations (renaming all);
+Synonym    : check renaming_declarations(synonym all);
+Lib_As_Lib : check renaming_declarations (library library_unit all);
+
+Call : check renaming_declarations (function_call);
+Obj  : check renaming_declarations (object);
+
+Op               : check renaming_declarations (operator function);
+As_op            : check renaming_declarations (as_operator function);
+Not_as_op        : check renaming_declarations (not as_operator function);
+Op_not_as_op     : check renaming_declarations (not as_operator operator function);
+Not_identical_op : check renaming_declarations (not identical operator all); -- although it applies only to functions, OK
+
+As_proc_spec : check renaming_declarations (not as_body procedure);
+As_proc_body : check renaming_declarations (as_body procedure);
+
+Local_pack : check renaming_declarations (not library_unit package);
+Libr_pack  : check renaming_declarations (library_unit package);
+
+Exc : check renaming_declarations (exception);
+
+Ren_Gen : check renaming_declarations (generic procedure, generic package); -- generic functions not checked

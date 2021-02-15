@@ -80,6 +80,7 @@ with
   Rules.Pragmas,
   Rules.Record_Declarations,
   Rules.Reduceable_Scope,
+  Rules.Renaming_Declarations,
   Rules.Representation_Clauses,
   Rules.Return_Statements,
   Rules.Return_Type,
@@ -533,13 +534,24 @@ package body Framework.Plugs is
                   Rules.Usage.                  Process_Declaration          (Element);
 
                when A_Procedure_Renaming_Declaration =>
-                  Rules.Derivations. Process_Callable    (Element);
-                  Rules.Style.       Process_Declaration (Element);
+                  Rules.Derivations.           Process_Callable    (Element);
+                  Rules.Renaming_Declarations. Process_Renaming_Declaration (Element);
+                  Rules.Style.                 Process_Declaration (Element);
 
                when A_Function_Renaming_Declaration =>
-                  Rules.Derivations. Process_Callable             (Element);
-                  Rules.Return_Type. Process_Function_Declaration (Element);
-                  Rules.Style.       Process_Declaration          (Element);
+                  Rules.Derivations.           Process_Callable             (Element);
+                  Rules.Renaming_Declarations. Process_Renaming_Declaration (Element);
+                  Rules.Return_Type.           Process_Function_Declaration (Element);
+                  Rules.Style.                 Process_Declaration          (Element);
+
+               when An_Object_Renaming_Declaration -- other renamings
+                  | An_Exception_Renaming_Declaration
+                  | A_Package_Renaming_Declaration
+                  | A_Generic_Package_Renaming_Declaration
+                  | A_Generic_Procedure_Renaming_Declaration
+                  | A_Generic_Function_Renaming_Declaration
+                  =>
+                  Rules.Renaming_Declarations. Process_Renaming_Declaration (Element);
 
                when A_Formal_Procedure_Declaration   =>
                   Rules.Style. Process_Declaration (Element);

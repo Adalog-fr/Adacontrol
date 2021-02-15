@@ -3027,6 +3027,7 @@ static, we use the term @i{RM_Static}.
 * Pragmas::
 * Record_Declarations::
 * Reduceable_Scope::
+* Renaming_Declarations::
 * Representation_Clauses::
 * Return_Statements::
 * Return_Type::
@@ -4222,8 +4223,7 @@ those occurring at specified locations.
   unconstrained_array_variable      | unconstrained_subtype           |
   uninitialized_protected_component | uninitialized_record_component  |
   uninitialized_variable            | unknown_discriminant            |
-  variable                          |
-  variant_part
+  variable                          | variant_part
 @end example
 
 @subsection Action
@@ -8315,7 +8315,7 @@ component had the specified alignment), thus creating possible false
 positives. Such cases are detected by the rule ``uncheckable''.
 @xref{Uncheckable}.
 
-@node Reduceable_Scope, Representation_Clauses, Record_Declarations, Rules reference
+@node Reduceable_Scope, , Record_Declarations, Rules reference
 @section Reduceable_Scope
 This rule controls declarations that could be moved to some inner
 scope.
@@ -8398,7 +8398,125 @@ both. There are differences too: ``unnecessary_use_clause'' reports
 while ``reduceable_scope'' reports clauses that are useful, but only
 in an inner scope.
 
-@node Representation_Clauses, Return_Statements, Reduceable_Scope, Rules reference
+@node Renaming_Declarations, Representation_Clauses, Reduceable_Scope, Rules reference
+@section Renaming_Declarations
+This rule controls usage of renaming declarations, possibly only those
+occurring at specified locations.
+
+@subsection Syntax
+@example
+<control_kind> renaming_declarations (<subrule> @{, <subrule>@})
+<subrule>  ::= @{[not] <location>@} @{[not] <filter>@} <renaming_kw>
+<location> ::= block   | library | local      | own |
+               private | public  | in_generic | task_body
+<filter>   ::= identical   | generic | as_body     | operator |
+               as_operator | synonym |library_unit | renaming
+<renaming_kw> ::= all      | object  | function_call | procedure |
+                  function | package | exception
+@end example
+
+@subsection Action
+The <location> restricts the places where the occurrence of the
+renaming declaration is controlled. If it is preceded by ``not'', the
+declaration is controlled except at this location. Several
+<location_kw> can be given, in which case the declaration is
+controlled at places where all the keywords apply.
+
+@itemize @bullet
+@item
+@code{block}: only declarations appearing in block statements are controlled.
+@item
+@code{library}: only library level declarations are controlled.
+@item
+@code{local}: only local declarations are controlled (i.e. only declarations
+appearing in (generic) packages, possibly nested, are allowed).
+@item
+@code{own}: only declarations that are local to a (generic) package body
+are controlled.
+@item
+@code{public}: only declarations appearing in the visible part of
+(generic) packages are controlled.
+@item
+@code{private}: only declarations appearing directly in a private
+part are controlled.
+@item
+@code{in_generic}: only declarations appearing directly or indirectly in a generic
+specification or body are controlled.
+@item
+@code{task_body}: only declarations appearing directly in a task body
+are controlled. Note that it would not make sense to have a
+<location> for task @i{specifications}, since renaming declarations are not
+allowed there.
+@end itemize
+
+The <filter> restricts the renaming declarations that are
+controlled to those with certain properties (or to those @i{not}
+having the property, if preceded by @code{not}). Several <filter>
+can be given, in which case the declaration is controlled when all the
+keywords apply.
+
+@itemize @bullet
+@item
+@code{identical}: the identifier of the renaming is the same as the
+one of the renamed entity.
+@item
+@code{generic}: the renamed entity is generic.
+@item
+@code{as_body}: the renaming is a ``renaming as body'' of a
+subprogram.
+@item
+@code{operator}: the renamed entity is an operator.
+@item
+@code{as_operator}: the identifier of the renaming is an operator
+symbol.
+@item
+@code{synonym}: the renaming and the renamed entity are declared in
+the same declarative part  (these serve no purpose as far as
+visibility is concerned, and are thus pure synonyms).
+@item
+@code{library_unit}: the renamed entity is a library unit.
+@item
+@code{renaming}: the renamed entity is itself declared by a renaming
+declaration.
+@end itemize
+
+This rule can be given once for each combination the parameters.
+
+Ex:
+@example
+-- No renaming in same scope as renamed entity:
+check renaming_declarations (synonym all);
+
+-- Renamings "as body":
+check renaming_declarations (as_body, all);
+
+-- Renaming of an operator as a different operator:
+check renaming_declarations (not identical operator as_operator function);
+
+-- Renamings declared in block statements:
+check renaming_declarations (not block all);
+
+-- Renamings of library packages
+check renaming_declarations (library_unit package);
+
+-- Renamings as library units
+check renaming_declarations (library all);
+@end example
+
+@subsection Tips
+``library'' is a <location> and means that the renaming is itself a
+library unit. ``library_unit'' is a <filter> and means that the
+renamed entity is a library unit.
+
+``as_operator'' means that the renaming's identifier is an operator
+symbol, while ``operator'' means that the renamed entity is an
+operator.
+
+Of course, some <filter> do not apply to some forms of renaming
+declarations: it is not an error if you use them, but don't expect to
+find any!
+
+@node Representation_Clauses, Return_Statements, Renaming_Declarations, Rules reference
 @section Representation_Clauses
 This rule controls usage of representation clause.
 
@@ -12066,6 +12184,33 @@ changes are very straightforward and can be done easily by hand, or
 with scripts if many files are involved.
 
 @section Migrating from 1.21r6b
+
+@subsection Declarations
+The various forms of renaming declarations have moved from the rule
+``declarations'' to their own rule ``renaming_declarations'' (with
+more possibilities). The correspondance is as follows:
+@example
+check declarations (renaming);
+   => check renaming_declarations [(all)];
+check declarations (function_call_renaming);
+   => check renaming_declarations (function_call);
+check declarations (non_identical_renaming);
+   => check renaming_declarations (not identical all);
+check declarations (operator_renaming);
+   => check renaming_declarations (operator function);
+check declarations (not_operator_renaming);
+   => check renaming_declarations (not operator function);
+check declarations (non_identical_operator_renaming);
+   => check renaming_declarations (not identical operator function);
+check declarations (library_unit_renaming);
+   => check renaming_declarations (library all);
+check declarations (renaming_as_body);
+   => check renaming_declarations (as_body all);
+check declarations (renaming_as_declaration);
+   => check renaming_declarations (not as_body all);
+check declarations (synonym_renaming);
+   => check renaming_declarations (synonym all);
+@end example
 
 @subsection Style
 The subrule ``Negative_Condition'' has been removed. It was redundant with

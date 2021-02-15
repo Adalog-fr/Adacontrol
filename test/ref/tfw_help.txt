@@ -674,6 +674,18 @@ Parameter(s): {<restriction>} all        | variable     | constant |
                               (optional)
 <restriction>: no_blocks | to_body
 ----
+Rule: RENAMING_DECLARATIONS
+Control occurrences of Ada declarations
+
+Parameter(s): {<location>} {<filter>} <subrule>
+<subrule>: all      | object  | function_call | procedure |
+           function | package | exception
+<location>: [not] all       | block   | library | local      |
+                  own       | private | public  | in_generic |
+                  task_body
+<filter>: as_body      | as_operator | generic  | identical |
+          library_unit | operator    | renaming | synonym
+----
 Rule: REPRESENTATION_CLAUSES
 Control occurrences of representation clauses
 
@@ -1076,17 +1088,18 @@ Rules:
    Parameter_Declarations          Positional_Associations         
    Potentially_Blocking_Operations Pragmas                         
    Record_Declarations             Reduceable_Scope                
-   Representation_Clauses          Return_Statements               
-   Return_Type                     Side_Effect_Parameters          
-   Silent_Exceptions               Simplifiable_Expressions        
-   Simplifiable_Statements         Statements                      
-   Style                           Terminating_Tasks               
-   Type_Initial_Values             Type_Usage                      
-   Uncheckable                     Units                           
-   Unit_Pattern                    Unnecessary_Use_Clause          
-   Unsafe_Elaboration              Unsafe_Paired_Calls             
-   Unsafe_Unchecked_Conversion     Usage                           
-   Use_Clauses                     With_Clauses                    
+   Renaming_Declarations           Representation_Clauses          
+   Return_Statements               Return_Type                     
+   Side_Effect_Parameters          Silent_Exceptions               
+   Simplifiable_Expressions        Simplifiable_Statements         
+   Statements                      Style                           
+   Terminating_Tasks               Type_Initial_Values             
+   Type_Usage                      Uncheckable                     
+   Units                           Unit_Pattern                    
+   Unnecessary_Use_Clause          Unsafe_Elaboration              
+   Unsafe_Paired_Calls             Unsafe_Unchecked_Conversion     
+   Usage                           Use_Clauses                     
+   With_Clauses                    
 
 ADACTL v. 1.22b11 
 ----

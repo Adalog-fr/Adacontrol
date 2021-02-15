@@ -2,6 +2,10 @@
 == V1.22b11 ==
 ==============
 
+New rule:
+---------
+renaming_declarations
+
 Changes to existing rules:
 --------------------------
 

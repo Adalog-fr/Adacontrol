@@ -74,6 +74,7 @@ conf/t_potentially_blocking_operations.aru: No syntax error
 conf/t_pragmas.aru: No syntax error
 conf/t_record_declarations.aru: No syntax error
 conf/t_reduceable_scope.aru: No syntax error
+conf/t_renaming_declarations.aru: No syntax error
 conf/t_representation_clauses.aru: No syntax error
 conf/t_return_statements.aru: No syntax error
 conf/t_return_type.aru: No syntax error
