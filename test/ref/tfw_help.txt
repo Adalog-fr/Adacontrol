@@ -322,6 +322,7 @@ Parameter(s): and                       | and_array                        |
               record_aggregate          | record_partial_others            |
               record_others             | redispatching_function_call      |
               static_membership         | slice                            |
+              target_name               | trivial_target_name              |
               type_conversion           | unconverted_fixed_multiplying_op |
               underived_conversion      | universal_range                  |
               unqualified_aggregate     | upward_conversion                |

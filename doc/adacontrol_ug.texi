@@ -5451,36 +5451,38 @@ This rule controls usage of various kinds of expressions.
 <control_kind> expressions (<subrule> @{, <subrule>@});
 <subrule> ::= @{<category>@} <expression_kw>
 <expression_kw> ::=
-   and                        | and_array                        |
-   and_binary                 | and_boolean                      |
-   and_then                   | array_aggregate                  |
-   array_named_others         | array_non_static_range           |
-   array_others               | array_partial_others             |
-   array_positional_others    | array_range                      |
-   case                       | complex_parameter                |
-   downward_conversion        | dispatching_function_calls       |
-   dynamic_function_calls     | extendable_aggregate             |
-   extension_aggregate        | explicit_dereference             |
-   fixed_multiplying_op       | for_all                          |
-   for_some                   | function_calls                   |
-   if                         | if_elsif                         |
-   if_no_else                 | implicit_dereference             |
-   in                         | inconsistent_attribute_dimension |
-   inherited_function_call    | mixed_operators                  |
-   not                        | not_in                           |
-   or                         | or_array                         |
-   or_binary                  | or_boolean                       |
-   or_else                    | parameter_view_conversion        |
-   prefixed_operator          | real_equality                    |
-   record_partial_others      | record_aggregate                 |
-   record_others              | redispatching_function_calls     |
-   slice                      | static_membership                |
-   type_conversion            | upward_conversion                |
-   unconverted_multiplying_op | underived_conversion             |
-   universal_range            | unqualified_aggregate            |
-   xor                        | xor_array                        |
-   xor_binary                 | xor_boolean
+   and                       | and_array                        |
+   and_binary                | and_boolean                      |
+   and_then                  | array_aggregate                  |
+   array_named_others        | array_non_static_range           |
+   array_others              | array_partial_others             |
+   array_positional_others   | array_range                      |
+   case                      | complex_parameter                |
+   dispatching_function_call | downward_conversion              |
+   dynamic_function_call     | explicit_dereference             |
+   extendable_aggregate      | extension_aggregate              |
+   fixed_multiplying_op      | for_all                          |
+   for_some                  | function_call                    |
+   if                        | if_elsif                         |
+   if_no_else                | implicit_dereference             |
+   in                        | inconsistent_attribute_dimension |
+   inherited_function_call   | mixed_operators                  |
+   not                       | not_in                           |
+   or                        | or_array                         |
+   or_binary                 | or_boolean                       |
+   or_else                   | parameter_view_conversion        |
+   prefixed_operator         | real_equality                    |
+   record_aggregate          | record_others                    |
+   record_partial_others     | redispatching_function_call      |
+   slice                     | static_membership                |
+   target_name               | trivial_target_name              |
+   type_conversion           | unconverted_fixed_multiplying_op |
+   underived_conversion      | universal_range                  |
+   unqualified_aggregate     | upward_conversion                |
+   xor                       | xor_array                        |
+   xor_binary                | xor_boolean
 @end example
+
 @subsection Action
 This rule controls usage of certain forms of expressions. The rule can
 be specified at most once for each subrule (i.e. subrules that accept
@@ -5611,6 +5613,11 @@ point) values.
 @code{@b{not in}}) where the expression on the left is statically
 known to belong to the range (or subtype) on the right, and is
 therefore always True (or false for @code{@b{not in}}).
+@item
+@code{target_name} controls occurrences of the (Ada202X) symbol of
+assignment target name (AKA ``@@''), while @code{trivial_target_name}
+controls only those where the target of the assignment is a simple
+identifier (and where the use of ``@@'' doesn't bring much).
 @item
 @code{type_conversion} controls all (sub)type conversions, while
 @code{underived_conversion} controls conversions between types that do

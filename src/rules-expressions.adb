@@ -1,7 +1,7 @@
 ----------------------------------------------------------------------
 --  Rules.Expressions - Package body                                --
 --                                                                  --
---  This software is (c) SAGEM DS and Adalog 2004-2005.             --
+--  This software is (c) SAGEM DS and Adalog 2004-2021.             --
 --  The Ada Controller is  free software; you can  redistribute  it --
 --  and/or modify it under  terms of the GNU General Public License --
 --  as published by the Free Software Foundation; either version 2, --
@@ -83,7 +83,7 @@ package body Rules.Expressions is
 
                      E_Static_Membership,                E_Slice,
 
-                     E_Type_Conversion,
+                     E_Target_Name,                      E_Trivial_Target_Name,    E_Type_Conversion,
 
                      E_Unconverted_Fixed_Multiplying_Op, E_Underived_Conversion,   E_Universal_Range,
                      E_Unqualified_Aggregate,            E_Upward_Conversion,
@@ -1108,8 +1108,15 @@ package body Rules.Expressions is
          when A_For_Some_Quantified_Expression =>
             Do_Report (E_For_Some, Get_Location (Expression));
 
-         when others =>
-            null;
+         when others =>   -- Including A_Target_Name if supported
+            if Expression_Kinds'Wide_Image (Expression_Kind (Expression)) = "A_TARGET_NAME" then
+               Do_Report (E_Target_Name, Get_Location (Expression));
+               if Rule_Used (E_Trivial_Target_Name) then
+                  if Expression_Kind (Corresponding_Target (Expression)) = An_Identifier then
+                     Do_Report (E_Trivial_Target_Name, Get_Location (Expression));
+                  end if;
+               end if;
+            end if;
       end case;
    end Process_Expression;
 
