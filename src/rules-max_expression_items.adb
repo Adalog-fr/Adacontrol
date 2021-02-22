@@ -1,7 +1,7 @@
 ----------------------------------------------------------------------
---  Rules.Max_Expression_Members - Package body                     --
+--  Rules.Max_Expression_Items - Package body                       --
 --                                                                  --
---  This software is (c) Adalog 2004-2018.                          --
+--  This software is (c) Adalog 2004-2021.                          --
 --  The Ada Controller is  free software; you can  redistribute  it --
 --  and/or modify it under  terms of the GNU General Public License --
 --  as published by the Free Software Foundation; either version 2, --
@@ -127,7 +127,8 @@ package body Rules.Max_Expression_Items is
                   A_Case_Expression                       => (Fixed,        Max,        True,    1),
                   An_If_Expression                        => (Fixed,        Max,        True,    1),
                   A_For_All_Quantified_Expression         => (Fixed,        Max,        True,    1),
-                  A_For_Some_Quantified_Expression        => (Fixed,        Max,        True,    1)
+                  A_For_Some_Quantified_Expression        => (Fixed,        Max,        True,    1),
+                  others                                  => (Fixed,        Fixed,      False,   1) -- A_Target_Name
                  );
    Operator_Mode : constant Counting_Mode                 := (Summ,         Summ,       False,   0);
 
@@ -372,16 +373,6 @@ package body Rules.Max_Expression_Items is
       end if;
       Rules_Manager.Enter (Rule_Id);
 
-      -- Is this a root expression, or a subexpression (which should be ignored)?
---        if not Good_Mode (Expr).Root then   -- always evaluate root expressions
---           Encl := Enclosing_Element (Expr);
---           if Association_Kind (Encl) = A_Parameter_Association then
---              Encl := Enclosing_Element (Encl);
---           end if;
---           if Element_Kind (Encl) = An_Expression then
---              return;
---           end if;
---        end if;
       -- Is this an element of a root expression, or a subexpression (which should be ignored)?
       Encl := Enclosing_Element (Expr);
       if Association_Kind (Encl) = A_Parameter_Association then

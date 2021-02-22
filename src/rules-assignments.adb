@@ -440,11 +440,14 @@ package body Rules.Assignments is
    -- Process_Access_Duplication --
    --------------------------------
 
-   procedure Process_Access_Duplication (Expr : in Asis.Expression) is
+   procedure Process_Access_Duplication (Expr                 : Asis.Expression;
+                                         Enclosing_Assignment : in Asis.Statement := Asis.Nil_Element)
+   is
+   -- Enclosing Assignment is Nil when called for an initialization ("@" not allowed there)
       use Thick_Queries, Utilities;
-      use Asis, Asis.Iterator;
-      Ignored         : Traverse_Control := Continue;
-      Controlled_Expr : Boolean          := Is_Controlled (Expr);
+      use Asis, Asis.Iterator, Asis.Statements;
+      Ignored         : Traverse_Control         := Continue;
+      Controlled_Expr : Boolean                  := Is_Controlled (Expr);
 
       procedure Report_Possible (Element : Asis.Element; Controlled : Boolean) is
          use Framework.Locations, Framework.Reports;
@@ -912,6 +915,15 @@ package body Rules.Assignments is
                   end loop;
                   Control := Abandon_Children;
                end;
+            when others => -- A_Target_Name, given as "when others" for compatibility
+               if Expression_Kinds'Wide_Image (Expression_Kind (Element)) = "A_TARGET_NAME" then
+                  -- The type is the one of the LHS of the assignment
+                  Check_Type_Def (In_Controlled,
+                                  Assignment_Variable_Name (Enclosing_Assignment),
+                                  Thick_Queries.Corresponding_Expression_Type_Definition (Element));
+               else
+                  Failure ("Process_Access_Duplication: Wrong expressions kind", Element);
+               end if;
          end case;
       end Pre_Operation;
 
@@ -1017,7 +1029,7 @@ package body Rules.Assignments is
       end if;
 
       if Rule_Used (Sr_Access_Duplication) then
-         Process_Access_Duplication (Assignment_Expression (Statement));
+         Process_Access_Duplication (Assignment_Expression (Statement), Statement);
       end if;
 
       if Rule_Used (Sr_Type) then
