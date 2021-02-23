@@ -1,30 +1,14 @@
 ==============
+== V1.22b12 ==
+==============
+
+==============
 == V1.22b11 ==
-==============
-
-New rule:
----------
-renaming_declarations
-
-Changes to existing rules:
---------------------------
-Declarations
-   removed subrules related to renamings, now handled by renaming_declarations
-
-Expressions
-   add subrules target_name, trivial_target_name
-
-Simplifiable_Statements
-   add the no_exit modifier to the loop_for_while subrule
-
-==============
-== V1.22b10 ==
 ==============
 
 General:
 --------
 Bug fixes
-Improve static evaluation of string constants
 
 Ptre:
 -----
@@ -52,6 +36,7 @@ Avoid cascading errors in case of Asis bugs;
 New rule:
 ---------
 Known_Exceptions
+Renaming_Declarations
 
 Changes to existing rules:
 --------------------------
@@ -62,6 +47,14 @@ Comments
    Add subrule Unnamed_End_Record
    Unnamed_Begin: add "min" modifier
    allow extra info after name for unnamed_begin and unnamed_end_record
+
+Declarations
+   removed subrules related to renamings, now handled by renaming_declarations
+
+Expressions
+   add subrules target_name, trivial_target_name
+
+Simplifiable_Statements
 
 Non_Static
    Add a rule variable to select between "statically provable"
@@ -75,6 +68,7 @@ Simplifiable_Statements:
    Improve subrule dead.
    Add rule variable Acceptable_Dead_Case
    Add control of redundant paths (dead)
+   Add the no_exit modifier to the loop_for_while subrule
    
 Statements:
    Add subrules hard_bounds_array_for_loop, multi_for_of_loop, 

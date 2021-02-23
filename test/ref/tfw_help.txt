@@ -1097,7 +1097,7 @@ Rules:
    Usage                           Use_Clauses                     
    With_Clauses                    
 
-ADACTL v. 1.22b11 
+ADACTL v. 1.22b12 
 ----
 Copyright (C) 2004-2021 Eurocontrol/Adalog and others.
 This software is covered by the GNU Modified General Public License.
