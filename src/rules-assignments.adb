@@ -445,7 +445,7 @@ package body Rules.Assignments is
    is
    -- Enclosing Assignment is Nil when called for an initialization ("@" not allowed there)
       use Thick_Queries, Utilities;
-      use Asis, Asis.Iterator, Asis.Statements;
+      use Asis, Asis.Iterator;
       Ignored         : Traverse_Control         := Continue;
       Controlled_Expr : Boolean                  := Is_Controlled (Expr);
 
@@ -661,7 +661,7 @@ package body Rules.Assignments is
             end if;
          end Traverse_Instead;
 
-         use Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions;
+         use Asis.Declarations, Asis.Definitions, Asis.Elements, Asis.Expressions, Asis.Statements;
       begin  -- Pre_Operation
          case Expression_Kind (Element) is
             when Not_An_Expression =>

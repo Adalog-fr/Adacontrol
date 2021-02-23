@@ -8,13 +8,14 @@ renaming_declarations
 
 Changes to existing rules:
 --------------------------
-Declarations: removed subrules related to renamings, now handled by
-   renaming_declarations
+Declarations
+   removed subrules related to renamings, now handled by renaming_declarations
 
-Expressions: add subrules target_name, trivial_target_name
+Expressions
+   add subrules target_name, trivial_target_name
 
-Simplifiable_Statements: add the no_exit modifier to the
-   loop_for_while subrule
+Simplifiable_Statements
+   add the no_exit modifier to the loop_for_while subrule
 
 ==============
 == V1.22b10 ==
@@ -29,112 +30,24 @@ Ptre:
 -----
 improve output and handling of line/col parameter
 
-=============
-== V1.22b9 ==
-=============
-
-General:
---------
-Bug fixes
-Small improvements in messages
-
-=============
-== V1.22b8 ==
-=============
-
-General:
---------
-Bug fixes
-Avoid cascading errors in case of Asis bugs;
-Shorten syntactic trace in case of bugs.
-
-Changes to existing rules:
---------------------------
-Style: add missing keywords for subrule casing_keyword
-Comments: allow extra info after name for unnamed_begin and
-   unnamed_end_record
-Known_Exceptions: allow raise expressions as the expression of
-   expression functions
-Comments: allow extra info after name for unnamed_begin and
-   unnamed_end_record
-
-=============
-== V1.22b7 ==
-=============
-
-General:
---------
-Bug fixes
-
-Changes to existing rules:
---------------------------
-Known_Exceptions: new subrule raise_expression
-
-=============
-== V1.22b6 ==
-=============
-
-General:
---------
-Bug fixes
-
-=============
-== V1.22b5 ==
-=============
-
-General:
---------
-Bug fixes
-
-Changes to existing rules:
---------------------------
-Known_Exceptions: print value of failing index
-Comments.Unnamed_Begin: add "min" modifier
-
-=============
-== V1.22b4 ==
-=============
-
-General:
---------
-Bug fixes
-Add -iargs option to ASIS options to add ASIS initialize options
-Install also pdf, info, and txt docs
-
-=============
-== V1.22b3 ==
-=============
-
-General:
---------
-Bug fixes
-Choose tree generator with ASISGCC variable or --GCC option
-Add ASIS option "-iargs" for specifying ASIS initialize options
-  (for developpers only)
-
-=============
-== V1.22b2 ==
-=============
-
 General:
 --------
 Bug fixes, improvements to object tracker
 
+Support for the new ASIS tree generator
+Choose tree generator with ASISGCC variable or --GCC option
 
-=============
-== V1.22b1 ==
-=============
-
-General:
---------
-Bug fixes
+Add -iargs option to ASIS options to add ASIS initialize options
+  (for developpers only)
+Install also pdf, info, and txt docs
 
 Possibility to define any custom output format
 
 Add data flow analysis, to extend cases that are
    statically determinable, improves several rules.
 
-Support for the new ASIS tree generator
+Avoid cascading errors in case of Asis bugs;
+   Shorten syntactic trace in case of bugs.
 
 New rule:
 ---------
@@ -142,15 +55,17 @@ Known_Exceptions
 
 Changes to existing rules:
 --------------------------
-Abnormal_Function_Returrn
+Abnormal_Function_Return
    Accept calls to a procedure with a No_Return aspect
+
+Comments
+   Add subrule Unnamed_End_Record
+   Unnamed_Begin: add "min" modifier
+   allow extra info after name for unnamed_begin and unnamed_end_record
 
 Non_Static
    Add a rule variable to select between "statically provable"
    and strictly RM static
-
-Comments
-   Add subrule Unnamed_End_Record
 
 Simplifiable_Expressions:
    Add subrule logical_redundant
@@ -166,6 +81,7 @@ Statements:
 
 Style:
    remove subrule negative_condition (redundant)
+   add missing keywords for subrule casing_keyword
 
 ==============
 == V1.21r6b ==
