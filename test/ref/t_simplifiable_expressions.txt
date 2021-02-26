@@ -54,6 +54,12 @@ t_simplifiable_expressions-test_logical.adb:60:7: Replace:60:31
 t_simplifiable_expressions-test_logical.adb:62:25: Error: SIMPLIFIABLE_EXPRESSIONS: Expression equivalent to left member of operator
 t_simplifiable_expressions-test_logical.adb:62:10: Replace:62:34
 !I > C
+t_simplifiable_expressions-test_logical.adb:66:30: Error: SIMPLIFIABLE_EXPRESSIONS: Expression equivalent to left member of operator
+t_simplifiable_expressions-test_logical.adb:66:7: Replace:66:35
+!Test_Logical.I <= 1
+t_simplifiable_expressions-test_logical.adb:70:17: Error: SIMPLIFIABLE_EXPRESSIONS: Expression equivalent to left member of operator
+t_simplifiable_expressions-test_logical.adb:70:7: Replace:70:35
+!I >= 1
 t_simplifiable_expressions-test_parentheses.adb:14:16: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
 t_simplifiable_expressions-test_parentheses.adb:14:16: Delete:14:16
 t_simplifiable_expressions-test_parentheses.adb:14:22: Delete:14:22
@@ -287,4 +293,4 @@ t_simplifiable_expressions-test_if.adb:7:10: Found: SIMPLIFIABLE_EXPRESSIONS: Ne
 t_simplifiable_expressions-test_if.adb:7:13: Found: SIMPLIFIABLE_EXPRESSIONS: "not" on comparison
 
 Counts summary:
-SIMPLIFIABLE_EXPRESSIONS: 125
+SIMPLIFIABLE_EXPRESSIONS: 127

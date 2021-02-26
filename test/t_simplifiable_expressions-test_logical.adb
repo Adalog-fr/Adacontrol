@@ -63,4 +63,11 @@ begin
       null;
    end if;
 
+   if Test_Logical.I <= 1 or I <= 1 then        -- Redundant
+      null;
+   end if;
+
+   if I >= 1 or Test_Logical.I >= 1 then        -- Redundant
+      null;
+   end if;
 end Test_Logical;
