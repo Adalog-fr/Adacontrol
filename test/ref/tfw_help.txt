@@ -55,13 +55,14 @@ Parameter(s): <Aspect_Mark> | implicit_true | all
              (optional, default = all)
 ----
 Rule: ASSIGNMENTS
-Control various issues in relation to assignments:
+Control various issues related to assignments:
 assignment to a given type, obvious array slidings, duplication of access value,
 repeated assignments in a sequence to a same variable, or sequences of assignments
-to components of a structured variable that could be replaced by an aggregate
+to components of a structured variable that could be replaced by an aggregate,
+subexpressions that could be replaced by "@"
 
 Parameter(1): type    | [[not] controlled] access_duplication |
-              sliding |repeated | groupable
+              sliding |repeated | groupable | [[not] trivial] possible_target name
 
 For type:
 Parameter(2): [component] [ancestor] <Type name>

@@ -3540,6 +3540,7 @@ that are replaceable by aggregate assignment.
                             @{, [not] <target>@});
 <control_kind> assignments (repeated);
 <control_kind> assignments (groupable, <filter> @{,<filter>@});
+<control_kind> assignments ([[not] trivial] possible_target_name);
 <target> ::= <entity> | <category> | function | procedure
 <filter> ::= given <min_val> | missing <max_val> | ratio <min_val> |
              total <max_val>
@@ -3646,6 +3647,17 @@ For other structured objects, a subcomponent is counted as assigned if
 it has been assigned in full, or if it @i{should} have been assigned
 in full (in other words: if the rule is triggered on those
 subcomponents as well) - recursively, of course.
+@item
+``possible_target_name'': controls (sub)expressions of the right hand
+side of the assignment that are identical to the left hand side,
+i.e. those that can be replaced by the new target name of Ada 202X
+(aka ``@@''). If ``possible_target_name'' is preceded by ``trivial'',
+only trivial names are controlled, i.e. those where the left hand side
+is a plain identifier (like in the subrule ``trivial_target_name'' of
+the rule ``expressions). @xref{Expressions}.  If it is preceded by
+``not trivial'', only those that are not trivial are
+controlled. Otherwise, both are controlled.  This subrule can be given
+only once for each of ``trivial'' and ``not trivial''.
 @end itemize
 
 Ex:
@@ -3668,7 +3680,17 @@ check  Assignments (repeated);
 -- two fields are missing, or if 80% of the fields are given:
 search assignments (groupable, given 3, missing 2);
 search assignments (groupable, ratio 80);
+
+-- Find all non trivial possible uses of "@@"
+search assignments (not trivial possible_target_name);
 @end example
+
+@subsection Fixes
+The following subrule generates fixes:
+@itemize @bullet
+@item
+``possible_target_name'': the candidate subexpression is replaced by ``@@''.
+@end itemize
 
 @subsection Tips
 The ``sliding'' subrule is not intended to prevent all cases of

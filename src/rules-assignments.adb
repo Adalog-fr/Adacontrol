@@ -2,7 +2,7 @@
 --  Rules.Assignments - Package body                                --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
---  of Air Navigation (EUROCONTROL) and Adalog 2004-2005.           --
+--  of Air Navigation (EUROCONTROL) and Adalog 2004-2021.           --
 --  The Ada Controller is  free software; you can  redistribute  it --
 --  and/or modify it under  terms of the GNU General Public License --
 --  as published by the Free Software Foundation; either version 2, --
@@ -49,9 +49,10 @@ with
 with
   Framework.Language,
   Framework.Language.Shared_Keys,
-  Framework.Queries;
-pragma Elaborate (Framework.Language);
-pragma Elaborate (Framework.Language.Shared_Keys);
+  Framework.Queries,
+  Framework.Reports.Fixes;
+  pragma Elaborate (Framework.Language);
+  pragma Elaborate (Framework.Language.Shared_Keys);
 
 package body Rules.Assignments is
    use Ada.Strings.Wide_Unbounded;
@@ -116,8 +117,14 @@ package body Rules.Assignments is
    --
    -- At the end of a sequence of assignments, all LHS in the map are traversed, and
    -- messages are issued according to the values assigned/total subcomponents.
+   --
+   -- Subrule Possible_Target_Name:
+   -- -----------------------------
+   -- Traverse the RHS and compare to LHS, all the work is done by Are_Equivalent_Expressions.
+   -- Identifiers (including selected ones) are checked, and function calls (including operators) are traversed;
+   -- other expressions are values that cannot be identical to the RHS
 
-   type Subrules is (Sr_Type, Sr_Access_Duplication, Sr_Sliding, Sr_Repeated, Sr_Groupable);
+   type Subrules is (Sr_Type, Sr_Access_Duplication, Sr_Sliding, Sr_Repeated, Sr_Groupable, Sr_Possible_Target_Name);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, Prefix => "Sr_");
 
    type Criteria is (Crit_Given, Crit_Missing, Crit_Ratio, Crit_Total);
@@ -191,6 +198,12 @@ package body Rules.Assignments is
 
    Duplication_Expected_Categories : constant Categories_Set := Basic_Set + Cat_Private;
 
+   -- Data for subrule Possible_Target_Name:
+   Trivial_Given              : Boolean := False;
+   Trivial_Target_Context     : Basic_Rule_Context;
+   Not_Trivial_Given          : Boolean := False;
+   Not_Trivial_Target_Context : Basic_Rule_Context;
+
    ----------
    -- Help --
    ----------
@@ -199,15 +212,16 @@ package body Rules.Assignments is
       use Utilities, Criteria_Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
-      User_Message ("Control various issues in relation to assignments:");
+      User_Message ("Control various issues related to assignments:");
       User_Message ("assignment to a given type, obvious array slidings, duplication of access value,");
       User_Message ("repeated assignments in a sequence to a same variable, or sequences of assignments");
-      User_Message ("to components of a structured variable that could be replaced by an aggregate");
+      User_Message ("to components of a structured variable that could be replaced by an aggregate,");
+      User_Message ("subexpressions that could be replaced by ""@""");
       User_Message;
       -- Since some subrules have various modifiers, we cannot use Help_On_Flags here.
       -- Update manually if new subrules are added
       User_Message ("Parameter(1): type    | [[not] controlled] access_duplication |");
-      User_Message ("              sliding |repeated | groupable");
+      User_Message ("              sliding |repeated | groupable | [[not] trivial] possible_target name");
       User_Message;
       User_Message ("For type:");
       User_Message ("Parameter(2): [component] [ancestor] <Type name>");
@@ -237,6 +251,7 @@ package body Rules.Assignments is
       Has_Not        : Boolean;
       Has_Controlled : Boolean;
       Has_Ancestor   : Boolean;
+      Has_Trivial    : Boolean;
       LHS_Kind       : LHS_Kinds;
       Filter         : Filter_Kind;
       Entity         : Entity_Specification;
@@ -248,12 +263,22 @@ package body Rules.Assignments is
 
       Has_Not        := Get_Modifier ("NOT");
       Has_Controlled := Get_Modifier ("CONTROLLED");
+      Has_Trivial    := Get_Modifier ("TRIVIAL");
       Subrule        := Get_Flag_Parameter (Allow_Any => False);
-      if Subrule /= Sr_Access_Duplication and (Has_Not or Has_Controlled) then
-         Parameter_Error (Rule_Id, """[not] controlled"" modifier applies only to Access_Duplication");
-      elsif Has_Not and not Has_Controlled then
-         Parameter_Error (Rule_Id, "missing ""Controlled"" modifier for Access_Duplication");
+      if Has_Not and not (Has_Controlled or Has_Trivial) then
+         Parameter_Error (Rule_Id, """not"" must be followed by ""Controlled"" or ""Trivial""");
       end if;
+      if Has_Controlled then
+         if Subrule /= Sr_Access_Duplication then
+            Parameter_Error (Rule_Id, """[not] controlled"" modifier applies only to subrule Access_Duplication");
+         end if;
+      end if;
+      if Has_Trivial then
+         if Subrule /= Sr_Possible_Target_Name then
+            Parameter_Error (Rule_Id, """[not] trivial"" modifier applies only to subrule Possible_Target_Name");
+         end if;
+      end if;
+
       case Subrule is
          when Sr_Access_Duplication =>
             if Parameter_Exists then
@@ -359,6 +384,29 @@ package body Rules.Assignments is
                end case;
             end loop;
             Append (Groupable_Contexts, (Basic.New_Context (Ctl_Kind, Ctl_Label) with Given, Missing, Ratio, Total));
+
+         when Sr_Possible_Target_Name =>
+            if Has_Not then  -- can happen only as Not Trivial here
+               if Not_Trivial_Given then
+                  Parameter_Error (Rule_Id, "Not trivial Possible_Target_Name already given");
+               end if;
+               Not_Trivial_Target_Context := Basic.New_Context (Ctl_Kind, Ctl_Label);
+               Not_Trivial_Given := True;
+            else
+               if Trivial_Given then
+                  Parameter_Error (Rule_Id, "Trivial Possible_Target_Name already given");
+               end if;
+               Trivial_Target_Context := Basic.New_Context (Ctl_Kind, Ctl_Label);
+               Trivial_Given := True;
+
+               if not Has_Trivial then -- Control is for both
+                  if Not_Trivial_Given then
+                     Parameter_Error (Rule_Id, "Not trivial Possible_Target_Name already given");
+                  end if;
+                  Not_Trivial_Target_Context := Basic.New_Context (Ctl_Kind, Ctl_Label);
+                  Not_Trivial_Given := True;
+               end if;
+            end if;
       end case;
       Rule_Used (Subrule) := True;
    end Add_Control;
@@ -373,7 +421,9 @@ package body Rules.Assignments is
    begin
       case Action is
          when Clear =>
-            Rule_Used := Not_Used;
+            Rule_Used         := Not_Used;
+            Trivial_Given     := False;
+            Not_Trivial_Given := False;
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := Not_Used;
@@ -434,6 +484,46 @@ package body Rules.Assignments is
          end loop;
       end;
    end Process_Sliding;
+
+
+   -------------------------
+   -- Process_Target_Name --
+   -------------------------
+
+   procedure Process_Target_Name (LHS : Asis.Element; RHS : Asis.Expression) is
+      use Asis, Asis.Elements;
+      use Framework.Locations, Framework.Reports, Thick_Queries;
+   begin
+      if Are_Equivalent_Expressions (LHS, RHS, RM_Static => True) then
+         -- We need RM_Static here, otherwise two variables known to have the same value would
+         -- be considered equivalent. While it would not be wrong to make the replacement in that case,
+         -- it is not desirable.
+         if Expression_Kind (LHS) = An_Identifier then
+            if Trivial_Given then
+               Report (Rule_Id,
+                       Trivial_Target_Context,
+                       Get_Location (RHS),
+                       "Possible use of trivial target name");
+               Fixes.Replace (RHS, "@");
+            end if;
+         else
+            if Not_Trivial_Given then
+               Report (Rule_Id,
+                       Not_Trivial_Target_Context,
+                       Get_Location (RHS),
+                       "Possible use of not trivial target name");
+               Fixes.Replace (RHS, "@");
+            end if;
+         end if;
+         return;
+      end if;
+
+      if Expression_Kind (RHS) = A_Function_Call then
+         for Param : Asis.Expression of Actual_Expressions (RHS) loop
+            Process_Target_Name (LHS, Param);
+         end loop;
+      end if;
+   end Process_Target_Name;
 
 
    --------------------------------
@@ -1017,7 +1107,8 @@ package body Rules.Assignments is
    procedure Process_Assignment (Statement : in Asis.Statement) is
       use Asis.Statements;
    begin   -- Process_Assignment
-      if (Rule_Used and Usage_Flags'(Sr_Sliding | Sr_Access_Duplication | Sr_Type => True, others => False)) = Not_Used
+      if (Rule_Used and Usage_Flags'(Sr_Sliding | Sr_Access_Duplication | Sr_Type | Sr_Possible_Target_Name => True,
+                                     others => False)) = Not_Used
       then
          return;
       end if;
@@ -1034,6 +1125,11 @@ package body Rules.Assignments is
 
       if Rule_Used (Sr_Type) then
          Process_Type (Assignment_Variable_Name (Statement));
+      end if;
+
+      if Rule_Used (Sr_Possible_Target_Name) then
+         Process_Target_Name (LHS => Assignment_Variable_Name (Statement),
+                              RHS => Assignment_Expression    (Statement));
       end if;
    end Process_Assignment;
 

@@ -18,3 +18,5 @@ Acc_Dup:        check  assignments (not controlled access_duplication, not funct
 Dup_Controlled: Search assignments (    controlled access_duplication);
 Proc_Dup:       check  assignments (access_duplication, procedure);
 
+Triv_Target:     search assignments (trivial possible_target_name);
+Not_Triv_Target: check  assignments (not trivial possible_target_name);

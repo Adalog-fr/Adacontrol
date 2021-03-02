@@ -2,17 +2,14 @@
 == V1.22b12 ==
 ==============
 
+Changes to existing rules:
+--------------------------
+Assignments:
+    Add subrule possible_target_name
+    
 ==============
 == V1.22b11 ==
 ==============
-
-General:
---------
-Bug fixes
-
-Ptre:
------
-improve output and handling of line/col parameter
 
 General:
 --------
@@ -76,6 +73,10 @@ Statements:
 Style:
    remove subrule negative_condition (redundant)
    add missing keywords for subrule casing_keyword
+
+Ptree:
+-----
+improve output and handling of line/col parameter
 
 ==============
 == V1.21r6b ==
