@@ -3714,6 +3714,9 @@ the ``given'' criterion; in this case, any assignment to parts of a
 structured variable will be reported, only global assignment is
 allowed.
 
+``possible_target_name'' generates fixes, thus allowing easy use of
+``@@'' when moving to Ada 202X.
+
 @subsection Limitations
 As usual, AdaControl can control only static aspects of
 assignments. Therefore, it cannot control assignments whose target is
@@ -5690,7 +5693,7 @@ check expressions (tagged downward_conversion);
 @end example
 
 @subsection Fixes
-The following subrules generate fixes:
+The following subrule generates fixes:
 @itemize @bullet
 @item
 ``Mixed_Operators'': Parentheses are inserted appropriately.
@@ -6459,12 +6462,15 @@ controlled.
 This rule can be given at most once for each subrule.
 
 @subsection Fixes
-The subrule``raise_expression'' generates fixes in the case where the
-@code{@b{raise}} expression appears as the right expression of an
-@code{@b{and}} or @code{@b{or}} operator: the operator is changed to
-the corresponding short-circuit operation (@code{@b{and then}} or
-@code{@b{or else}}, respectively).
-
+The following subrule generates fixes:
+@itemize @bullet
+@item
+``raise_expression'': when the @code{@b{raise}}
+expression appears as the right expression of an @code{@b{and}} or
+@code{@b{or}} operator, the operator is changed to the corresponding
+short-circuit operation (@code{@b{and then}} or @code{@b{or else}},
+respectively).
+@end itemize
 
 @subsection Tips
 The error message indicates the failing value and the expected bound
@@ -6650,7 +6656,11 @@ check max_blank_lines (5);
 @end example
 
 @subsection Fixes
-This rule generates fixes: Extra blank lines are removed.
+This rule generates fixes:
+@itemize @bullet
+@item
+Extra blank lines are removed.
+@end itemize
 
 @node Max_Call_Depth, Max_Expression_Items, Max_Blank_Lines, Rules reference
 @section Max_Call_Depth
@@ -6663,7 +6673,7 @@ This rule controls the maximum depth of subprograms (or entry) calls.
 Roughly speaking, the call depth is the number of frames that are
 stacked by a call: if you call a subprogram that calls another
 subprogram that calls nothing, then the call depth is 2. Note that a
-call to a task (not protected) entry has always a depth of 1, since
+call to a task entry (not a  protected entry) has always a depth of 1, since
 the accept body that corresponds to the entry is executed on a
 different stack.
 
@@ -6705,10 +6715,10 @@ functions (Ada 2012).
 @item Count_Expr_Fun_Calls
 @tab off
 @tab Calls to expression functions are assumed to be inlined and do not add
+an extra depth level.
 @item
 @tab on (default)
 @tab Calls to expression functions are counted like regular calls.
-an extra depth level.
 @end multitable
 
 @subsection Tip
@@ -8323,7 +8333,7 @@ component had the specified alignment), thus creating possible false
 positives. Such cases are detected by the rule ``uncheckable''.
 @xref{Uncheckable}.
 
-@node Reduceable_Scope, , Record_Declarations, Rules reference
+@node Reduceable_Scope, Renaming_Declarations, Record_Declarations, Rules reference
 @section Reduceable_Scope
 This rule controls declarations that could be moved to some inner
 scope.
