@@ -651,7 +651,7 @@ package body Rules.Object_Declarations is
       use NRT_Utilities, Thick_Queries;
 
       Previous   : Asis.Element := Ident;
-      Current    : Asis.Element := Enclosing_Element (Ident);
+      Current    : Asis.Element;
    begin
       if not Rule_Used (S_Not_Required_Type) then
          return;
@@ -663,6 +663,7 @@ package body Rules.Object_Declarations is
       end if;
 
       -- Find out how this identifier is used
+      Current := Enclosing_Element (Ident);
       loop
          case Element_Kind (Current) is
             when A_Declaration =>
@@ -770,11 +771,19 @@ package body Rules.Object_Declarations is
                   when A_Procedure_Call_Statement | An_Entry_Call_Statement =>
                      -- find where we are in the call...
                      declare
-                        Actuals : constant Expression_List := Actual_Parameters (Current);
+                        Called  : constant Asis.Declaration := Corresponding_Called_Entity (Current);
+                        Actuals : constant Expression_List  := Actual_Parameters (Current);
                      begin
+                        -- Called is Nil_Element for a dynamic (access or dispatching) call
+                        -- We can't make it dependent on anything, since the formal name is unknow
+                        -- (and depends on the target).
+                        if Is_Nil (Called) then
+                           return;
+                        end if;
+
                         for Inx in Actuals'Range loop
                            if Is_Equal (Previous, Actuals (Inx)) then
-                              if Ultimate_Origin (Corresponding_Called_Entity (Current)) = An_Application_Unit then
+                              if Ultimate_Origin (Called) = An_Application_Unit then
                                  Make_Dependent (Ident, On => Formal_Name (Current, Inx));
                               else
                                  -- Language defined, implementation defined...

@@ -235,6 +235,11 @@ package body Rules.Object_Declarations.NRT_Utilities is
 
       -- Here, create dependency between Obj and On
       On_Key    := To_Unbounded_Wide_String (Full_Name_Image (On));
+      if not Is_Present (All_Suspects, On_Key) then
+         -- This happens when an object is referenced from outside its declaration scope (formal parameter)
+         -- The rule does not define this as a dependency
+         return;
+      end if;
       Ident_Key := To_Unbounded_Wide_String (Full_Name_Image (Obj));
       Full_Info := Fetch (All_Suspects, On_Key);
       On_Level  := Full_Info.Depend_Level;
@@ -316,27 +321,36 @@ package body Rules.Object_Declarations.NRT_Utilities is
                   return False;
             end case;
          when A_Function_Call =>
-            if Corresponding_Call_Description (Good_Expr).Kind = A_Predefined_Entity_Call then
-               if Expression_Kind (Prefix (Good_Expr)) = An_Operator_Symbol then
-                  return (for some Param of Actual_Parameters (Good_Expr) => Is_Requiring (Param, Of_Type));
-               else
+            declare
+               Called : constant Asis.Expression := Called_Simple_Name (Good_Expr);
+            begin
+               if Is_Nil (Called) then -- dereference...
                   return False;
-               end if;
-            elsif Ultimate_Origin (Called_Simple_Name (Good_Expr)) = An_Application_Unit then
-               return False;
-            else
-               declare
-                  Result_Profile : constant Profile_Entry := Types_Profile
-                                                              (Corresponding_Called_Function (Good_Expr)).Result_Type;
-               begin
-                  if Result_Profile.Access_Form = Not_An_Access_Definition then  -- we don't care about anonymous types
-                     return Is_Equal (Ultimate_Type_Declaration (Of_Type),
-                                      Enclosing_Element (Result_Profile.General_Name.Name));
+               elsif Corresponding_Call_Description (Good_Expr).Kind = A_Predefined_Entity_Call then
+                  if Expression_Kind (Prefix (Good_Expr)) = An_Operator_Symbol then
+                     return (for some Param of Actual_Parameters (Good_Expr) => Is_Requiring (Param, Of_Type));
                   else
                      return False;
                   end if;
-               end;
-            end if;
+               elsif Expression_Kind (Called) = An_Attribute_Reference then
+                  return False;
+               elsif Ultimate_Origin (Called) = An_Application_Unit then
+                  return False;
+               else
+                  declare
+                     Result_Profile : constant Profile_Entry := Types_Profile
+                       (Corresponding_Called_Function (Good_Expr)).Result_Type;
+                  begin
+                     if Result_Profile.Access_Form = Not_An_Access_Definition then
+                        -- we don't care about anonymous types
+                        return Is_Equal (Ultimate_Type_Declaration (Of_Type),
+                                         Enclosing_Element (Result_Profile.General_Name.Name));
+                     else
+                        return False;
+                     end if;
+                  end;
+               end if;
+            end;
          when A_Parenthesized_Expression =>
             return Is_Requiring (Expression_Parenthesized (Good_Expr), Of_Type);
          when A_Qualified_Expression =>

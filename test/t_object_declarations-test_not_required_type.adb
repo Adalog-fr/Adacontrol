@@ -61,6 +61,8 @@ begin
       KO5 : Count;                -- NRT_Count (depends on application function)
       OK6 : Count;                -- OK (depends on non-application function)
       OK7 : My_Int;               -- OK (depends on required function parameter)
+      KO8 : My_Int;               -- NRT (use of attribute function)
+      KO9 : My_Int;               -- NRT (depends on formal parameter)
       function "-" (L : My_Int;   -- NRT_Variable
                     R : My_Int)   -- OK (used in indexing)
                     return My_Int is
@@ -73,6 +75,14 @@ begin
       begin
          return Line_Length;
       end Local_Length;
+
+      function Use_Param (Param : My_Int) return My_Int is  -- NRT (Param)
+         Result : My_Int;         -- NRT (Result)
+      begin
+         Result := Param;
+         return Result;
+      end Use_Param;
+
    begin
       OK3 := 1;
       OK1 := (OK3 + 1) * OK4;
@@ -81,6 +91,8 @@ begin
       OK5 := Line_Length;
       KO5 := Local_Length;
       Set_Line_Length (OK6 + 3);
+      KO8 := My_Int'Value ("23");
+      KO9 := Use_Param (KO9);
    end;
 
    -- same without indexing

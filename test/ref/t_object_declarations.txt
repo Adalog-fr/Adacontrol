@@ -7,32 +7,36 @@ t_object_declarations-test_not_required_type.adb:25:7: Error: NRT_Variable: Vari
 t_object_declarations-test_not_required_type.adb:28:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
 t_object_declarations-test_not_required_type.adb:20:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
 t_object_declarations-test_not_required_type.adb:33:23: Error: NRT_Variable: Parameter declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
-t_object_declarations-test_not_required_type.adb:64:21: Error: NRT_Variable: Parameter declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:80:10: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:79:27: Error: NRT_Variable: Parameter declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:66:21: Error: NRT_Variable: Parameter declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
 t_object_declarations-test_not_required_type.adb:58:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
 t_object_declarations-test_not_required_type.adb:61:7: Found: NRT_Count: Variable declaration of not required type ADA.TEXT_IO.COUNT
-t_object_declarations-test_not_required_type.adb:88:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
-t_object_declarations-test_not_required_type.adb:89:7: Error: NRT_Constant: Constant declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
-t_object_declarations-test_not_required_type.adb:90:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
-t_object_declarations-test_not_required_type.adb:99:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
-t_object_declarations-test_not_required_type.adb:103:10: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
-t_object_declarations-test_not_required_type.adb:109:13: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
-t_object_declarations-test_not_required_type.adb:121:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
-t_object_declarations-test_not_required_type.adb:129:13: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
-t_object_declarations-test_not_required_type.adb:125:10: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
-t_object_declarations-test_not_required_type.adb:146:11: Error: NRT_Variable: Loop parameter declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
-t_object_declarations-test_not_required_type.adb:144:7: Error: NRT_Constant: Constant declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
-t_object_declarations-test_not_required_type.adb:150:14: Error: NRT_Variable: Loop parameter declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
-t_object_declarations-test_not_required_type.adb:149:16: Error: NRT_Variable: Loop parameter declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
-t_object_declarations-test_not_required_type.adb:154:11: Error: NRT_Variable: Loop parameter declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
-t_object_declarations-test_not_required_type.adb:167:11: Error: NRT_Variable: Loop parameter declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
-t_object_declarations-test_not_required_type.adb:179:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
-t_object_declarations-test_not_required_type.adb:195:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
-t_object_declarations-test_not_required_type.adb:197:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
-t_object_declarations-test_not_required_type.adb:210:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
-t_object_declarations-test_not_required_type.adb:211:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
-t_object_declarations-test_not_required_type.adb:224:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
-t_object_declarations-test_not_required_type.adb:232:13: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
-t_object_declarations-test_not_required_type.adb:228:10: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:64:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:65:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:100:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:101:7: Error: NRT_Constant: Constant declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:102:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:111:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:115:10: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:121:13: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:133:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:141:13: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:137:10: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:158:11: Error: NRT_Variable: Loop parameter declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:156:7: Error: NRT_Constant: Constant declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:162:14: Error: NRT_Variable: Loop parameter declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:161:16: Error: NRT_Variable: Loop parameter declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:166:11: Error: NRT_Variable: Loop parameter declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:179:11: Error: NRT_Variable: Loop parameter declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:191:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:207:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:209:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:222:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:223:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:236:7: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:244:13: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
+t_object_declarations-test_not_required_type.adb:240:10: Error: NRT_Variable: Variable declaration of not required type T_OBJECT_DECLARATIONS.TEST_NOT_REQUIRED_TYPE.MY_INT
 t_object_declarations-test_type.adb:15:4: Error: All_All Ttt: Variable declaration of type TTT
 t_object_declarations-test_type.adb:16:4: Error: All_All Ttt: Variable declaration of type TTT
 t_object_declarations-test_type.adb:17:4: Error: Const_Pack1.Ttt: Constant declaration of type T_OBJECT_DECLARATIONS.TEST_TYPE.PACK1.TTT
