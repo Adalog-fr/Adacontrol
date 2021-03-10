@@ -931,8 +931,9 @@ package body Framework.Ruler is
                when An_Attribute_Reference =>
                   -- don't consider attributes like Pre'Class as "true" attributes
                   if Is_True_Identifier (Prefix (Element), State) then
-                     Framework.Plugs.         Pre_Procedure (Element);
-                     Framework.Specific_Plugs.Pre_Procedure (Element);
+                     Object_Tracker.          Process_Attribute (Element);
+                     Framework.Plugs.         Pre_Procedure     (Element);
+                     Framework.Specific_Plugs.Pre_Procedure     (Element);
 
                      -- Traverse manually, because we want to inhibit True_Identifier for
                      -- the attribute designator, not for the prefix

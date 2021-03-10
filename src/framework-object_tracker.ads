@@ -100,7 +100,9 @@ package Framework.Object_Tracker is
    procedure Process_Type_Declaration (Decl : in Asis.Declaration);
 
    procedure Process_Object_Declaration (Decl : in Asis.Declaration);
-   -- To be called for each object (constant, variable, loop parameter, or formal parameter) declaration,
+   -- To be called for each object (constant, variable, loop parameter, or formal parameter) declaration
+
+   procedure Process_Attribute (Attr_Ref : Asis.Expression);
 
    procedure Process_Instantiation (Inst : Asis.Declaration);
 

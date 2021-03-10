@@ -1145,6 +1145,31 @@ package body Framework.Object_Tracker is
       end if;
    end Process_Assignment;
 
+
+   -----------------------
+   -- Process_Attribute --
+   -----------------------
+
+   procedure Process_Attribute (Attr_Ref : Asis.Expression) is
+      use Asis.Elements, Asis.Expressions;
+      Good_Name : Asis.Expression;
+   begin
+      case Attribute_Kind (Attr_Ref) is
+         when An_Address_Attribute =>
+            Good_Name := Simple_Name (Prefix (Attr_Ref));
+            if Expression_Kind (Good_Name) = An_Identifier then
+               Good_Name := Ultimate_Name (Good_Name);
+               if not Is_Nil (Good_Name) then
+                  Untrack_Variable (Good_Name);
+               end if;
+            end if;
+         when others =>
+            -- We don't need to handle 'Access, since aliased variables are not tracked
+            null;
+      end case;
+   end Process_Attribute;
+
+
    ---------------------
    -- Process_Handler --
    ---------------------
