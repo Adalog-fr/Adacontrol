@@ -1512,6 +1512,8 @@ package body Rules.Declarations is
                            | A_Function_Renaming_Declaration
                            | A_Generic_Procedure_Declaration
                            | A_Generic_Function_Declaration
+                           | A_Formal_Procedure_Declaration
+                           | A_Formal_Function_Declaration
                            =>
                            Do_Report (D_Anonymous_Access_Parameter, Encl);
 
