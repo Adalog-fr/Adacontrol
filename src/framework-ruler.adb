@@ -217,6 +217,8 @@ package body Framework.Ruler is
       when ASIS_Inappropriate_Element =>
          -- Not a true identifier!
          return False;
+      when others =>  --TBSL Kludge for ASIS bug: Identifier in an aspect clause, ticket U315-011
+         return False;
    end Is_True_Identifier;
 
    -----------------------
