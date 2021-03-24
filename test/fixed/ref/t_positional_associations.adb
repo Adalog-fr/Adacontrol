@@ -93,10 +93,10 @@ procedure T_Positional_Associations is
    end Taske;
 
    type Enum1 is (X, Y);
-   for Enum1 use (1, Y => 2);                         -- OK
+   for Enum1 use (X => 1, Y => 2);                            -- OK
 
    type Enum2 is (A, B);
-   for Enum2 use (1, 2);                              -- all_positional x2
+   for Enum2 use (1, 2);                                     -- all_positional x2
 
    package Object is
       type Instance is tagged null record;
