@@ -1,14 +1,10 @@
 ==============
-== V1.22b12 ==
+== V1.22b13 ==
 ==============
 
-Changes to existing rules:
---------------------------
-Assignments:
-    Add subrule possible_target_name
     
 ==============
-== V1.22b11 ==
+== V1.22b12 ==
 ==============
 
 General:
@@ -40,6 +36,9 @@ Changes to existing rules:
 Abnormal_Function_Return
    Accept calls to a procedure with a No_Return aspect
 
+Assignments:
+    Add subrule possible_target_name
+
 Comments
    Add subrule Unnamed_End_Record
    Unnamed_Begin: add "min" modifier
@@ -50,8 +49,6 @@ Declarations
 
 Expressions
    add subrules target_name, trivial_target_name
-
-Simplifiable_Statements
 
 Non_Static
    Add a rule variable to select between "statically provable"
