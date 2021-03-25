@@ -40,9 +40,9 @@ begin
       VD2 : Tagged_D2;
       VD3 : Tagged_D1;
    begin
-      VT  := @;             -- ancestor Tagged_T
-      VD1 := @;            -- directe Tagged_D1, ancestor Tagged_T
-      Try_Tagged.VD2 := @; -- ancestor Tagged_T
+      VT  := @;             -- ancestor Tagged_T, Trivial_Target_Name
+      VD1 := @;            -- directe Tagged_D1, ancestor Tagged_T, Trivial_Target_Name
+      Try_Tagged.VD2 := @; -- ancestor Tagged_T, Not_Trivial_Target_Name
       Tagged_T (VD3) := VT;  -- ancestor Tagged_T
    end Try_Tagged;
 

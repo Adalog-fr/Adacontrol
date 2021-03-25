@@ -121,8 +121,6 @@ package body Rules.Assignments is
    -- Subrule Possible_Target_Name:
    -- -----------------------------
    -- Traverse the RHS and compare to LHS, all the work is done by Are_Equivalent_Expressions.
-   -- Identifiers (including selected ones) are checked, and function calls (including operators) are traversed;
-   -- other expressions are values that cannot be identical to the RHS
 
    type Subrules is (Sr_Type, Sr_Access_Duplication, Sr_Sliding, Sr_Repeated, Sr_Groupable, Sr_Possible_Target_Name);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, Prefix => "Sr_");
@@ -491,38 +489,76 @@ package body Rules.Assignments is
    -------------------------
 
    procedure Process_Target_Name (LHS : Asis.Element; RHS : Asis.Expression) is
-      use Asis, Asis.Elements;
-      use Framework.Locations, Framework.Reports, Thick_Queries;
-   begin
-      if Are_Equivalent_Expressions (LHS, RHS, RM_Static => True) then
-         -- We need RM_Static here, otherwise two variables known to have the same value would
-         -- be considered equivalent. While it would not be wrong to make the replacement in that case,
-         -- it is not desirable.
-         if Expression_Kind (LHS) = An_Identifier then
-            if Trivial_Given then
-               Report (Rule_Id,
-                       Trivial_Target_Context,
-                       Get_Location (RHS),
-                       "Possible use of trivial target name");
-               Fixes.Replace (RHS, "@");
-            end if;
-         else
-            if Not_Trivial_Given then
-               Report (Rule_Id,
-                       Not_Trivial_Target_Context,
-                       Get_Location (RHS),
-                       "Possible use of not trivial target name");
-               Fixes.Replace (RHS, "@");
-            end if;
-         end if;
-         return;
-      end if;
+      use Asis, Asis.Iterator;
 
-      if Expression_Kind (RHS) = A_Function_Call then
-         for Param : Asis.Expression of Actual_Expressions (RHS) loop
-            Process_Target_Name (LHS, Param);
-         end loop;
-      end if;
+      procedure Target_Pre (Sub_Expr   :        Asis.Element;
+                            Control    : in out Traverse_Control;
+                            Target_Var : in out Asis.Expression);
+      procedure Target_Post (Sub_Expr   :        Asis.Element;
+                             Control    : in out Traverse_Control;
+                             Target_Var : in out Asis.Expression)
+      is null;
+      procedure Target_Traverse is new Traverse_Element (Asis.Expression, Target_Pre, Target_Post);
+
+      procedure Target_Pre (Sub_Expr   :        Asis.Element;
+                            Control    : in out Traverse_Control;
+                            Target_Var : in out Asis.Expression)
+      is
+         use Asis.Elements, Asis.Expressions;
+         use Framework.Locations, Framework.Reports, Thick_Queries;
+      begin
+         case Expression_Kind (Sub_Expr) is
+            when An_Attribute_Reference =>
+               -- don't traverse the attribute name
+               Target_Traverse (Prefix (Sub_Expr), Control, Target_Var);
+               Control := Abandon_Children;
+            when A_Function_Call =>
+               -- don't traverse the function name
+               for P of Function_Call_Parameters (Sub_Expr) loop
+                  Target_Traverse (P, Control, Target_Var);
+               end loop;
+               Control := Abandon_Children;
+            when An_Allocation_From_Subtype =>
+               -- Certainly not replaceable by target name!
+               Control := Abandon_Children;
+            when An_Allocation_From_Qualified_Expression =>
+               -- Certainly not replaceable by target name, but traverse the qualified expression
+               Target_Traverse (Allocator_Qualified_Expression (Sub_Expr), Control, Target_Var);
+               Control := Abandon_Children;
+            when Not_An_Expression =>
+               -- F.e. a definition/a_range from an array aggregate
+               null;
+            when others =>
+               if Are_Equivalent_Expressions (Target_Var, Sub_Expr, RM_Static => True) then
+                  -- We need RM_Static here, otherwise two variables known to have the same value would
+                  -- be considered equivalent. While it would not be wrong to make the replacement in that case,
+                  -- it is not desirable.
+                  if Expression_Kind (Target_Var) = An_Identifier then
+                     if Trivial_Given then
+                        Report (Rule_Id,
+                                Trivial_Target_Context,
+                                Get_Location (Sub_Expr),
+                                "Possible use of trivial target name");
+                        Fixes.Replace (Sub_Expr, "@");
+                     end if;
+                  else
+                     if Not_Trivial_Given then
+                        Report (Rule_Id,
+                                Not_Trivial_Target_Context,
+                                Get_Location (Sub_Expr),
+                                "Possible use of not trivial target name");
+                        Fixes.Replace (Sub_Expr, "@");
+                     end if;
+                  end if;
+                  Control := Abandon_Children;  -- No sub-subexpression can be identical to Sub_Expr
+               end if;
+         end case;
+      end Target_Pre;
+
+      Control : Traverse_Control := Continue;
+      LHS_Var : Asis.Expression  := LHS;
+   begin  -- Process_Target_Name
+      Target_Traverse (RHS, Control, LHS_Var);
    end Process_Target_Name;
 
 

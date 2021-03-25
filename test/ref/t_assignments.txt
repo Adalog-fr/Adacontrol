@@ -28,6 +28,9 @@ t_assignments-sliding.adb:30:13: Error: Sliding: Lower bound (2) does not match 
 t_assignments-sliding.adb:31:13: Error: Sliding: Lower bound (1) does not match assigned variable (2)
 t_assignments-sliding.adb:33:13: Error: Sliding: Lower bound (2) does not match assigned variable (1)
 t_assignments-sliding.adb:35:13: Error: Sliding: Lower bound (2) does not match assigned variable (1)
+t_assignments-sliding.adb:35:21: Found: Triv_Target: Possible use of trivial target name
+t_assignments-sliding.adb:35:21: Replace:35:22
+!@
 t_assignments-sliding.adb:37:13: Error: Sliding: Lower bound (2) does not match assigned variable (1)
 t_assignments-sliding.adb:38:13: Error: Sliding: Lower bound (1) does not match assigned variable (2)
 t_assignments-sliding.adb:41:26: Error: Sliding: Lower bound (2) does not match assigned variable (1)
@@ -107,24 +110,80 @@ t_assignments-access_duplication.adb:197:13: Error: Acc_Dup: Duplication of not 
 t_assignments-access_duplication.adb:198:13: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
 t_assignments-access_duplication.adb:199:13: Error: Acc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:5:16
 t_assignments-access_duplication.adb:204:18: Error: Proc_Dup: Duplication of not controlled access defined at t_assignments-access_duplication.adb:9:21
-t_assignments-possible_target_name.adb:17:4: Error: Repeated: variable already assigned in same group at t_assignments-possible_target_name.adb:16:4
-t_assignments-possible_target_name.adb:20:4: Error: Repeated: variable already assigned in same group at t_assignments-possible_target_name.adb:15:4
-t_assignments-possible_target_name.adb:21:4: Error: Repeated: variable already assigned in same group at t_assignments-possible_target_name.adb:15:4
-t_assignments-possible_target_name.adb:16:4: Error: Small_Rec: too many assignments to components of T_Assignments.Possible_Target_Name.R, total: 2 (<=2)
-t_assignments-possible_target_name.adb:15:15: Found: Triv_Target: Possible use of trivial target name
-t_assignments-possible_target_name.adb:15:15: Replace:15:36
+t_assignments-possible_target_name.adb:26:4: Error: Repeated: variable already assigned in same group at t_assignments-possible_target_name.adb:25:4
+t_assignments-possible_target_name.adb:27:4: Error: Repeated: variable already assigned in same group at t_assignments-possible_target_name.adb:25:4
+t_assignments-possible_target_name.adb:28:4: Error: Repeated: variable already assigned in same group at t_assignments-possible_target_name.adb:25:4
+t_assignments-possible_target_name.adb:29:4: Error: Repeated: variable already assigned in same group at t_assignments-possible_target_name.adb:25:4
+t_assignments-possible_target_name.adb:30:4: Error: Repeated: variable already assigned in same group at t_assignments-possible_target_name.adb:25:4
+t_assignments-possible_target_name.adb:33:4: Error: Repeated: variable already assigned in same group at t_assignments-possible_target_name.adb:32:4
+t_assignments-possible_target_name.adb:34:4: Error: Repeated: variable already assigned in same group at t_assignments-possible_target_name.adb:32:4
+t_assignments-possible_target_name.adb:35:4: Error: Repeated: variable already assigned in same group at t_assignments-possible_target_name.adb:32:4
+t_assignments-possible_target_name.adb:40:4: Error: Repeated: variable already assigned in same group at t_assignments-possible_target_name.adb:39:4
+t_assignments-possible_target_name.adb:42:4: Error: Repeated: variable already assigned in same group at t_assignments-possible_target_name.adb:25:4
+t_assignments-possible_target_name.adb:43:4: Error: Repeated: variable already assigned in same group at t_assignments-possible_target_name.adb:25:4
+t_assignments-possible_target_name.adb:44:4: Error: Repeated: variable already assigned in same group at t_assignments-possible_target_name.adb:25:4
+t_assignments-possible_target_name.adb:45:4: Error: Repeated: variable already assigned in same group at t_assignments-possible_target_name.adb:25:4
+t_assignments-possible_target_name.adb:52:4: Error: Repeated: variable already assigned in same group at t_assignments-possible_target_name.adb:50:4
+t_assignments-possible_target_name.adb:32:4: Error: Small_Rec: too many assignments to components of T_Assignments.Possible_Target_Name.Vrec, total: 2 (<=2)
+t_assignments-possible_target_name.adb:25:9: Found: Triv_Target: Possible use of trivial target name
+t_assignments-possible_target_name.adb:25:9: Replace:25:30
 !@
-t_assignments-possible_target_name.adb:16:19: Error: Not_Triv_Target: Possible use of not trivial target name
-t_assignments-possible_target_name.adb:16:19: Replace:16:25
+t_assignments-possible_target_name.adb:26:9: Found: Triv_Target: Possible use of trivial target name
+t_assignments-possible_target_name.adb:26:9: Replace:26:11
 !@
-t_assignments-possible_target_name.adb:18:31: Error: Not_Triv_Target: Possible use of not trivial target name
-t_assignments-possible_target_name.adb:18:31: Replace:18:35
+t_assignments-possible_target_name.adb:27:18: Found: Triv_Target: Possible use of trivial target name
+t_assignments-possible_target_name.adb:27:18: Replace:27:20
 !@
-t_assignments-possible_target_name.adb:20:21: Found: Triv_Target: Possible use of trivial target name
-t_assignments-possible_target_name.adb:20:21: Replace:20:21
+t_assignments-possible_target_name.adb:28:18: Found: Triv_Target: Possible use of trivial target name
+t_assignments-possible_target_name.adb:28:18: Replace:28:20
 !@
-t_assignments-possible_target_name.adb:20:33: Found: Triv_Target: Possible use of trivial target name
-t_assignments-possible_target_name.adb:20:33: Replace:20:33
+t_assignments-possible_target_name.adb:29:15: Found: Triv_Target: Possible use of trivial target name
+t_assignments-possible_target_name.adb:29:15: Replace:29:15
+!@
+t_assignments-possible_target_name.adb:29:27: Found: Triv_Target: Possible use of trivial target name
+t_assignments-possible_target_name.adb:29:27: Replace:29:27
+!@
+t_assignments-possible_target_name.adb:30:18: Found: Triv_Target: Possible use of trivial target name
+t_assignments-possible_target_name.adb:30:18: Replace:30:18
+!@
+t_assignments-possible_target_name.adb:32:22: Error: Not_Triv_Target: Possible use of not trivial target name
+t_assignments-possible_target_name.adb:32:22: Replace:32:31
+!@
+t_assignments-possible_target_name.adb:34:18: Error: Not_Triv_Target: Possible use of not trivial target name
+t_assignments-possible_target_name.adb:34:18: Replace:34:19
+!@
+t_assignments-possible_target_name.adb:35:18: Found: Triv_Target: Possible use of trivial target name
+t_assignments-possible_target_name.adb:35:18: Replace:35:27
+!@
+t_assignments-possible_target_name.adb:37:32: Error: Not_Triv_Target: Possible use of not trivial target name
+t_assignments-possible_target_name.adb:37:32: Replace:37:36
+!@
+t_assignments-possible_target_name.adb:42:15: Found: Triv_Target: Possible use of trivial target name
+t_assignments-possible_target_name.adb:42:15: Replace:42:15
+!@
+t_assignments-possible_target_name.adb:43:15: Found: Triv_Target: Possible use of trivial target name
+t_assignments-possible_target_name.adb:43:15: Replace:43:15
+!@
+t_assignments-possible_target_name.adb:43:20: Found: Triv_Target: Possible use of trivial target name
+t_assignments-possible_target_name.adb:43:20: Replace:43:20
+!@
+t_assignments-possible_target_name.adb:44:15: Found: Triv_Target: Possible use of trivial target name
+t_assignments-possible_target_name.adb:44:15: Replace:44:15
+!@
+t_assignments-possible_target_name.adb:44:20: Found: Triv_Target: Possible use of trivial target name
+t_assignments-possible_target_name.adb:44:20: Replace:44:20
+!@
+t_assignments-possible_target_name.adb:44:28: Found: Triv_Target: Possible use of trivial target name
+t_assignments-possible_target_name.adb:44:28: Replace:44:28
+!@
+t_assignments-possible_target_name.adb:45:15: Found: Triv_Target: Possible use of trivial target name
+t_assignments-possible_target_name.adb:45:15: Replace:45:15
+!@
+t_assignments-possible_target_name.adb:47:14: Error: Not_Triv_Target: Possible use of not trivial target name
+t_assignments-possible_target_name.adb:47:14: Replace:47:19
+!@
+t_assignments-possible_target_name.adb:52:23: Found: Triv_Target: Possible use of trivial target name
+t_assignments-possible_target_name.adb:52:23: Replace:52:24
 !@
 
 Counts summary:
