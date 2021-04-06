@@ -46,6 +46,7 @@ package Adactl_Constants is
 
    Max_ID_Length : constant := 250;
    -- Max length of an Ada identifier (and of a keyword by the same token)
+   type ID_Count is range 0 .. Max_ID_Length;
 
    Max_Controls_For_Rule : constant := 100;
    -- For rules that need an upper bound to the number of times they can

@@ -3540,7 +3540,8 @@ that are replaceable by aggregate assignment.
                             @{, [not] <target>@});
 <control_kind> assignments (repeated);
 <control_kind> assignments (groupable, <filter> @{,<filter>@});
-<control_kind> assignments ([[not] trivial] possible_target_name);
+<control_kind> assignments ([[not] trivial] possible_target_name
+                            [, <max length>]);
 <target> ::= <entity> | <category> | function | procedure
 <filter> ::= given <min_val> | missing <max_val> | ratio <min_val> |
              total <max_val>
@@ -3656,8 +3657,16 @@ only trivial names are controlled, i.e. those where the left hand side
 is a plain identifier (like in the subrule ``trivial_target_name'' of
 the rule ``expressions). @xref{Expressions}.  If it is preceded by
 ``not trivial'', only those that are not trivial are
-controlled. Otherwise, both are controlled.  This subrule can be given
-only once for each of ``trivial'' and ``not trivial''.
+controlled. Otherwise, both are controlled.
+
+If <max length> is specified with ``trivial'', only identifiers whose
+length is greater are controlled; if it is specified with ``not
+trivial'', only names with more components (i.e qualifications and
+indexings) are controlled. <max length> is not allowed with no
+modifiers.
+
+This subrule can be given only once for each of ``trivial'' and ``not
+trivial''.
 @end itemize
 
 Ex:
@@ -3683,6 +3692,10 @@ search assignments (groupable, ratio 80);
 
 -- Find all non trivial possible uses of "@@"
 search assignments (not trivial possible_target_name);
+
+-- Find all trivial possible uses of "@@" where the identifier
+-- has more than 3 characters
+search assignments (trivial possible_target_name, 3);
 @end example
 
 @subsection Fixes

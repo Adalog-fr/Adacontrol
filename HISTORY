@@ -2,7 +2,11 @@
 == V1.22b13 ==
 ==============
 
-    
+Changes to existing rules:
+--------------------------
+Assignments:
+   possible_target_name: add length parameter
+
 ==============
 == V1.22b12 ==
 ==============

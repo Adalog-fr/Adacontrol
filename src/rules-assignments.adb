@@ -35,11 +35,13 @@ with
   Asis.Elements,
   Asis.Expressions,
   Asis.Iterator,
-  Asis.Statements;
+  Asis.Statements,
+  Asis.Text;
 
 -- Adalog
 with
   A4G_Bugs,
+  Adactl_Constants,
   Binary_Map,
   Linear_Queue,
   Thick_Queries,
@@ -120,7 +122,7 @@ package body Rules.Assignments is
    --
    -- Subrule Possible_Target_Name:
    -- -----------------------------
-   -- Traverse the RHS and compare to LHS, all the work is done by Are_Equivalent_Expressions.
+   -- Traverse the RHS and compare each subexpression to LHS, all the work is done by Are_Equivalent_Expressions.
 
    type Subrules is (Sr_Type, Sr_Access_Duplication, Sr_Sliding, Sr_Repeated, Sr_Groupable, Sr_Possible_Target_Name);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, Prefix => "Sr_");
@@ -197,10 +199,14 @@ package body Rules.Assignments is
    Duplication_Expected_Categories : constant Categories_Set := Basic_Set + Cat_Private;
 
    -- Data for subrule Possible_Target_Name:
+   type Target_Context is new Basic_Rule_Context with
+      record
+         Allowed_Count : Adactl_Constants.ID_Count;  -- Largely sufficient for element count too
+      end record;
    Trivial_Given              : Boolean := False;
-   Trivial_Target_Context     : Basic_Rule_Context;
+   Trivial_Target_Context     : Target_Context;
    Not_Trivial_Given          : Boolean := False;
-   Not_Trivial_Target_Context : Basic_Rule_Context;
+   Not_Trivial_Target_Context : Target_Context;
 
    ----------
    -- Help --
@@ -212,9 +218,9 @@ package body Rules.Assignments is
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control various issues related to assignments:");
       User_Message ("assignment to a given type, obvious array slidings, duplication of access value,");
-      User_Message ("repeated assignments in a sequence to a same variable, or sequences of assignments");
+      User_Message ("repeated assignments in a sequence to a same variable, sequences of assignments");
       User_Message ("to components of a structured variable that could be replaced by an aggregate,");
-      User_Message ("subexpressions that could be replaced by ""@""");
+      User_Message ("or subexpressions that could be replaced by ""@""");
       User_Message;
       -- Since some subrules have various modifiers, we cannot use Help_On_Flags here.
       -- Update manually if new subrules are added
@@ -231,6 +237,12 @@ package body Rules.Assignments is
       User_Message ("For groupable:");
       User_Message ("Parameter(2..): <criterion> <value>");
       Help_On_Modifiers (Header => "<criterion>:");
+      User_Message;
+      User_Message ("For trivial possible_target_name:");
+      User_Message ("Parameter (2): Maximum length of acceptable identifier");
+      User_Message;
+      User_Message ("For not trivial possible_target_name:");
+      User_Message ("Parameter (2): Maximum components of acceptable name");
    end Help;
 
 
@@ -239,11 +251,13 @@ package body Rules.Assignments is
    -----------------
 
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
-      use Context_Queue, Criteria_Utilities, Subrules_Flag_Utilities, Framework.Language, Thick_Queries;
+      use Adactl_Constants, Context_Queue, Criteria_Utilities, Subrules_Flag_Utilities,
+          Framework.Language, Thick_Queries;
       Given          : Biggest_Natural := 0;
       Missing        : Biggest_Natural := Biggest_Natural'Last;
       Ratio          : Percentage      := 0;
       Total          : Biggest_Natural := 0;
+      Count          : Id_Count        := 0;
       Crit           : Criteria;
       Subrule        : Subrules;
       Has_Not        : Boolean;
@@ -384,28 +398,37 @@ package body Rules.Assignments is
             Append (Groupable_Contexts, (Basic.New_Context (Ctl_Kind, Ctl_Label) with Given, Missing, Ratio, Total));
 
          when Sr_Possible_Target_Name =>
+            if Parameter_Exists and then Is_Integer_Parameter then
+               Count := Id_Count (Biggest_Int'(Get_Integer_Parameter (Min => 1, Max => Biggest_Int (Id_Count'Last))));
+            end if;
             if Has_Not then  -- can happen only as Not Trivial here
                if Not_Trivial_Given then
                   Parameter_Error (Rule_Id, "Not trivial Possible_Target_Name already given");
                end if;
-               Not_Trivial_Target_Context := Basic.New_Context (Ctl_Kind, Ctl_Label);
+               Not_Trivial_Target_Context := (Basic.New_Context (Ctl_Kind, Ctl_Label) with Allowed_Count => Count);
                Not_Trivial_Given := True;
             else
                if Trivial_Given then
                   Parameter_Error (Rule_Id, "Trivial Possible_Target_Name already given");
                end if;
-               Trivial_Target_Context := Basic.New_Context (Ctl_Kind, Ctl_Label);
+               Trivial_Target_Context := (Basic.New_Context (Ctl_Kind, Ctl_Label) with Allowed_Count => Count);
                Trivial_Given := True;
 
                if not Has_Trivial then -- Control is for both
+                  if Count /= 0 then
+                     Parameter_Error (Rule_Id, "Count can be given only with ""(not] trivial""");
+                  end if;
                   if Not_Trivial_Given then
                      Parameter_Error (Rule_Id, "Not trivial Possible_Target_Name already given");
                   end if;
-                  Not_Trivial_Target_Context := Basic.New_Context (Ctl_Kind, Ctl_Label);
+                  Not_Trivial_Target_Context := (Basic.New_Context (Ctl_Kind, Ctl_Label) with Allowed_Count => 1);
                   Not_Trivial_Given := True;
                end if;
             end if;
       end case;
+      if Parameter_Exists then
+         Parameter_Error (Rule_Id, "Too many parameters for subrule " & Image (Subrule));
+      end if;
       Rule_Used (Subrule) := True;
    end Add_Control;
 
@@ -505,8 +528,36 @@ package body Rules.Assignments is
                             Target_Var : in out Asis.Expression)
       is
          use Asis.Elements, Asis.Expressions;
-         use Framework.Locations, Framework.Reports, Thick_Queries;
-      begin
+         use Adactl_Constants, Framework.Locations, Framework.Reports, Thick_Queries;
+         function Target_Count return Id_Count is
+            use Asis.Text;
+            use Utilities;
+
+            The_Span  : constant Span := A4G_Bugs.Element_Span (Target_Var);
+            Result    : ID_Count := 1;
+            Remaining : Asis.Expression := Target_Var;
+         begin
+            if Expression_Kind (Target_Var) = An_Identifier then
+               -- Trivial
+               return Id_Count (The_Span.Last_Column - The_Span.First_Column + 1);
+            end if;
+
+            -- Not trivial
+            loop
+               case Expression_Kind (Remaining) is
+                  when A_Selected_Component | An_Indexed_Component | An_Explicit_Dereference =>
+                     Result := Result + 1;
+                     Remaining := Prefix (Remaining);
+                  when An_Identifier =>
+                     return Result;
+                  when others =>
+                     -- A_Function_Call...
+                     -- Should have been eliminated before we arrive here
+                     Failure ("Unexpected target", Target_Var);
+               end case;
+            end loop;
+         end Target_Count;
+      begin   -- Target_Pre
          case Expression_Kind (Sub_Expr) is
             when An_Attribute_Reference =>
                -- don't traverse the attribute name
@@ -514,8 +565,8 @@ package body Rules.Assignments is
                Control := Abandon_Children;
             when A_Function_Call =>
                -- don't traverse the function name
-               for P of Function_Call_Parameters (Sub_Expr) loop
-                  Target_Traverse (P, Control, Target_Var);
+               for P : Asis.Association of Function_Call_Parameters (Sub_Expr) loop
+                  Target_Traverse (Actual_Parameter (P), Control, Target_Var);
                end loop;
                Control := Abandon_Children;
             when An_Allocation_From_Subtype =>
@@ -534,7 +585,7 @@ package body Rules.Assignments is
                   -- be considered equivalent. While it would not be wrong to make the replacement in that case,
                   -- it is not desirable.
                   if Expression_Kind (Target_Var) = An_Identifier then
-                     if Trivial_Given then
+                     if Trivial_Given and then Target_Count > Trivial_Target_Context.Allowed_Count then
                         Report (Rule_Id,
                                 Trivial_Target_Context,
                                 Get_Location (Sub_Expr),
@@ -542,7 +593,7 @@ package body Rules.Assignments is
                         Fixes.Replace (Sub_Expr, "@");
                      end if;
                   else
-                     if Not_Trivial_Given then
+                     if Not_Trivial_Given and then Target_Count > Not_Trivial_Target_Context.Allowed_Count then
                         Report (Rule_Id,
                                 Not_Trivial_Target_Context,
                                 Get_Location (Sub_Expr),
