@@ -1003,12 +1003,12 @@ package body Rules.Simplifiable_Statements is
                   Report (Rule_Id,
                           Usage (Stmt_Dead),
                           Get_Location (CP),
-                          "choice(s) cover no value of case expression");
+                          "choice(s) cover no value of the selecting expression of the case statement");
                elsif Spurious_Values then
                   Report (Rule_Id,
                           Usage (Stmt_Dead),
                           Get_Location (CP),
-                          "some choice(s) not covering any value of case expression");
+                          "some choice(s) not covering any value of the selecting expression of the case statement");
                elsif Count = 0 then
                   Report (Rule_Id,
                           Usage (Stmt_Dead),

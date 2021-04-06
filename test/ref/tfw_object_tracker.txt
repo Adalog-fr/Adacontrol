@@ -79,7 +79,7 @@ tfw_object_tracker.adb:238:7: Replace:240:13
 tfw_object_tracker.adb:246:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
 tfw_object_tracker.adb:246:4: Replace:248:10
 !X := 1;
-tfw_object_tracker.adb:256:7: Error: SIMPLIFIABLE_STATEMENTS: choice(s) cover no value of case expression
+tfw_object_tracker.adb:256:7: Error: SIMPLIFIABLE_STATEMENTS: choice(s) cover no value of the selecting expression of the case statement
 tfw_object_tracker.adb:253:10: Error: SIMPLIFIABLE_STATEMENTS: condition is always true
 tfw_object_tracker.adb:253:10: Replace:255:16
 !X := 1;

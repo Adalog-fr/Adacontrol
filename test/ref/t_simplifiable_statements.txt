@@ -210,9 +210,9 @@ t_simplifiable_statements-test_dead.adb:38:7: Error: SIMPLIFIABLE_STATEMENTS: ch
 t_simplifiable_statements-test_dead.adb:38:7: Delete:39:16
 t_simplifiable_statements-test_dead.adb:40:7: Error: SIMPLIFIABLE_STATEMENTS: choice(s) cover no value
 t_simplifiable_statements-test_dead.adb:40:7: Delete:41:16
-t_simplifiable_statements-test_dead.adb:49:7: Error: SIMPLIFIABLE_STATEMENTS: choice(s) cover no value of case expression
-t_simplifiable_statements-test_dead.adb:61:7: Error: SIMPLIFIABLE_STATEMENTS: choice(s) cover no value of case expression
-t_simplifiable_statements-test_dead.adb:63:7: Error: SIMPLIFIABLE_STATEMENTS: choice(s) cover no value of case expression
+t_simplifiable_statements-test_dead.adb:49:7: Error: SIMPLIFIABLE_STATEMENTS: choice(s) cover no value of the selecting expression of the case statement
+t_simplifiable_statements-test_dead.adb:61:7: Error: SIMPLIFIABLE_STATEMENTS: choice(s) cover no value of the selecting expression of the case statement
+t_simplifiable_statements-test_dead.adb:63:7: Error: SIMPLIFIABLE_STATEMENTS: choice(s) cover no value of the selecting expression of the case statement
 t_simplifiable_statements-test_dead.adb:69:4: Error: SIMPLIFIABLE_STATEMENTS: condition is always false
 t_simplifiable_statements-test_dead.adb:69:4: Delete:71:10
 t_simplifiable_statements-test_dead.adb:87:7: Error: SIMPLIFIABLE_STATEMENTS: unreachable code after this statement
