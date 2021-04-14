@@ -2469,9 +2469,9 @@ controls with that label), separated by spaces. Alternatively, the
 list of controls can be the word ``all'' to disable/re-enable all
 controls.
 
-In a ``@code{--##}'' line, everything appearing after another ``##''
-tag (by default) is ignored. This allows the insertion of a comment
-explaining why the control is disabled at that point.
+In a ``@code{--##}'' line, everything appearing after another
+``@code{##}'' tag (by default) is ignored. This allows the insertion
+of a comment explaining why the control is disabled at that point.
 
 Both tags can be changed with the ``set'' command. @xref{Set command}.
 

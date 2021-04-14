@@ -876,8 +876,8 @@ package body Framework.Object_Tracker is
                      then
                         if Declaration_Kind (Good_Var_Scope) = A_Package_Declaration
                           and then Is_Part_Of ((if Is_Part_Of_Instance (Good_Var_Scope)
-                                               then Ultimate_Enclosing_Instantiation (Good_Var_Scope)
-                                               else Good_Var_Scope),
+                                                  then Ultimate_Enclosing_Instantiation (Good_Var_Scope)
+                                                  else Good_Var_Scope),
                                                Inside => Ref_Enclosing)
                         then
                            -- This is a package nested in the subprogram, so it's OK
