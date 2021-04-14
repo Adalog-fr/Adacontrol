@@ -34,6 +34,16 @@ procedure Tfw_Object_Tracker is
       <<Label_2>>
    end Check_Label;
 
+   procedure Check_Expression_Function is
+      J : Integer := 1;
+      function J_Plus_1 return Integer is (J + 1);
+   begin
+      null;
+      if I_Plus_1 = 1 then            -- Unkown (non local expression function)
+         null;
+      end if;
+   end;
+
 begin
 
    -- Simple cases
