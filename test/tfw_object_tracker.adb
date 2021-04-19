@@ -110,6 +110,7 @@ begin
       E1 : Enum := Two;
       E2 : Enum range Three .. Four;
       subtype Es is Enum range Enum'Succ (E1) .. Four;
+      subtype With_Predicate is Enum with Static_Predicate => With_Predicate /= Three;
    begin
       if E1 = Two then                -- True
          X := 1;
@@ -118,6 +119,9 @@ begin
       E1 := One;
       if E2 not in Es then            -- False
          X := 1;
+      end if;
+      if E1 in With_Predicate then    -- Unknown (predicate)
+         null;
       end if;
    end;
 
@@ -726,7 +730,7 @@ begin
          null;
       end if;
 
-      if A = 1 then -- OK (unknown)
+      if A = 1 then -- Unknown
          null;
       end if;
 
@@ -762,8 +766,8 @@ begin
    begin
       case X is
          when 1 =>
-            V.F := V.F;               -- Constraint_Error
-            V.J := V.J;               -- Constraint_Error
+            V.F := V.F;               -- Constraint_Error x2
+            V.J := V.J;               -- Constraint_Error x2
          when others =>
             null;
       end case;
@@ -779,8 +783,8 @@ begin
 
       case X is
          when 1 =>
-            V.F := V.F;               -- OK (unknown)
-            V.J := V.J;               -- OK (unknown)
+            V.F := V.F;               -- Unknown
+            V.J := V.J;               -- Unknown
          when others =>
             null;
       end case;
