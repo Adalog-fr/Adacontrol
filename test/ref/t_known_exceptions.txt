@@ -82,6 +82,11 @@ t_known_exceptions-test_raise_expression.adb:45:9: Error: Exceptions: Raise_Expr
 t_known_exceptions-test_raise_expression.adb:48:55: Error: Exceptions: Raise_Expression executed unconditionally, use "or else" instead
 t_known_exceptions-test_raise_expression.adb:48:52: Replace:48:53
 !or else
+t_known_exceptions-test_zero_divide.adb:14:14: Error: Zero_Divide: division by 0 raises Constraint_Error
+t_known_exceptions-test_zero_divide.adb:18:13: Error: Zero_Divide: division by 0 raises Constraint_Error
+t_known_exceptions-test_zero_divide.adb:21:15: Error: Zero_Divide: division by 0 raises Constraint_Error
+t_known_exceptions-test_zero_divide.adb:26:14: Error: Zero_Divide: division by 0 raises Constraint_Error
+t_known_exceptions-test_zero_divide.adb:31:14: Error: Zero_Divide: division by 0 raises Constraint_Error
 
 Counts summary:
-All_Errors: 76
+All_Errors: 81

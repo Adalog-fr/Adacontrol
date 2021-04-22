@@ -410,7 +410,7 @@ Rule: KNOWN_EXCEPTIONS
 Control constructs that are provably always raising an exception
 
 Parameter(s): access           | discriminant | index |
-              raise_expression
+              raise_expression | zero_divide
               (optional, default=all)
 ----
 Rule: LOCAL_ACCESS

@@ -6445,7 +6445,8 @@ construct is certain to raise an exception.
 @subsection Syntax
 @example
 <control_kind> known_exceptions [(<subrule> @{,<subrule>@})];
-<subrule>   ::= access | discriminant | index | raise_expression
+<subrule>   ::= access      | discriminant | index | raise_expression |
+                zero_divide
 @end example
 
 @subsection Action
@@ -6468,6 +6469,9 @@ test (@code{@b{and then}} and @code{@b{or else}}), as a dependent
 expression of an @code{@b{if}} expression or a @code{@b{case}}
 expression, or as the expression of an expression function (the later
 being assumed to be a function that raises the exception on purpose).
+@item
+``zero_divide'': controls @code{"/"} operators where the right operand is
+statically known to be zero.
 @end itemize
 Without parameters, all kinds of known exceptions are
 controlled.

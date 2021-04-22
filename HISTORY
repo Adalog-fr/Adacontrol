@@ -2,6 +2,10 @@
 == V1.22b14 ==
 ==============
 
+Changes to existing rules:
+--------------------------
+Known_Exceptions: add zero_divide subrule
+
 ==============
 == V1.22b13 ==
 ==============

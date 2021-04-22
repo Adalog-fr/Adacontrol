@@ -49,7 +49,7 @@ pragma Elaborate (Framework.Language);
 package body Rules.Known_Exceptions is
    use Framework, Framework.Control_Manager;
 
-   type Subrules is (SR_Access, SR_Discriminant, SR_Index, SR_Raise_Expression);
+   type Subrules is (SR_Access, SR_Discriminant, SR_Index, SR_Raise_Expression, SR_Zero_Divide);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, "SR_");
 
    type Usage_Flags is array (Subrules) of Boolean;
@@ -146,6 +146,44 @@ package body Rules.Known_Exceptions is
                  & " raises Constraint_Error (null pointer)");
       end if;
    end Process_Dereference;
+
+
+   ---------------------------
+   -- Process_Function_Call --
+   ---------------------------
+
+   procedure Process_Function_Call (Expr : Asis.Expression) is
+      use Asis, Asis.Elements, Asis.Expressions;
+      use Framework.Locations, Framework.Reports, Thick_Queries;
+      RHS : Asis.Expression;
+   begin
+      if not Rule_Used (SR_Zero_Divide) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      if Expression_Kind (Prefix (Expr)) not in An_Identifier | An_Operator_Symbol | A_Selected_Component then
+         -- f.e.: an_indexed_component of an array of access to function, an_explicit_dereference...
+         -- fully dynamic
+         return;
+      end if;
+
+      if Operator_Kind (Ultimate_Name (Prefix (Expr))) /= A_Divide_Operator then
+         return;
+      end if;
+
+      -- Predefined operators cannot be called in named notation, therefore it is safe to use
+      -- non-normalized association
+      RHS := Actual_Expressions (Expr) (2);
+      if Discrete_Static_Expression_Value (RHS) = 0 then
+         Report (Rule_Id,
+                 Contexts (SR_Zero_Divide),
+                 Get_Location (RHS),
+                 "division by 0 raises Constraint_Error");
+      end if;
+
+   end Process_Function_Call;
+
 
    ------------------------------
    -- Process_Index_Expression --

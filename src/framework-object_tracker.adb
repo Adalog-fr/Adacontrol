@@ -1307,7 +1307,7 @@ package body Framework.Object_Tracker is
          Bounds           : Extended_Biggest_Int_List (1 .. 2);
          Obj_Type_Name    : Asis.Expression;
       begin
-         case Type_Category (Obj_Def) is
+         case Type_Category (Obj_Def, Follow_Derived => True) is
             when An_Enumeration_Type =>
                Descriptor.Kind := Enumerated;
             when A_Signed_Integer_Type =>
@@ -1416,10 +1416,18 @@ package body Framework.Object_Tracker is
                else
                   -- The type may not be in table, if from some package that has not been analyzed
                   -- (standard library f.e.)
-                  Range_Descriptor := Type_Table.Fetch (Subtype_Simple_Name (Obj_Def),
-                                                        Default => (Kind => Pointer,
-                                                                    Imin => 0,
-                                                                    Imax => Biggest_Int'Last));
+                  if Definition_Kind (Obj_Def) = A_Type_Definition then
+                     -- This def obtained from the type of the object, get the name from the declaration
+                     Range_Descriptor := Type_Table.Fetch (Names (Enclosing_Element (Obj_Def))(1),
+                                                           Default => (Kind => Pointer,
+                                                                       Imin => 0,
+                                                                       Imax => Biggest_Int'Last));
+                  else
+                     Range_Descriptor := Type_Table.Fetch (Subtype_Simple_Name (Obj_Def),
+                                                           Default => (Kind => Pointer,
+                                                                       Imin => 0,
+                                                                       Imax => Biggest_Int'Last));
+                  end if;
                   Descriptor.Declaration_Min := Range_Descriptor.Imin;
                end if;
                Descriptor.Declaration_Max := Biggest_Int'Last;           -- Always for pointers

@@ -791,6 +791,7 @@ package body Framework.Plugs is
                   Rules.Exception_Propagation.    Process_Call                  (Element);
                   Rules.Expressions.              Process_Call                  (Element);
                   Rules.Insufficient_Parameters.  Process_Call                  (Element);
+                  Rules.Known_Exceptions.         Process_Function_Call         (Element);
                   Rules.Max_Call_Depth.           Process_Call                  (Element);
                   Rules.Not_Elaboration_Calls.    Process_Call                  (Element);
                   Rules.Parameter_Aliasing.       Process_Call                  (Element);
