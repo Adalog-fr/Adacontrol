@@ -1748,10 +1748,6 @@ package body Framework.Object_Tracker is
 
       -- Note: all loop statements are already invalidated from Process_Outer_Statement
       case Statement_Kind (Stmt) is
-         when An_Assignment_Statement =>
-            Process_Assignment (Path => Enclosing_Element        (Stmt),
-                                Var  => Assignment_Variable_Name (Stmt),
-                                Expr => Assignment_Expression    (Stmt));
          when A_While_Loop_Statement =>
             Update_Condition (While_Condition (Stmt));
          when A_For_Loop_Statement =>
@@ -1794,11 +1790,15 @@ package body Framework.Object_Tracker is
    ----------------------------
 
    procedure Post_Process_Statement (Stmt : in Asis.Statement) is
-      use Asis.Elements;
+      use Asis.Elements, Asis.Statements;
       -- NB: we handle here only statements whose sequence of statements is not included in a path
       --     (for the latters, see Post_Process_Path)
    begin
       case Statement_Kind (Stmt) is
+         when An_Assignment_Statement =>
+            Process_Assignment (Path => Enclosing_Element        (Stmt),
+                                Var  => Assignment_Variable_Name (Stmt),
+                                Expr => Assignment_Expression    (Stmt));
          when A_Loop_Statement | A_While_Loop_Statement | A_For_Loop_Statement | A_Block_Statement =>
             Clear_Invalidated_Path (Stmt);
             Clear_Path (Stmt);
