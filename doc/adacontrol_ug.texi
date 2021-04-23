@@ -95,7 +95,7 @@ these fixes automatically, or they can be fixed interactively from
 GPS.
 
 AdaControl is a commercial product of
-@url{http://www.adalog.fr/adalog2.htm,Adalog} with professional grade
+@url{https://www.adalog.fr/en/adalog.html,Adalog} with professional grade
 support available. Getting support is highly recommended for
 industrial projects. Adacontrol can also be customized or extended to
 match your special needs, please refer to @ref{Support} or contact
@@ -164,8 +164,8 @@ apply. The complete syntax of the commands is described in chapter
 @ref{Command language reference}.
 
 AdaControl produces messages to the standard output, unless
-redirected. Several levels of messages are defined (i.e. error or found),
-depending on the kind of the control (i.e. check or search).
+redirected. Several levels of messages are defined (i.e. @code{error} or @code{found}),
+depending on the kind of the control (i.e. @code{check} or @code{search}).
 
 Rules can be locally disabled for a part of the source code, and various
 options can be passed to the program.
@@ -240,7 +240,7 @@ rules;
 consulting services for defining coding standards;
 @item
 consulting services in all areas related to Ada, real-time,
-compilation, etc. See @url{http://www.adalog.fr/adalog2.htm,Adalog's site} for details.
+compilation, etc. See @url{https://www.adalog.fr/en/adalog.html,Adalog's site} for details.
 @end itemize
 
 For pricing information about support contract and other services,
@@ -276,7 +276,7 @@ anybody else to get a support contract!
 Provide good ideas, new rules, suggestions for improvements...
 @end itemize
 And remember: developing AdaControl is an expensive effort (according
-to Ohlo's COCOMO model, it is worth 15 man.year of development). We
+to Ohlo's COCOMO model, it is worth 22 man.year of development). We
 need support from our users to keep it running!
 
 @node History, References, Support, Introduction
@@ -1908,7 +1908,8 @@ gnathub -P <project-file> --plugins=adacontrol
 
 To provide options to AdaControl (here: run AdaControl with a given rules file):
 @example
-gnathub -P <project-file> --plugins=adacontrol --targs:adacontrol -f special.aru
+gnathub -P <project-file> --plugins=adacontrol --targs:adacontrol
+        -f special.aru
 @end example
 
 @node Helpful utilities, Optimizing Adacontrol, Integrating AdaControl into GNATdashboard, Program Usage
@@ -6394,7 +6395,7 @@ The various forms of <formal_spec> make the rule quite powerful. For
 example:
 @example
 -- Not two instantiations of Gen with the same first parameter:
-check instantations (Gen, =);
+check instantiations (Gen, =);
 
 -- Not two instantiations of Gen with same first and third parameters:
 check instantiations (Gen, =, <>, =);
@@ -8604,7 +8605,8 @@ check renaming_declarations (synonym all);
 check renaming_declarations (as_body, all);
 
 -- Renaming of an operator as a different operator:
-check renaming_declarations (not identical operator as_operator function);
+check renaming_declarations
+   (not identical operator as_operator function);
 
 -- Renamings declared in block statements:
 check renaming_declarations (not block all);
@@ -12279,8 +12281,10 @@ Examples:
 @example
 -- Gnat format:
 set format "%[%f:%l:%c: %]%k: %d: %m"
--- YAML format:
-set format "- Path: %f%n  Location:%n    Line: %l%n    Column: %c%n  Type: %k%n  %[Label: %t%n  %]Rule: %r%n  Message: %m";
+
+-- CSV format (with header):
+set format_header ~"file","line","col.","key","label","rule","message"~
+set format ~"%"f","%"l","%"c","%"k","%"t","%"r","%"m"~
 @end example
 The ``rules'' directory of the distribution of AdaControl contains the
 files ``toml.aru'' and ``yaml.aru'' that can be sourced from other
@@ -12345,7 +12349,7 @@ The Format variable now accepts two kinds of values, Identifier (as in
 previous versions), and string values. See @ref{Output format}
 for more details.
 
-Now, the default file path are in short version instead of long.
+The default file path is now in short version instead of long.
 
 @section Migrating from 1.19r10
 @subsection Default_Parameter
@@ -12977,21 +12981,21 @@ check Header_Comments (minimum, 10);
 @subsection No_Closing_Name
 This rule is now part of the ``style'' rule. Change:
 @example
-check|search|count No_Closing_Name;
+check No_Closing_Name;
 @end example
 to:
 @example
-check|search|count Style (No_Closing_Name);
+check Style (No_Closing_Name);
 @end example
 
 @subsection Specification_Objects
 This rule is now part of the ``usage'' rule. Change:
 @example
-check|search|count Specification_Objects (<parameters>);
+check Specification_Objects (<parameters>);
 @end example
 to:
 @example
-check|search|count Usage (Object, From_Spec, <parameters>);
+check Usage (Object, From_Spec, <parameters>);
 @end example
 
 @subsection Statement
@@ -13001,12 +13005,12 @@ be consistent with other rules.
 @subsection When_Others_Null
 This rule is now part of the ``statements'' rule. Change:
 @example
-check|search|count When_Others_Null (case);
-check|search|count When_Others_Null (exception);
+check When_Others_Null (case);
+check When_Others_Null (exception);
 @end example
 to:
 @example
-check|search|count Statements (case_others_null);
-check|search|count Statements (exception_others_null);
+check Statements (case_others_null);
+check Statements (exception_others_null);
 @end example
 @bye

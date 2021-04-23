@@ -119,7 +119,7 @@ package Framework.Reports.Fixes is
    procedure List_Remove (Fix  : in out Incremental_Fix;
                           Inx  : Asis.List_Index;
                           From : Asis.Element);
-   -- If all all elements are removed from the clause, Flush will remove the whole clause
+   -- If all elements are removed from the clause, Flush will remove the whole clause
    -- All List_Remove in the same incremental fix must be from the same clause.
    procedure Flush  (Fix : in out Incremental_Fix);
 
