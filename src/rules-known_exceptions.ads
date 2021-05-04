@@ -32,6 +32,7 @@ package Rules.Known_Exceptions is
 
    Rule_Id : constant Wide_String := "KNOWN_EXCEPTIONS";
 
+   procedure Process_Assignment         (Stmt : Asis.Statement);
    procedure Process_Dereference        (Expr : Asis.Expression);
    procedure Process_Function_Call      (Expr : Asis.Expression);
    procedure Process_Index_Expression   (Expr : Asis.Expression);

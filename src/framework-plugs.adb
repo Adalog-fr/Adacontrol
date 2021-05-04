@@ -670,7 +670,8 @@ package body Framework.Plugs is
 
             case Statement_Kind (Element) is
                when An_Assignment_Statement =>
-                  Rules.Assignments.Process_Assignment (Element);
+                  Rules.Assignments.      Process_Assignment (Element);
+                  Rules.Known_Exceptions. Process_Assignment (Element);
 
                when A_Procedure_Call_Statement =>
                   Rules.Max_Call_Depth.                 Process_Call                  (Element);

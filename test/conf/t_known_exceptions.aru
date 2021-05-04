@@ -3,4 +3,5 @@ Access_Error  : check  known_exceptions (access);
 Discrim_Error : search known_exceptions (Discriminant);
 Exceptions    : check  known_exceptions (Raise_expression);
 Zero_Divide   : check  known_exceptions (Zero_Divide);
+Assignment    : check  known_exceptions (Assignment);
 All_Errors    : count  known_exceptions;

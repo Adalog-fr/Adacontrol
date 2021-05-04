@@ -6445,8 +6445,8 @@ construct is certain to raise an exception.
 @subsection Syntax
 @example
 <control_kind> known_exceptions [(<subrule> @{,<subrule>@})];
-<subrule>   ::= access      | discriminant | index | raise_expression |
-                zero_divide
+<subrule>   ::= access           | assignment | discriminant | index |
+                raise_expression | zero_divide
 @end example
 
 @subsection Action
@@ -6455,6 +6455,9 @@ The parameters are subrule keywords:
 @item
 ``access'': controls dereferences (explicit and implicit) where the
 access value is statically known to be @code{@b{null}}.
+@item
+``assignment'': controls assignments where the assigned expression value is known
+to be outside of the constraint of the assigned variable.
 @item
 ``discriminant'': controls access to record components that depend on a
 discriminant, and where the governing discriminant is statically known
@@ -6491,10 +6494,10 @@ respectively).
 
 @subsection Tips
 The error message indicates the failing value and the expected bound
-(for the ``index'' subrule), or the failing discriminant name (for the
-``discriminant'' subrule). Note that if the value is from an
-enumerated type (including character types), the value given is the
-integer position value (i.e. the @code{'Pos}).
+(for the ``assignment'' and ``index'' subrules), or the failing
+discriminant name (for the ``discriminant'' subrule). Note that if the
+value is from an enumerated type (including character types), the
+value given is the integer position value (i.e. the @code{'Pos}).
 
 A @code{@b{raise}} expression should not be evaluated unconditionally,
 it is rather to be used as a default in cases where other conditions

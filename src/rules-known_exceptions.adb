@@ -29,7 +29,8 @@ with
   Asis.Definitions,
   Asis.Elements,
   Asis.Exceptions,
-  Asis.Expressions;
+  Asis.Expressions,
+  Asis.Statements;
 
 -- Adalog
 with
@@ -49,7 +50,7 @@ pragma Elaborate (Framework.Language);
 package body Rules.Known_Exceptions is
    use Framework, Framework.Control_Manager;
 
-   type Subrules is (SR_Access, SR_Discriminant, SR_Index, SR_Raise_Expression, SR_Zero_Divide);
+   type Subrules is (SR_Access, SR_Assignment, SR_Discriminant, SR_Index, SR_Raise_Expression, SR_Zero_Divide);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, "SR_");
 
    type Usage_Flags is array (Subrules) of Boolean;
@@ -121,6 +122,53 @@ package body Rules.Known_Exceptions is
             Rule_Used := Save_Used;
       end case;
    end Command;
+
+
+   ------------------------
+   -- Process_Assignment --
+   ------------------------
+
+   procedure Process_Assignment (Stmt : Asis.Statement) is
+      use Asis.Statements;
+      use Framework.Locations, Framework.Reports, Thick_Queries;
+   begin
+      if not Rule_Used (SR_Assignment) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      declare
+         Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (Assignment_Variable_Name (Stmt));
+         Expr   : constant Asis.Expression           := Assignment_Expression (Stmt);
+         Val    : Extended_Biggest_Int;
+      begin
+         if Bounds = Nil_Extended_Biggest_Int_List then
+            -- Not a discrete variable
+            return;
+         end if;
+
+         Val := Discrete_Static_Expression_Value (Expr, Minimum);
+         if         Val        /= Not_Static
+           and then Bounds (2) /= Not_Static
+           and then Val >  Bounds (2)
+         then
+               Report (Rule_Id, Contexts (SR_Assignment), Get_Location (Stmt),
+                       "Assignment raises Constraint_Error, value " & Biggest_Int_Img (Val)
+                       & " > " & Biggest_Int_Img (Bounds (2)));
+         end if;
+
+         Val := Discrete_Static_Expression_Value (Expr, Maximum);
+         if         Val        /= Not_Static
+           and then Bounds (1) /= Not_Static
+           and then Val <  Bounds (1)
+         then
+            Report (Rule_Id, Contexts (SR_Assignment), Get_Location (Stmt),
+                    "Assignment raises Constraint_Error, value " & Biggest_Int_Img (Val)
+                    & " < " & Biggest_Int_Img (Bounds (1)));
+         end if;
+      end;
+   end Process_Assignment;
+
 
    -------------------------
    -- Process_Dereference --

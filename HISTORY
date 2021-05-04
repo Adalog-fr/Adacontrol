@@ -4,7 +4,7 @@
 
 Changes to existing rules:
 --------------------------
-Known_Exceptions: add zero_divide subrule
+Known_Exceptions: add zero_divide and assignment subrules
 
 ==============
 == V1.22b13 ==
