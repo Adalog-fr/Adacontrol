@@ -64,6 +64,7 @@ package Framework.Object_Tracker is
                       (Kind => Modular,    Imin | Imax => Thick_Queries.Not_Static),
                       (Kind => Pointer,    Imin | Imax => Thick_Queries.Not_Static),
                       (Kind => Untracked));
+   Null_Value : constant Object_Value_Set := (Kind => Pointer, Imin | Imax => 0);
 
    function Expression_Value (Expr : Asis.Expression; RM_Static : Boolean := False) return Object_Value_Set;
    -- Evaluates Expr, and return the value in Imin and Imax

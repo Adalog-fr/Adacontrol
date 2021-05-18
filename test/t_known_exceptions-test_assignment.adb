@@ -7,23 +7,42 @@ procedure Test_Assignment is
    I1 : Int1;
    Is1 : Sub1;
    Is2 : Sub2;
-   Is3 : Sub1 := 1;
+   Is3 : Sub1 := 1;     -- Assignment
 
    type Enum is (A, B, C);
    E : Enum range A .. B;
 
+   type Ptr1 is access Integer;
+   P1  : Ptr1;
+   type Ptr2 is not null access all Integer;
+   P2  : Ptr2;          -- Assignment (no initialization)
+   subtype Ptr3 is not null Ptr1;
+   P3  : Ptr3 := new Integer;
+   type Ptr4 is new not null Ptr1;
+   P4  : Ptr4;          -- Assignment (no initialization)
+   P5  : not null Ptr1; -- Assignment (no initialization)
+
 begin
-   I1 := 11;        -- Assignment
+   I1 := 11;            -- Assignment
    I1 := Int1'Last;
 
-   Is1 := 4;        -- Assignment
+   Is1 := 4;            -- Assignment
    Is1 := I1 - 1;
-   Is1 := Is1 + 1;  -- Assignment
-   Is1 := 10;       -- Assignment
+   Is1 := Is1 + 1;      -- Assignment
+   Is1 := 10;           -- Assignment
 
-   Is2 := 0;        -- OK (predicate)
+   Is2 := 0;            -- OK (predicate)
 
    E := B;
-   E := Enum'Last;  -- Assignment
+   E := Enum'Last;      -- Assignment
+
+   P2 := null;          -- Assignment
+   P2 := Ptr2 (P1);     -- Assignment
+   P1 := new Integer;
+   P2 := Ptr2 (P1);
+   P1 := null;
+   P3 := null;          -- Assignment
+   P3 := P1;            -- Assignment
+   P4 := Ptr4 (P1);     -- Assignment
 
 end Test_Assignment;

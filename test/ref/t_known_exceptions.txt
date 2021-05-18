@@ -10,11 +10,20 @@ t_known_exceptions-test_access.adb:62:37: Error: Access_Error: Implicit derefere
 t_known_exceptions-test_access.adb:64:10: Error: Access_Error: Implicit dereference of SP1 raises Constraint_Error (null pointer)
 t_known_exceptions-test_access.adb:64:22: Error: Access_Error: Implicit dereference of SP2 raises Constraint_Error (null pointer)
 t_known_exceptions-test_access.adb:75:10: Error: Access_Error: Implicit dereference of SP1 raises Constraint_Error (null pointer)
-t_known_exceptions-test_assignment.adb:19:4: Error: Assignment: Assignment raises Constraint_Error, value 11 > 10
-t_known_exceptions-test_assignment.adb:22:4: Error: Assignment: Assignment raises Constraint_Error, value 4 < 5
-t_known_exceptions-test_assignment.adb:24:4: Error: Assignment: Assignment raises Constraint_Error, value 10 > 9
-t_known_exceptions-test_assignment.adb:25:4: Error: Assignment: Assignment raises Constraint_Error, value 10 > 9
-t_known_exceptions-test_assignment.adb:30:4: Error: Assignment: Assignment raises Constraint_Error, value 2 > 1
+t_known_exceptions-test_assignment.adb:10:4: Error: Assignment: Initialization raises Constraint_Error, value 1 < 5
+t_known_exceptions-test_assignment.adb:18:4: Error: Assignment: Initialization raises Constraint_Error, no initialization for null excluding object
+t_known_exceptions-test_assignment.adb:22:4: Error: Assignment: Initialization raises Constraint_Error, no initialization for null excluding object
+t_known_exceptions-test_assignment.adb:23:4: Error: Assignment: Initialization raises Constraint_Error, no initialization for null excluding object
+t_known_exceptions-test_assignment.adb:26:4: Error: Assignment: Assignment raises Constraint_Error, value 11 > 10
+t_known_exceptions-test_assignment.adb:29:4: Error: Assignment: Assignment raises Constraint_Error, value 4 < 5
+t_known_exceptions-test_assignment.adb:31:4: Error: Assignment: Assignment raises Constraint_Error, value 10 > 9
+t_known_exceptions-test_assignment.adb:32:4: Error: Assignment: Assignment raises Constraint_Error, value 10 > 9
+t_known_exceptions-test_assignment.adb:37:4: Error: Assignment: Assignment raises Constraint_Error, value 2 > 1
+t_known_exceptions-test_assignment.adb:39:4: Error: Assignment: Assignment raises Constraint_Error, null value for null excluding variable
+t_known_exceptions-test_assignment.adb:40:4: Error: Assignment: Assignment raises Constraint_Error, null value for null excluding variable
+t_known_exceptions-test_assignment.adb:44:4: Error: Assignment: Assignment raises Constraint_Error, null value for null excluding variable
+t_known_exceptions-test_assignment.adb:45:4: Error: Assignment: Assignment raises Constraint_Error, null value for null excluding variable
+t_known_exceptions-test_assignment.adb:46:4: Error: Assignment: Assignment raises Constraint_Error, null value for null excluding variable
 t_known_exceptions-test_index.adb:21:9: Error: Index_Error: Indexing raises Constraint_Error, value 11 > 10
 t_known_exceptions-test_index.adb:23:9: Error: Index_Error: Indexing raises Constraint_Error, value 2 > 1
 t_known_exceptions-test_index.adb:26:22: Error: Index_Error: Indexing raises Constraint_Error, value -1 < 0
@@ -94,4 +103,4 @@ t_known_exceptions-test_zero_divide.adb:26:14: Error: Zero_Divide: division by 0
 t_known_exceptions-test_zero_divide.adb:31:14: Error: Zero_Divide: division by 0 raises Constraint_Error
 
 Counts summary:
-All_Errors: 86
+All_Errors: 95

@@ -6456,8 +6456,9 @@ The parameters are subrule keywords:
 ``access'': controls dereferences (explicit and implicit) where the
 access value is statically known to be @code{@b{null}}.
 @item
-``assignment'': controls assignments where the assigned expression value is known
-to be outside of the constraint of the assigned variable.
+``assignment'': controls assignments (including object initialization)
+where the assigned expression value is known to be outside of the
+constraint of the assigned variable.
 @item
 ``discriminant'': controls access to record components that depend on a
 discriminant, and where the governing discriminant is statically known
@@ -6480,6 +6481,13 @@ Without parameters, all kinds of known exceptions are
 controlled.
 
 This rule can be given at most once for each subrule.
+
+Ex:
+@example
+check  Known_Exceptions (Assignment, Zero_Divide);
+search Known_Exceptions (raise_expression);
+@end example
+
 
 @subsection Fixes
 The following subrule generates fixes:

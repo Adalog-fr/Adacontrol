@@ -1,7 +1,7 @@
 ----------------------------------------------------------------------
 --  Rules.Known_Exceptions - Package body                           --
 --                                                                  --
---  This software is (c) Adalog 2004-2020.                          --
+--  This software is (c) Adalog 2004-2021.                          --
 --  The Ada Controller is  free software; you can  redistribute  it --
 --  and/or modify it under  terms of the GNU General Public License --
 --  as published by the Free Software Foundation; either version 2, --
@@ -34,6 +34,7 @@ with
 
 -- Adalog
 with
+  A4G_Bugs,
   Thick_Queries,
   Utilities;
 
@@ -49,6 +50,10 @@ pragma Elaborate (Framework.Language);
 
 package body Rules.Known_Exceptions is
    use Framework, Framework.Control_Manager;
+
+   -- Algorithm:
+   -- not much algorithmic difficulty in this rule, it relies mainly on the static evaluator
+
 
    type Subrules is (SR_Access, SR_Assignment, SR_Discriminant, SR_Index, SR_Raise_Expression, SR_Zero_Divide);
    package Subrules_Flag_Utilities is new Framework.Language.Flag_Utilities (Subrules, "SR_");
@@ -130,7 +135,8 @@ package body Rules.Known_Exceptions is
 
    procedure Process_Assignment (Stmt : Asis.Statement) is
       use Asis.Statements;
-      use Framework.Locations, Framework.Reports, Thick_Queries;
+      use Framework.Locations, Framework.Object_Tracker, Framework.Reports, Thick_Queries;
+
    begin
       if not Rule_Used (SR_Assignment) then
          return;
@@ -138,37 +144,127 @@ package body Rules.Known_Exceptions is
       Rules_Manager.Enter (Rule_Id);
 
       declare
-         Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (Assignment_Variable_Name (Stmt));
-         Expr   : constant Asis.Expression           := Assignment_Expression (Stmt);
-         Val    : Extended_Biggest_Int;
+         Target : constant Asis.Expression  := Assignment_Variable_Name (Stmt);
+         Val    : constant Object_Value_Set := Expression_Value (Assignment_Expression (Stmt));
       begin
+         if Val.Kind = Untracked then
+            -- Expr is not evaluable
+            return;
+         end if;
+
+         if Is_Access_Expression (Target) then
+            if Is_Null_Excluding_Subtype (A4G_Bugs.Corresponding_Expression_Type (Target)) and then Val.Imax = 0 then
+               Report (Rule_Id, Contexts (SR_Assignment), Get_Location (Stmt),
+                       "Assignment raises Constraint_Error, null value for null excluding variable");
+            end if;
+            return;
+         end if;
+
+         declare
+            Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (Target);
+         begin
+            if Bounds = Nil_Extended_Biggest_Int_List then
+               -- Target is not a discrete variable
+               return;
+            end if;
+
+            if         Val.Imin   /= Not_Static
+              and then Bounds (2) /= Not_Static
+              and then Val.Imin >  Bounds (2)
+            then
+               Report (Rule_Id, Contexts (SR_Assignment), Get_Location (Stmt),
+                       "Assignment raises Constraint_Error, value " & Biggest_Int_Img (Val.Imin)
+                       & " > " & Biggest_Int_Img (Bounds (2)));
+            end if;
+
+            if         Val.Imax   /= Not_Static
+              and then Bounds (1) /= Not_Static
+              and then Val.Imax <  Bounds (1)
+            then
+               Report (Rule_Id, Contexts (SR_Assignment), Get_Location (Stmt),
+                       "Assignment raises Constraint_Error, value " & Biggest_Int_Img (Val.Imax)
+                       & " < " & Biggest_Int_Img (Bounds (1)));
+            end if;
+         end;
+      end;
+   end Process_Assignment;
+
+
+   --------------------------------
+   -- Process_Object_Declaration --
+   --------------------------------
+
+   procedure Process_Object_Declaration (Decl : Asis.Declaration) is
+      use Asis.Declarations, Asis.Elements;
+      use Framework.Locations, Framework.Object_Tracker, Framework.Reports, Thick_Queries;
+   begin
+      if not Rule_Used (SR_Assignment) then
+         return;
+      end if;
+      Rules_Manager.Enter (Rule_Id);
+
+      -- No need to check for every name in the declaration: Constraint_Error is raised for all or no names
+      declare
+         Bounds : constant Extended_Biggest_Int_List := Discrete_Constraining_Values (Names (Decl)(1));
+         Expr   : constant Asis.Expression           := Initialization_Expression (Decl);
+         Val    : Object_Value_Set;
+      begin
+         if Is_Access_Subtype (Object_Declaration_View (Decl)) then
+            if Is_Nil (Expr) then
+               Val := Null_Value;  -- unitialized access object
+            else
+               Val := Expression_Value (Expr);
+               if Val.Kind = Untracked then
+                  return;
+               end if;
+            end if;
+
+            if Is_Null_Excluding_Subtype (Object_Declaration_View (Decl)) and then Val.Imax = 0 then
+               if Is_Nil (Expr) then
+                  Report (Rule_Id, Contexts (SR_Assignment), Get_Location (Decl),
+                          "Initialization raises Constraint_Error, no initialization for null excluding object");
+               else
+                  Report (Rule_Id, Contexts (SR_Assignment), Get_Location (Expr),
+                          "Initialization raises Constraint_Error, null initial value for null excluding object");
+               end if;
+               return;
+            end if;
+         end if;
+
          if Bounds = Nil_Extended_Biggest_Int_List then
             -- Not a discrete variable
             return;
          end if;
 
-         Val := Discrete_Static_Expression_Value (Expr, Minimum);
-         if         Val        /= Not_Static
-           and then Bounds (2) /= Not_Static
-           and then Val >  Bounds (2)
-         then
-               Report (Rule_Id, Contexts (SR_Assignment), Get_Location (Stmt),
-                       "Assignment raises Constraint_Error, value " & Biggest_Int_Img (Val)
-                       & " > " & Biggest_Int_Img (Bounds (2)));
+         if Is_Nil (Expr) then
+            -- no initialization
+            return;
          end if;
 
-         Val := Discrete_Static_Expression_Value (Expr, Maximum);
-         if         Val        /= Not_Static
-           and then Bounds (1) /= Not_Static
-           and then Val <  Bounds (1)
+         Val := Expression_Value (Expr);
+         if Val.Kind = Untracked then
+            return;
+         end if;
+
+         if         Val.Imin   /= Not_Static
+           and then Bounds (2) /= Not_Static
+           and then Val.Imin   >  Bounds (2)
          then
-            Report (Rule_Id, Contexts (SR_Assignment), Get_Location (Stmt),
-                    "Assignment raises Constraint_Error, value " & Biggest_Int_Img (Val)
+            Report (Rule_Id, Contexts (SR_Assignment), Get_Location (Decl),
+                    "Initialization raises Constraint_Error, value " & Biggest_Int_Img (Val.Imin)
+                    & " > " & Biggest_Int_Img (Bounds (2)));
+         end if;
+
+         if         Val.Imax   /= Not_Static
+           and then Bounds (1) /= Not_Static
+           and then Val.Imax   <  Bounds (1)
+         then
+            Report (Rule_Id, Contexts (SR_Assignment), Get_Location (Decl),
+                    "Initialization raises Constraint_Error, value " & Biggest_Int_Img (Val.Imax)
                     & " < " & Biggest_Int_Img (Bounds (1)));
          end if;
       end;
-   end Process_Assignment;
-
+   end Process_Object_Declaration;
 
    -------------------------
    -- Process_Dereference --
