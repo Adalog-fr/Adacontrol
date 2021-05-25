@@ -4,8 +4,12 @@
 
 Changes to existing rules:
 --------------------------
-Known_Exceptions: add zero_divide and assignment subrules
+Known_Exceptions
+   add zero_divide and assignment subrules
 
+Pragmas
+   add modifier "not"
+   
 ==============
 == V1.22b13 ==
 ==============

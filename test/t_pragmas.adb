@@ -27,7 +27,10 @@ procedure T_pragmas is
    function "+" (L, R : Integer) return Integer;
    pragma Convention (C, "+");                        -- multiple
    function "+" (L : Integer)  return Integer is begin return 1; end "+";
-   function "+" (L,R : Integer)return Integer is begin return 1; end "+";
+   function "+" (L, R : Integer)return Integer is begin return 1; end "+";
+
+   I : Integer;
+   pragma Unreferenced (I);  -- Non standard, but ignored
 begin
    null;
 end T_pragmas;

@@ -1,7 +1,7 @@
 specific_pragmas: check  pragmas (elaborate_all);
 specific_pragmas: search pragmas (pure);
 specific_pragmas: search pragmas (inconnu);
-nonstandard    : check pragmas (nonstandard);
+nonstandard    : check pragmas (nonstandard, not unreferenced);
 all_pragmas    : search pragmas (all);
 
 specific_pragmas: count  pragmas (elaborate_all);

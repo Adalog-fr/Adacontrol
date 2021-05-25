@@ -652,7 +652,7 @@ Parameter(s): None
 Rule: PRAGMAS
 Control usage of specific pragmas
 
-Parameter(s): [multiple] all | nonstandard | <pragma names>
+Parameter(s): [multiple|not] all | nonstandard | <pragma names>
 ----
 Rule: RECORD_DECLARATIONS
 Controls various parameters related to record types declarations

@@ -2,7 +2,7 @@
 --  Rules.Pragmas - Package body                                    --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
---  of Air Navigation (EUROCONTROL) and Adalog 2004-2005.           --
+--  of Air Navigation (EUROCONTROL) and Adalog 2004-2021.           --
 --  The Ada Controller is  free software; you can  redistribute  it --
 --  and/or modify it under  terms of the GNU General Public License --
 --  as published by the Free Software Foundation; either version 2, --
@@ -41,9 +41,10 @@ package body Rules.Pragmas is
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
 
+   type Special_Case is (None, Multiple, Not_Controlled);
    type Pragma_Context is new Basic_Rule_Context with
       record
-         Multiple_Only : Boolean;
+         Feature : Special_Case;
       end record;
 
    Rule_Uses : Context_Store;
@@ -58,7 +59,7 @@ package body Rules.Pragmas is
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control usage of specific pragmas");
       User_Message;
-      User_Message ("Parameter(s): [multiple] all | nonstandard | <pragma names>");
+      User_Message ("Parameter(s): [multiple|not] all | nonstandard | <pragma names>");
    end Help;
 
    -----------------
@@ -68,20 +69,31 @@ package body Rules.Pragmas is
    procedure Add_Control (Ctl_Label : in Wide_String; Ctl_Kind : in Control_Kinds) is
       use Framework.Language;
 
+      Not_Given      : Boolean;
+      Multiple_Given : Boolean;
    begin
-      if  not Parameter_Exists then
+      if not Parameter_Exists then
          Parameter_Error (Rule_Id, "At least one parameter required");
       end if;
 
       while Parameter_Exists loop
+         Not_Given      := Get_Modifier ("NOT");
+         Multiple_Given := Get_Modifier ("MULTIPLE");
+         Not_Given      := Not_Given or Get_Modifier ("NOT");  -- Just in case of "multiple not XXX"
          declare
-            Multiple_Only : constant Boolean     := Get_Modifier ("MULTIPLE");
-            Pragma_Name   : constant Wide_String := Get_Name_Parameter;
+            Pragma_Name    : constant Wide_String := Get_Name_Parameter;
          begin
+            if Not_Given and Multiple_Given then
+               Parameter_Error (Rule_Id, """multiple"" and ""not"" cannot be given together");
+            end if;
+
             -- "Nonstandard" and "all" are handled just as if they were pragma names
             Associate (Rule_Uses,
                        Specification => Value (Pragma_Name),
-                       Context       => Pragma_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label) with Multiple_Only));
+                       Context       => Pragma_Context'(Basic.New_Context (Ctl_Kind, Ctl_Label)
+                                        with (if    Multiple_Given then Multiple
+                                              elsif Not_Given      then Not_Controlled
+                                              else                      None)));
          exception
             when Already_In_Store =>
                Parameter_Error (Rule_Id, Pragma_Name & " already given");
@@ -130,7 +142,7 @@ package body Rules.Pragmas is
          use Asis.Expressions;
          use Framework.Locations, Framework.Reports, Thick_Queries;
       begin
-         if Pragma_Context(Current_Context).Multiple_Only then
+         if Pragma_Context(Current_Context).Feature = Multiple then
             declare
                Actual : Asis.Expression;
             begin
@@ -176,6 +188,9 @@ package body Rules.Pragmas is
          Current_Context : constant Root_Context'Class := Matching_Context (Rule_Uses, Pragma_Element);
       begin
          if Current_Context /= No_Matching_Context then
+            if Pragma_Context (Current_Context).Feature = Not_Controlled then
+               return;
+            end if;
             Do_Report (Current_Context,
                        "use of pragma """ & To_Title (Last_Matching_Name (Rule_Uses)) & '"');
          end if;
