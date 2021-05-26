@@ -356,7 +356,7 @@ procedure Ptree is
                              Control : in out Asis.Traverse_Control;
                              State   : in out Info)
    is
-      pragma Unreferenced (Element, Control);
+      pragma Unreferenced (Control);
    begin
       State.Depth := State.Depth - 1;
       if Is_Equal (State.Top_Active_Element, Element) then
