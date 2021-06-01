@@ -358,6 +358,7 @@ AdaControl is supported only in conjunction with the Gnat
 compiler. For versions up to GnatPro 20.2 and GnatCE 2019, you just
 need the compiler installed.
 
+@subsection GnatPro users
 Starting from GnatPro 21.0, you'll need to install AdaCore's ASISTools
 package. This package is installed by default in Gnat's root
 directory. If you choose to install it in a different location, you
@@ -366,6 +367,36 @@ need to set the environment variable @code{ASISGCC} to the path to the
 installation. It is normally of the form
 @code{<install-directory>/asis-gnsa/libexec/bin/asis-gcc}. Alternatively,
 you can pass the ASIS option @code{--GCC=} to AdaControl; @xref{ASIS options}.
+
+Get in touch with Adalog at
+@url{mailto::support@@adalog.fr,,support@@adalog.fr} if you experience
+any difficulty.
+
+@subsection Gnat CE users
+Starting from GnatCE 2020, AdaCore has stopped distributing ASIS with
+Gnat CE (although it is still available to Pro users). Gnat CE users
+have several options to benefit from AdaControl:
+@itemize @bullet
+@item
+Stay with GnatCE 2019, or keep a GnatCE 2019 installed together with
+another version. In the latter caser, it is better to @emph{not} put
+the corresponding ``bin'' directory in the path (to avoid confusion
+with the other Gnat installation), but put it into the environment
+variable @code{ASISGCC} (see above). Note that AdaControl may fail
+occasionnaly, due to ASIS bugs that have been fixed in more recent
+versions of ASIS.
+@item
+Find a Pro-user friend who provides you with a copy of ASISTools. This
+is free software, after all.
+@item
+Get in touch with Adalog at
+@url{mailto::support@@adalog.fr,,support@@adalog.fr}, and we'll be
+happy to discuss your problem.
+@end itemize
+
+You can also write to AdaCore to express your dissatisfaction with a
+commercial policy that deprives the community of a very useful
+technology used by many tools.
 
 @node  Building and installing AdaControl from source, Installing an executable distribution, Prerequisites, Installation
 @section Building and installing AdaControl from source
@@ -1860,6 +1891,25 @@ AdaControl installs a non-default profile called ``AdaControl way''
 that contains all AdaControl rules. Use it to activate the rules you
 need. You can also make it inherit from ``GNATdashboard way'' if you
 want to use AdaControl with other GNAT tools.
+
+Ex:
+
+Assuming all necessary AdaControl options are set in the project file,
+you can run AdaControl as:
+@example
+gnathub -P <project-file>
+@end example
+
+If there are other tools defined in the project file and you just want
+to run AdaControl:
+@example
+gnathub -P <project-file> --plugins=adacontrol
+@end example
+
+To provide options to AdaControl (here: run AdaControl with a given rules file):
+@example
+gnathub -P <project-file> --plugins=adacontrol --targs:adacontrol -f special.aru
+@end example
 
 @node Helpful utilities, Optimizing Adacontrol, Integrating AdaControl into GNATdashboard, Program Usage
 @section Helpful utilities
