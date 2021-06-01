@@ -91,24 +91,24 @@ how to get AdaControl from GIT are
 Some terms have a precise definition in AdaControl, and will be used
 with that signification in the rest of this manual.
 
-A @i{rule} is an AdaControl package whose purpose is to recognize
+A @emph{rule} is an AdaControl package whose purpose is to recognize
 occurrences of certain constructs in Ada programs. All rules are
 children of  the ``Rules'' package. By extension, the term rule is
 also used to designate the check that is performed by the package. A
 rule has a name, and may have parameters.
 
-A @i{control} defines a check to be performed on some Ada text. A
+A @emph{control} defines a check to be performed on some Ada text. A
 control is defined by a rule, and the value of the parameters given to
 the rule.
 
-A @i{command} is a statement in the command language interpreted by
+A @emph{command} is a statement in the command language interpreted by
 AdaControl.
 
-A @i{control command} is a kind of command that describes a check to
-be performed. A control commmand includes a @i{kind} (``check'', ``search''
+A @emph{control command} is a kind of command that describes a check to
+be performed. A control commmand includes a @emph{kind} (``check'', ``search''
 or ``count'', see user's guide), and a control (rule name and parameters).
 
-A @i{context} is a set of values used by a rule to keep the
+A @emph{context} is a set of values used by a rule to keep the
 characteristics associated with a control. Those values can, but need
 not necessarily, be the parameters of the control.
 
@@ -117,15 +117,15 @@ The AdaControl tool includes several main components. Those that are
 relevant for writing new rules are:
 @itemize @bullet
 @item
-A general @i{framework} that provides services that are necessary to
+A general @emph{framework} that provides services that are necessary to
 write rules. This includes a special module, @code{Framework.Plugs},
 where rules are plugged-in;
 @item
-A set of @i{utilities} providing useful functionalities, but not
+A set of @emph{utilities} providing useful functionalities, but not
 specific to the writing of rules. Actually, the utilities packages are
 shared with other programs from Adalog's ``Semtools'' family of tools.
 @item
-The @i{rules} themselves.
+The @emph{rules} themselves.
 @end itemize
 
 This clear distinction makes it easy to add new rules. Actually, the
@@ -203,10 +203,10 @@ The definition of some constants that are used to fix a bound to the
 number of allowable constructs. Use these constants to dimension
 tables for example.
 @item
-The notion of @i{location}, with associated subprograms. A location is
+The notion of @emph{location}, with associated subprograms. A location is
 a place within a source file where some construct happens.
 @item
-The notion of @i{rule context}. A rule context is some information
+The notion of @emph{rule context}. A rule context is some information
 that a rule associates to entities. For example, given the following
 rules:
 @example
@@ -247,16 +247,16 @@ report its findings, never use @code{Wide_Text_IO} or any other
 mean. The specifications of the Report procedures are:
 
 @example
-@b{procedure} Report (Rule_Id    : @b{in} Wide_String;
-                  Rule_Label : @b{in} Wide_String;
-                  Ctl_Type   : @b{in} Control_Kinds;
-                  Loc        : @b{in} Location;
-                  Msg        : @b{in} Wide_String);
+@strong{procedure} Report (Rule_Id    : @strong{in} Wide_String;
+                  Rule_Label : @strong{in} Wide_String;
+                  Ctl_Type   : @strong{in} Control_Kinds;
+                  Loc        : @strong{in} Location;
+                  Msg        : @strong{in} Wide_String);
 
-@b{procedure} Report (Rule_Id    : @b{in} Wide_String;
-                  Context    : @b{in} Root_Context'class;
-                  Loc        : @b{in} Location;
-                  Msg        : @b{in} Wide_String);
+@strong{procedure} Report (Rule_Id    : @strong{in} Wide_String;
+                  Context    : @strong{in} Root_Context'class;
+                  Loc        : @strong{in} Location;
+                  Msg        : @strong{in} Wide_String);
 @end example
 
 The first procedure expects the label and type to be given
@@ -271,10 +271,10 @@ output line = one message.
 
 In addition, there is an @code{Uncheckable} procedure, with the following profile:
 @example
-   @b{procedure} Uncheckable (Rule_Id : @b{in} Wide_String;
-                          Risk    : @b{in} Uncheckable_Consequence;
-                          Loc     : @b{in} Location;
-                          Msg     : @b{in} Wide_String);
+   @strong{procedure} Uncheckable (Rule_Id : @strong{in} Wide_String;
+                          Risk    : @strong{in} Uncheckable_Consequence;
+                          Loc     : @strong{in} Location;
+                          Msg     : @strong{in} Wide_String);
 @end example
 This procedure is called each time a rule encounters some dynamic
 construct that prevents normal checking. The parameter @code{Risk} is
@@ -294,7 +294,7 @@ The functionalities provided here allow to insert, delete, or replace
 elements of the source text. See the specification for details.
 
 If your rule knows how to fix a violation, just call the corresponding
-subprograms from this package. Always call the fixes subprograms @i{after} the
+subprograms from this package. Always call the fixes subprograms @emph{after} the
 corresponding report subprograms, because it's the report subprogram that
 determines if the rule is enabled or disabled.
 
@@ -347,10 +347,10 @@ also provides the notion of sets of modifiers.
 
 Note that if you instantiate @code{Flag_Utilities} or
 @code{Modifier_Utilities} in a library package (as will be the case
-most of the time), you @i{must} put a @code{pragma Elaborate
+most of the time), you @emph{must} put a @code{pragma Elaborate
 (Framework.Language);} on top of the package. Failing to do so will
 result in circular elaboration problems; (@code{pragma Elaborate_All},
-as implicitely provided by GNAT, does @i{not} work).
+as implicitely provided by GNAT, does @emph{not} work).
 
 @node The package Framework.Variables, The package Framework.Plugs, The package Framework.Language, The framework and utilities packages
 @section The package Framework.Variables
@@ -395,9 +395,9 @@ includes a typical usage of a rule variable.
 @section The package Framework.Plugs
 Procedures in the package @code{Framework.Plugs} are called during the
 traversal of the Ada source code. Unlike the rest of the framework,
-this package does not provide services to rules, but instead @i{calls}
+this package does not provide services to rules, but instead @emph{calls}
 processing procedures defined in the rules packages. Therefore, it is
-necessary to @i{plug} the corresponding calls in this package. This is
+necessary to @emph{plug} the corresponding calls in this package. This is
 described in details in @ref{Plugging-in a new rule into the
 framework}.
 
@@ -445,7 +445,7 @@ message, the difference being that @code{User_Log} outputs its message
 only in verbose mode. @code{User_Message} is used to print help
 messages. @code{User_Log} could be used if some rule wanted to print
 some extra information in verbose mode. Note that these procedures
-should @i{not} be used to report the result of a check or search (use
+should @emph{not} be used to report the result of a check or search (use
 @code{Framework.Reports.Report} instead).
 
 @item
@@ -467,7 +467,7 @@ The @code{Failure} procedure is used to report internal failures. It
 is frequent in ASIS programming to have a big case statement over the
 various kinds of elements, of which only a few values are interesting
 or possible given the context. We strongly encourage to call
-@code{Failure} in the @b{when others} part of the case statement to
+@code{Failure} in the @strong{when others} part of the case statement to
 trap unexpected cases. Note that the procedure is overloaded with a
 version that allows to print information about the failing element.
 
@@ -505,7 +505,7 @@ These packages provide simple generic containers that are needed by several rule
 
 The generic package @code{Linear_Queue} can be instantiated with any
 (non-limited) @code{Component} type, and provides a simple queue of
-elements. Note that this queue has @i{value} semantics: when a queue
+elements. Note that this queue has @emph{value} semantics: when a queue
 is assigned, its content is duplicated. Queues are controlled, and
 therefore all internal storage allocations are internally managed. The
 package @code{Framework.Element_Queue} is an instantiation of
@@ -542,8 +542,8 @@ replacement in @code{A4G_Bugs}.
 
 @node Writing a new rule, Plugging-in a new rule into the framework, The framework and utilities packages, Top
 @chapter Writing a new rule
-There are two kinds of rules: @i{semantic} rules, which operate on Ada
-elements, and @i{textual} rules, which operate on the source text. In
+There are two kinds of rules: @emph{semantic} rules, which operate on Ada
+elements, and @emph{textual} rules, which operate on the source text. In
 some rare cases, a rule can be of both kinds at the same time; see the
 rule ``Style'' for an example of this. Note that a semantic rule can
 still access the text of an Ada construct with the facilities provided
@@ -588,7 +588,7 @@ case-independant recognition).
 
 Ex:
 @example
-Rule_Id : @b{constant} Wide_String := "PRAGMAS";
+Rule_Id : @strong{constant} Wide_String := "PRAGMAS";
 @end example
 
 Note that from a language point of view, this declaration could be in
@@ -615,11 +615,11 @@ line, and the corresponding location.
  Ex:
 @example
 -- Semantic rule:
-@b{procedure} Process_Pragma (Pragma_Element : @b{in} Asis.Pragma_Element);
+@strong{procedure} Process_Pragma (Pragma_Element : @strong{in} Asis.Pragma_Element);
 
 -- Textual rule:
-@b{procedure} Process_Line (Line : @b{in} Asis.Program_Text;
-                        Loc  : @b{in} Framework.Location);
+@strong{procedure} Process_Line (Line : @strong{in} Asis.Program_Text;
+                        Loc  : @strong{in} Framework.Location);
 @end example
 
 @section Body
@@ -638,7 +638,7 @@ call-backs that are registered to the framework by calling
 @code{Framework.Rules_Manager.Register} in the statements part of the
 body. Note that there is a parameter to this procedure that tells
 whether the rule is semantic, textual, or both.  This procedure has
-@b{@code{null}} defaults for the optional subprograms.
+@strong{@code{null}} defaults for the optional subprograms.
 
 @subsection Help
 Help is a procedure that displays a short help message to the standard
@@ -676,15 +676,15 @@ should write your own help messages.
 
 Ex:
 @example
-@b{procedure} Help @b{is}
-  @b{use} Utilities;
-@b{begin}
+@strong{procedure} Help @strong{is}
+  @strong{use} Utilities;
+@strong{begin}
   User_Message ("Rule: " & Rule_Id);
   User_Message ("Control occurrences of aspect specifications");
   User_Message;
   User_Message ("Parameter(s): <Aspect_Mark> | implicit_true | all");
   User_Message ("             (optional, default = all)");
-@b{end} Help;
+@strong{end} Help;
 @end example
 
 @subsection Add_Control
@@ -709,13 +709,13 @@ be specified only once, it is up to the rule to check this and call
 
 Ex:
 @example
-@b{procedure} Add_Control (Label    : @b{in} Label;
-                   Ctl_Type : @b{in} Control_Kinds) @b{is}
-@b{begin}
-   @b{while} Parameter_Exists @b{loop}
+@strong{procedure} Add_Control (Label    : @strong{in} Label;
+                   Ctl_Type : @strong{in} Control_Kinds) @strong{is}
+@strong{begin}
+   @strong{while} Parameter_Exists @strong{loop}
       -- process parameter
-   @b{end} @b{loop};
-@b{end} Add_Control;
+   @strong{end} @strong{loop};
+@strong{end} Add_Control;
 @end example
 There is no special requirement on the implementation of the @code{Add}
 procedure. The programmer is free to interpret the parameters as
@@ -753,20 +753,20 @@ a simple variable can be used to save the current state.
 
 Ex:
 @example
-@b{procedure} Command (Action : Framework.Rules_Manager.Rule_Action) @b{is}
-   @b{use} Framework.Rules_Manager;
-@b{begin}
-   @b{case} Action @b{is}
-      @b{when} Clear =>
+@strong{procedure} Command (Action : Framework.Rules_Manager.Rule_Action) @strong{is}
+   @strong{use} Framework.Rules_Manager;
+@strong{begin}
+   @strong{case} Action @strong{is}
+      @strong{when} Clear =>
          Rule_Used := False;
          -- Free internal data structures if necessary
-      @b{when} Suspend =>
+      @strong{when} Suspend =>
          Save_Used := Rule_Used;
          Rule_Used := False;
-      @b{when} Resume =>
+      @strong{when} Resume =>
          Rule_Used := Save_Used;
-   @b{end} @b{case};
-@b{end} Command;
+   @strong{end} @strong{case};
+@strong{end} Command;
 @end example
 
 @anchor{Prepare}
@@ -774,8 +774,8 @@ Ex:
 @code{Prepare} is a procedure that performs some initialisations that
 must be done after all controls refering to the rule have been parsed,
 and before processing the units. It is optional (i.e. a
-@code{@b{null}} pointer can be passed for it to the @code{Register}
-procedure, or simply not mentionned since @code{@b{null}} is the
+@code{@strong{null}} pointer can be passed for it to the @code{Register}
+procedure, or simply not mentionned since @code{@strong{null}} is the
 default).
 
 A typical use of @code{Prepare} is to balance the tree from a binary
@@ -799,7 +799,7 @@ variable which is set to @code{True} in @code{Add_Control}, and checked at
 the beginning of @code{Process}. For efficiency reasons, avoid doing
 any call to the ASIS library before this check. This means that if you
 need objects initialized with such calls, they should be declared in a
-block @i{after} the test, rather than in the declarative part of the
+block @emph{after} the test, rather than in the declarative part of the
 @code{Process} procedure.
 
 After this test, the rule should immediately call
@@ -809,7 +809,7 @@ case of a problem, this allows the system to report which rule failed.
 A special case arises for rules that follow the call graph. Such rules
 may traverse elements outside the current unit, but should avoid
 analyzing units to which an @code{inhibit all} applies (so-called
-@i{banned} units). The framework features an @code{Is_Banned} function
+@emph{banned} units). The framework features an @code{Is_Banned} function
 that tells if an element should not be traversed due to it being
 declared in a banned unit. See @code{Rules.Global_References} for an
 example of this.
@@ -818,16 +818,16 @@ example of this.
 @code{Finalize} is called at the end of a "Go" command, after all
 units have been processed. It is useful for rules that report on
 global usage of entities, and therefore can report findings only at
-the end. It is optionnal (i.e. a @code{@b{null}} pointer can be passed
+the end. It is optionnal (i.e. a @code{@strong{null}} pointer can be passed
 for it to the @code{Register} procedure, or simply not mentionned
-since @code{@b{null}} is the default).
+since @code{@strong{null}} is the default).
 
 Ex:
 @example
-@b{procedure} Finalize @b{is}
-@b{begin}
+@strong{procedure} Finalize @strong{is}
+@strong{begin}
    -- Report findings
-@b{end} Finalize;
+@strong{end} Finalize;
 @end example
 
 @subsection Package statements
@@ -840,14 +840,14 @@ whether it is a semantic, textual, or semantic_textual rule.
 
 Ex:
 @example
-@b{begin}
+@strong{begin}
    Framework.Rules_Manager.Register (Rule_Id,
                                      Rules_Manager.Semantic,
                                      Help        => Help'Access,
                                      Add_Control => Add_Control'Access,
                                      Command     => Command'Access,
                                      Prepare     => Prepare'Access);
-@b{end} Rules.Pragmas;
+@strong{end} Rules.Pragmas;
 @end example
 
 @section Programming rules and tips
@@ -857,9 +857,9 @@ match the style of the rest of the program. Have a look at other rules, and run 
 on your code. In addition, please note the following:
 @itemize @bullet
 @item
-The @code{@b{use}} clause is allowed, but its scope should be
+The @code{@strong{use}} clause is allowed, but its scope should be
 restricted to the innermost declarative region where it is useful. Use
-a @code{@b{use}} clause for ASIS units, and another one for other
+a @code{@strong{use}} clause for ASIS units, and another one for other
 units.  Sort units alphabetically in the clause.
 @item
 The only output of a rule should be by calling
@@ -985,7 +985,7 @@ Add a with clause naming the rule package:
 
 Ex:
 @example
-@b{with} Rules.Pragmas;
+@strong{with} Rules.Pragmas;
 @end example
 
 @item
@@ -995,15 +995,15 @@ place(s) in the body of the provided procedures. For textual rules,
 
 Ex:
 @example
-@b{procedure} Pre_Procedure (Element : @b{in} Asis.Element) is
-   @b{use} Asis;
-   @b{use} Asis.Elements;
-@b{begin}
-   @b{case} Element_Kind (Element) @b{is}
-      @b{when} A_Pragma =>
+@strong{procedure} Pre_Procedure (Element : @strong{in} Asis.Element) is
+   @strong{use} Asis;
+   @strong{use} Asis.Elements;
+@strong{begin}
+   @strong{case} Element_Kind (Element) @strong{is}
+      @strong{when} A_Pragma =>
          Rules.Pragmas.Process_Pragma (Element);
        ...
-@b{end} Pre_Procedure;
+@strong{end} Pre_Procedure;
 @end example
 @end enumerate
 

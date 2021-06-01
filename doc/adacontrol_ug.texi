@@ -5,7 +5,7 @@
 @c %**end of header
 @macro rule{text}
 @sp 1
-@noindent @b{\text\}
+@noindent @strong{\text\}
 @end macro
 
 @titlepage
@@ -44,7 +44,7 @@ how to add new kinds of rules to AdaControl.
 * Non upward-compatible changes::
 @end menu
 
-AdaControl is Copyright @copyright{} 2005-2019 Eurocontrol/Adalog,
+AdaControl is Copyright @copyright{} 2005-2021 Eurocontrol/Adalog,
 except for some specific modules that are @copyright{} 2006
 Belgocontrol/Adalog, @copyright{} 2006 CSEE/Adalog, @copyright{}
 2006 SAGEM/Adalog, or @copyright{} 2015 Alstom/Adalog.
@@ -67,7 +67,7 @@ executable to be covered by the GNU General Public License. This
 exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU Public License.
 
-This document is Copyright @copyright{} 2005-2019
+This document is Copyright @copyright{} 2005-2021
 Eurocontrol/Adalog. This document may be copied, in whole or in part,
 in any form or by any means, as is or with alterations, provided that
 (1) alterations are clearly marked as alterations and (2) this
@@ -174,10 +174,10 @@ Ex:
 
 Given the following package:
 @example
-@b{package} Pack @b{is}
-   @b{pragma} Pure (Pack);
+@strong{package} Pack @strong{is}
+   @strong{pragma} Pure (Pack);
    ...
-@b{end} Pack;
+@strong{end} Pack;
 @end example
 The following command:
 @example
@@ -314,17 +314,17 @@ files. See @ref{Non upward-compatible changes} for details.
 @enumerate
 @item
 ``On the benefits for industrials of sponsoring free software
-development'', @i{Ada User Journal}, Volume 26, number 4, december 2005
+development'', @emph{Ada User Journal}, Volume 26, number 4, december 2005
 
 @url{http://www.adalog.fr/publicat/Free-software.pdf}
 @item
-``A Comparison of Industrial Coding Rules'', @i{Ada User Journal},
+``A Comparison of Industrial Coding Rules'', @emph{Ada User Journal},
 Volume 29, number 4, december 2008
 
 @url{http://www.adalog.fr/publicat/coding-rules.pdf}
 @item
 ``A Methodology for Avoiding Known Compiler Problems
-Using Static Analysis'', @i{proceedings of the ACM SIGAda Annual International Conference (SIGAda 2010)}
+Using Static Analysis'', @emph{proceedings of the ACM SIGAda Annual International Conference (SIGAda 2010)}
 
 @url{http://dl.acm.org/authorize?316395}
 @end enumerate
@@ -458,7 +458,7 @@ If you want to uninstall AdaControl, just use:
 gprinstall --uninstall adacontrol
 @end example
 
-Caveat (@i{old gnat only}): Due to a bug in some versions, if you are using GNATPro
+Caveat (@emph{old gnat only}): Due to a bug in some versions, if you are using GNATPro
 6.1.2 and above, you must set the variable GNAT_FIX to 1; i.e. invoke
 the command as:
 @example
@@ -594,7 +594,7 @@ If you have some funding available, please contact
 @url{mailto::info@@adalog.fr,,info@@adalog.fr}. We'll be happy to
 make an offer to customize AdaControl to your needs.
 @item
-If you @i{don't} have funding, but have some knowledge of ASIS
+If you @emph{don't} have funding, but have some knowledge of ASIS
 programming, you can add the rule yourself. We have made every effort
 to make this as simple as possible. Please refer to the AdaControl
 programmer's manual for details. If you do so, please send your rules
@@ -657,10 +657,10 @@ directory.
 @node Program Usage, Command language reference, Installation, Top
 @chapter Program Usage
 AdaControl is a command-line program, i.e. it is normally called
-directly from the system shell. @i{Options} are introduced by a ``-''
+directly from the system shell. @emph{Options} are introduced by a ``-''
 followed by a letter and can be grouped as usual. Some options take
 the following word on the command line as a value; such options must
-appear last in a group of options. @i{Parameters} are words on the command
+appear last in a group of options. @emph{Parameters} are words on the command
 line that stand by themselves. Options and parameters can be given in
 any order.
 
@@ -683,9 +683,9 @@ you can do any of the following:
 @itemize
 @item
 have a ``gnat.adc'' file in the current directory that contains a
-@code{@b{pragma} Ada_05;} (or @code{@b{pragma} Ada_12;})
+@code{@strong{pragma} Ada_05;} (or @code{@strong{pragma} Ada_12;})
 @item
-put a @code{@b{pragma} Ada_05} (or @code{@b{pragma} Ada_12;}) on top
+put a @code{@strong{pragma} Ada_05} (or @code{@strong{pragma} Ada_12;}) on top
 of every compilation unit that uses Ada-2005/2012 features;
 @item
 generate the tree files manually (@pxref{Generating tree files
@@ -698,7 +698,7 @@ of GNAT where Ada-2005 or above is the default (especially GNAT
 Community Edition), and in the rare cases where your program would not
 compile in Ada-2005 mode (notably if you have a function that returns
 a task type), you can force Ada-95 the same way by using
-@code{@b{pragma} Ada_95} instead.
+@code{@strong{pragma} Ada_95} instead.
 
 @menu
 * Command line parameters and options::
@@ -790,7 +790,7 @@ the command line.
 
 It is possible to specify more than one unit (not file) to process in
 a parameter by separating the names with ``+''.  Conversely, it is
-possible to specify units that are @i{not} to be processed, separated
+possible to specify units that are @emph{not} to be processed, separated
 by ``-''. When a unit is subtracted from the unit list, it is never
 processed even if it is included via the recursive option, and all its
 child and separate units are also excluded. This is convenient to
@@ -819,7 +819,7 @@ ignored. This can be useful to temporarily disable the processing of
 some files or to add comments.
 @item
 If a name in the file starts with ``-'', it indicates the name of a
-unit that is @i{not} to be processed. This is useful if the indirect
+unit that is @emph{not} to be processed. This is useful if the indirect
 file is used with the ``-r'' (recursive) option to prevent some units
 that would be found by the recursive search to be included in the
 analysis.
@@ -872,7 +872,7 @@ Ex:
 adactl -f my_rules.aru proc.adb
 @end example
 
-Note that the ``-l'' and ``-f'' options are @i{not} exclusive: if both
+Note that the ``-l'' and ``-f'' options are @emph{not} exclusive: if both
 are specified, the commands to be performed include those in the file
 (first) and then those given on the command line.
 
@@ -1076,7 +1076,7 @@ i.e. to report a return code of 1 even if only ``search'' controls
 were triggered. @xref{Return codes}. It does not change the messages
 however.
 
-Conversely, the ``-E'' option tells AdaControl to @i{not} report
+Conversely, the ``-E'' option tells AdaControl to @emph{not} report
 warnings at all, i.e. only errors are reported. However, if you ask
 for statistics, the number of warning messages is still
 counted. @xref{Report messages}.
@@ -1432,7 +1432,7 @@ were found is output if the ``-v'' option is given.
 
 This option is especially useful when you have modified a command file,
 before trying it on many units. The way AdaControl works, it must open
-the ASIS context (a lengthy operation) @i{before} analyzing the
+the ASIS context (a lengthy operation) @emph{before} analyzing the
 rules. This option can therefore save a lot of time if the command file
 contains errors.
 
@@ -1745,7 +1745,7 @@ recompilation for the next build of the project.
 (from the ``Help/AdaControl/Help on rule'' menu) is displayed. If you
 select ``Pop-up'', a summary of the rule's purpose and syntax is
 displayed in a pop-up. If you select ``User Guide'', the user guide
-opens in a browser at the page that explains the rule. (@b{Caveat}:
+opens in a browser at the page that explains the rule. (@strong{Caveat}:
 due to a problem in GPS under Windows, the ``User Guide'' option may
 not work at all, or the browser will not find the right anchor;
 hopefully, this will be fixed in an upcomming release of GPS. No such
@@ -1843,8 +1843,9 @@ the tree files are not up-to-date.
 
 @node Integrating AdaControl into GNATdashboard, Helpful utilities, Running AdaControl from AdaGide, Program Usage
 @section Integrating AdaControl into GNATdashboard
-Once GNATdashboard support is installed, AdaControl is usable like any
-other tool that comes with GNATdashboard. The name of the plug-in is
+Once GNATdashboard support is installed (see @ref{Installing support
+for GNATdashboard integration}), AdaControl is usable like any other
+tool that comes with GNATdashboard. The name of the plug-in is
 ``adacontrol''.  It can be given either on the command line of
 @code{gnathub} or in the ``Plugins'' attribute of the ``Dashboard''
 package of a project file.
@@ -1879,7 +1880,7 @@ The convention used to refer to entities (as described in
 difficult to spell out correctly the name of some entities, especially
 when using the overloaded syntax.
 
-@code{pfni} (which stands for @i{Print Full Name Image}) can be used
+@code{pfni} (which stands for @emph{Print Full Name Image}) can be used
 to get the correct spelling for any Ada entity. The syntax of
 @code{pfni} is:
 @example
@@ -2041,7 +2042,7 @@ on-the-fly
 @w{-FM}: Compile on-the-fly units for which there is no already existing
 tree file
 @end itemize
-Note that ``@w{-FT}'' is the only allowed mode, and @i{must} be specified,
+Note that ``@w{-FT}'' is the only allowed mode, and @emph{must} be specified,
 with the ``@w{-C1}'' and ``@w{-CN}'' options.
 
 The default combination used by AdaControl is ``@w{-CA} @w{-FM}''. A
@@ -2100,9 +2101,9 @@ automatic recompilation.
 In order to optimize the use of AdaControl, it is important to
 remember that reading tree files is a time-consuming operation. On the
 other hand, a single tree file contains not only information for the
-corresponding unit, but also for the @i{specifications} of all units
+corresponding unit, but also for the @emph{specifications} of all units
 that the given unit depends on. Moreover, our measures showed that
-reading an existing tree file may be @i{slower} than compiling the
+reading an existing tree file may be @emph{slower} than compiling the
 corresponding unit on-the-fly (but once again, YMMV).
 
 Here are some hints to help you find the most efficient combination of
@@ -2190,7 +2191,7 @@ from using it.
 If AdaControl detects an unexpected exception during the processing of
 a unit (an ASIS error or an internal error), it will abandon the unit,
 clean up everything, and go on processing the remaining units. This
-way, an error due to a special case in a unit will @i{not} affect the
+way, an error due to a special case in a unit will @emph{not} affect the
 processing of other units. AdaControl will return a Status of 10 in
 this case.
 
@@ -2203,7 +2204,7 @@ problem. @xref{Inhibit command}.
 
 @node Command language reference, Rules reference, Program Usage, Top
 @chapter Command language reference
-AdaControl is about @i{controlling rules}. @i{Rules} are built in
+AdaControl is about @emph{controlling rules}. @emph{Rules} are built in
 AdaControl; each rule has a name, and may require parameters. For the
 complete description of each rule, @pxref{Rules reference}.
 
@@ -2249,7 +2250,7 @@ to output all errors, but no analysis of user code will be performed.
 
 @node Controls, Other commands, General, Command language reference
 @section Controls
-A @i{control command} is a command that declares one (or several)
+A @emph{control command} is a command that declares one (or several)
 controls. A control defines how a rule is applied to Ada units. The
 syntax of a control command is as follows:
 @example
@@ -2416,7 +2417,7 @@ with a ``!''  pointing to the exact location of the problem.
 
 If the format is ``None'', no error message is output at all. This is
 useful when only the return code of running AdaControl is desired
-(just to check if a program is OK or not). Note that this does @i{not}
+(just to check if a program is OK or not). Note that this does @emph{not}
 prevent the output of statistics, since these are under control of the
 ``-S'' option or the ``set statistics'' command. In this case,
 statistics are output in CSVX format, since asking for statistics with
@@ -2446,7 +2447,7 @@ is as follows:
 @item
 1: A count of units, (raw) lines, error and warning messages is output
 @item
-2: The rule name and label (if any) of any control @i{not} triggered are
+2: The rule name and label (if any) of any control @emph{not} triggered are
 output
 @item
 3: The rule name and label (if any) of every control is output,
@@ -2588,7 +2589,7 @@ Syntax:
 @example
 go;
 @end example
-Controls are @i{not} reset after a ``go'' command; for example, the
+Controls are @emph{not} reset after a ``go'' command; for example, the
 following program:
 @example
 search entities (pack1);
@@ -2762,7 +2763,7 @@ The ``set ignore'' command governs handling of disabled messages
 messages are not printed. When set to ``on'', all messages are
 printed, including those that are disabled. Setting this option can
 result in considerable speed-up of the printing of messages. When set
-to ``Inverted'', @i{only} disabled messages are printed. This is
+to ``Inverted'', @emph{only} disabled messages are printed. This is
 useful to check which messages have been disabled.
 
 The ``set max_errors'' and ``set max_messages'' limit the output of
@@ -2962,7 +2963,7 @@ AdaControl. Note that the @code{rules} directory of the distribution
 contains a file named @code{verif.aru} that contains an example of a
 set of rules appropriate to check on almost any software.
 
-A general limitation applies to all rules. AdaControl is a @i{static}
+A general limitation applies to all rules. AdaControl is a @emph{static}
 checking tool, and therefore cannot check usages that depend on
 run-time values. For example, it is not possible to check rules
 applying to an entity when this entity is aliased and accessed through
@@ -2971,10 +2972,10 @@ is a dispatching call.
 
 Starting with version 1.22, AdaControl performs some data flow tracing
 that allows it to check conditions that are provably always True/False
-although not @i{static} as defined in the reference manual. When the
+although not @emph{static} as defined in the reference manual. When the
 description of a rule talks about something being static, it really
 means statically provable. If a condition needs to be legalistically
-static, we use the term @i{RM_Static}.
+static, we use the term @emph{RM_Static}.
 
 @menu
 * Abnormal_Function_Return::
@@ -3056,7 +3057,7 @@ static, we use the term @i{RM_Static}.
 @section Abnormal_Function_Return
 This rule controls functions that may not terminate normally, i.e. where
 @code{Program_Error} could be raised due to reaching the end of the
-function without encountering a @code{@b{return}} statement.
+function without encountering a @code{@strong{return}} statement.
 
 @subsection Syntax
 @example
@@ -3068,32 +3069,32 @@ The rule controls that the sequence of statements of each function
 body, as well as each of its exception handlers, ends with:
 @itemize @bullet
 @item
-a @code{@b{return}} statement (including extended return statements)
+a @code{@strong{return}} statement (including extended return statements)
 @item
-a @code{@b{raise}} statement (or equivalently, a call to
+a @code{@strong{raise}} statement (or equivalently, a call to
 @code{Ada.Exceptions.Raise_Exception} or
 @code{Ada.Exceptions.Reraise_Occurrence});
 @item
-a call to a procedure which is the target of a @code{@b{pragma} No_Return} or
+a call to a procedure which is the target of a @code{@strong{pragma} No_Return} or
 has a @code{No_Return} aspect;
 @item
 a block statement, whose last statement of its sequence and any
 exception handler is one of these;
 @item
-an @code{@b{if}} statement that includes an @code{@b{else}} path, and
+an @code{@strong{if}} statement that includes an @code{@strong{else}} path, and
 where the last statement of every  path is one of these;
 @item
-a @code{@b{case}} statement where the last statement of every  path is
+a @code{@strong{case}} statement where the last statement of every  path is
 one of these.
 @item
-a plain @code{@b{loop}} statement (not @code{@b{for}} or
-@code{@b{while}}) without any @code{@b{exit}} or  @code{@b{goto}}
+a plain @code{@strong{loop}} statement (not @code{@strong{for}} or
+@code{@strong{while}}) without any @code{@strong{exit}} or  @code{@strong{goto}}
 statement transfering control outside of the loop.
 @end itemize
 
 This is a sufficient (but of course not necessary) condition to ensure
 that no function raises @code{Program_Error} due to reaching the end
-of its statements without encountering a @code{@b{return}}.
+of its statements without encountering a @code{@strong{return}}.
 
 This rule can be specified only once.
 
@@ -3104,14 +3105,14 @@ check abnormal_function_return;
 
 @subsection Tips
 This rule checks that a function always returns correctly, but does not
-prevent multiple @code{@b{return}} statements in functions. If you want
-to ensure that there is exactly one @code{@b{return}} statement in functions,
+prevent multiple @code{@strong{return}} statements in functions. If you want
+to ensure that there is exactly one @code{@strong{return}} statement in functions,
 and that this statement is always the last one, use this rule together with
 the rule @code{statements(function_return)}.
 @xref{Statements}.
 
 It is possible to exit from an extended return statement with an
-@code{@b{exit}} or @code{@b{goto}} statement. If this happens, the
+@code{@strong{exit}} or @code{@strong{goto}} statement. If this happens, the
 return statement is not considered a proper return statement, and an
 appropriate message is issued.
 
@@ -3233,7 +3234,7 @@ If a parameter is preceded by the word ``anonymous'', only allocators
 whose expected type is an anonymous access type are controlled.
 
 If a parameter is preceded by the word ``inconsistent'', only
-allocators whose allocator subtype (the name after ``@code{@b{new}}'')
+allocators whose allocator subtype (the name after ``@code{@strong{new}}'')
 is not the same as the designated subtype (from the access type
 declaration) are controlled. However an allocator is not considered
 inconsistent when the designated subtype imposes no special
@@ -3252,7 +3253,7 @@ when it is a base type (of the form @code{T'Base}).
 Note that if the access type includes a constraint like in the
 following example:
 @example
-   @b{type} Acc @b{is} @b{access} integer @b{range} 1..10;
+   @strong{type} Acc @strong{is} @strong{access} integer @strong{range} 1..10;
 @end example
 all allocators will necessarilly be inconsistent, since there is no
 way to repeat the constraint at the place of the allocator.
@@ -3279,15 +3280,15 @@ this type. If the type is declared within a generic package, the rule
 will control all corresponding types from instantiations.
 
 The type mentionned in the rule is the one following the
-@code{@b{new}} keyword, which is not necessarily the same as the
+@code{@strong{new}} keyword, which is not necessarily the same as the
 expected type in presence of implicit conversions like this:
 
 @example
-   @b{type} T @b{is} @b{tagged} ...;
-   @b{type} Class_Access @b{is} @b{access} T'Class;
+   @strong{type} T @strong{is} @strong{tagged} ...;
+   @strong{type} Class_Access @strong{is} @strong{access} T'Class;
    X : Class_Access;
 begin
-   X := @b{new} T;
+   X := @strong{new} T;
 @end example
 
 This allocator will be found for type @code{T}, not for type @code{T'Class}.
@@ -3295,10 +3296,10 @@ This allocator will be found for type @code{T}, not for type @code{T'Class}.
 The reason for the ``inconsistent'' modifier is that inconsistent
 allocators may cost a double check. Given:
 @example
-   @b{type} Acc @b{is} @b{access} Positive;
+   @strong{type} Acc @strong{is} @strong{access} Positive;
    V : Acc;
-@b{begin}
-   V := @b{new} Natural'(...);
+@strong{begin}
+   V := @strong{new} Natural'(...);
 @end example
 The compiler will first check the constraint for Natural, then the
 constraint for Positive.  To avoid confusion, it is better to always
@@ -3486,7 +3487,7 @@ The subrule @code{Max_Length} ignores index constraints that are not
 static.  Non static index constraints can be controlled with the rule
 @code{Non_Static (Index_Constraint)}. @xref{Non_Static}.
 
-Requiring the same @i{upper} bound for all arrays is not very useful, but:
+Requiring the same @emph{upper} bound for all arrays is not very useful, but:
 @example
 check array_declarations (last, min 1);
 @end example
@@ -3568,15 +3569,15 @@ the language only in so-called ``sliding'' contexts.
 @item
 ``access_duplication'' controls assignments where the content of an
 object of an access type is stored (directly, or as a subcomponent)
-into another object. The @code{@b{null}} value and allocators
-(@code{@b{new}}) are @i{not} controlled. In other words, this rule
+into another object. The @code{@strong{null}} value and allocators
+(@code{@strong{new}}) are @emph{not} controlled. In other words, this rule
 spots places where you start having more than one way to access a
 variable.
 
 If the modifier ``controlled'' is given, only access types that are
 subcomponents (directly or indirectly) of a controlled type are
 controlled, while if ``not controlled'' is given, only those that are
-@i{not} subcomponents of a controlled type are controlled. No modifier
+@emph{not} subcomponents of a controlled type are controlled. No modifier
 is equivalent to giving both ``controlled'' and ``not controlled''.
 
 If one or several <target> without @code{not} are given, the control
@@ -3640,12 +3641,12 @@ If several filters are given, the rule is triggered if all conditions
 are met (``and'' logic). Note however that this rule can be given
 several times, thus achieving ``or'' logic.
 
-The rule is @i{not} triggered on an object if a subcomponent of that
+The rule is @emph{not} triggered on an object if a subcomponent of that
 object is of a limited or class-wide type, since global assignment
 would not be allowed in that case.
 
 For other structured objects, a subcomponent is counted as assigned if
-it has been assigned in full, or if it @i{should} have been assigned
+it has been assigned in full, or if it @emph{should} have been assigned
 in full (in other words: if the rule is triggered on those
 subcomponents as well) - recursively, of course.
 @item
@@ -3790,7 +3791,7 @@ the protected element).
 ``array_aggregate'' allows use of array aggregates.
 @item
 ``comparison_operator'' allows use of predefined comparison and
-membership operators (@code{"="}, @code{">"}, @code{@b{in}}, etc.).
+membership operators (@code{"="}, @code{">"}, @code{@strong{in}}, etc.).
 @item
 ``conversion'' allows use of type conversions and type qualifications.
 @item
@@ -3806,7 +3807,7 @@ and explicit dereferences).
 same protected object.
 @item
 ``logical_operator'' allows use of predefined logical operators and
-short-circuit forms (@code{@b{and}}, @code{@b{or else}}, etc.).
+short-circuit forms (@code{@strong{and}}, @code{@strong{or else}}, etc.).
 @item
 ``record_aggregate'' allows use of record aggregates and extension
 aggregates.
@@ -3847,9 +3848,9 @@ use of certain features can be interpreted only as a warning.
 
 @node Case_Statement, Characters, Barrier_Expressions, Rules reference
 @section Case_Statement
-This rule controls various metrics related to the @code{@b{case}}
+This rule controls various metrics related to the @code{@strong{case}}
 statement.  It is intended for cases where it is desired to limit the
-complexity of @code{@b{case}} statements.
+complexity of @code{@strong{case}} statements.
 @subsection Syntax
 @example
 <control_kind> Case_Statement ([<category>] <subrule>, <bound>
@@ -3864,28 +3865,28 @@ The first parameter is a subrule keyword:
 @itemize
 @item
 ``others_span'' controls the number of values covered by
-@code{@b{when}} @code{@b{others}} case alternatives.
+@code{@strong{when}} @code{@strong{others}} case alternatives.
 @item
-``paths'' controls the number of paths (i.e. @code{@b{when}} branches).
+``paths'' controls the number of paths (i.e. @code{@strong{when}} branches).
 @item
 ``range_span'' controls the number of values covered by ranges used as
 choices.
 @item
 ``values'' controls the number of values covered by the subtype
-of the @code{@b{case}} selector.
+of the @code{@strong{case}} selector.
 @item
 ``values_if_others'' is like ``values'', but is activated only for
-@code{@b{case}} statements with a @code{@b{when}} @code{@b{others}}
+@code{@strong{case}} statements with a @code{@strong{when}} @code{@strong{others}}
 alternative.
 @end itemize
 If the <subrule> is preceded by a <category>, it applies only to
-@code{@b{case}} statements whose selecting expression belongs to the
+@code{@strong{case}} statements whose selecting expression belongs to the
 indicated category, otherwise the subrule applies to all
 categories. Obviously, only categories ``()'', ``range'' and ``mod''
 can be given.
 
 This rule traverses derivations; privacy is irrelevant, since the
-selecting expression of a @code{@b{case}} statement has to be visibly
+selecting expression of a @code{@strong{case}} statement has to be visibly
 discrete. @xref{Definition of type categories}.
 
 The second (and optionnally third) parameter give the minimum and/or
@@ -3910,25 +3911,25 @@ check  Case_Statement (mod   paths, min 3, max 100);
 @end example
 
 @subsection Tips
-To control that no range is used as a choice in a @code{@b{case}}
+To control that no range is used as a choice in a @code{@strong{case}}
 statement:
 @example
 check case_statement (range_span, max 0);
 @end example
 
-To control ``@code{@b{when}} @code{@b{others}}'' that
+To control ``@code{@strong{when}} @code{@strong{others}}'' that
 cover no value at all:
 @example
 check case_statement (others_span, min 1);
 @end example
 
 @subsection Limitations
-If some characteristic of the @code{@b{case}} statement depend on a
+If some characteristic of the @code{@strong{case}} statement depend on a
 generic formal type, it is not possible to control some of the
 features statically. Such cases are detected by the rule
 ``uncheckable''. @xref{Uncheckable}.
 
-If the subtype of the selecting expression of the @code{@b{case}}
+If the subtype of the selecting expression of the @code{@strong{case}}
 statement, or a subtype in one of its a choice lists, has applicable
 static predicates, AdaControl is not able to control the features that
 depend on the number of values of the subtype. Such cases are detected
@@ -4052,17 +4053,17 @@ warning for comments that start at columns 2 to 6, and an error otherwise.
 ``terminating'' controls comments that are at the end of an otherwise
 non empty line (i.e. that appear on the same line as a declaration or
 statement). If ``begin'' is specified, comments appearing on a line
-that contains only a @code{@b{begin}} are allowed (not reported);
+that contains only a @code{@strong{begin}} are allowed (not reported);
 similarly, if ``end'' is specified, comments appearing on a line that
-contains only an @code{@b{end}} are allowed. Otherwise, the other
+contains only an @code{@strong{end}} are allowed. Otherwise, the other
 parameters are patterns that specify forms of comments that are
 allowed. Patterns are given using the full Regexp syntax.
 @pxref{Syntax of regular expressions} for details. Pattern matching is
 always case insensitive.
 @item
-``unnamed_begin'' controls @code{@b{begin}} of various constructs that
+``unnamed_begin'' controls @code{@strong{begin}} of various constructs that
 do not have a comment that repeats the name of the program unit
-associated to the @code{@b{begin}}. The unit name must be the first word
+associated to the @code{@strong{begin}}. The unit name must be the first word
 of the comment (after any number of spaces). Some extra information can
 be provided after the name, provided it is separated from the name by
 a space or a comma.
@@ -4081,7 +4082,7 @@ declaration part contains the declarations of other program units
 @end itemize
 
 If ``min <value>'' is specified, it tells the minimum number of lines
-in the statement part that follows  @code{@b{begin}} for the control
+in the statement part that follows  @code{@strong{begin}} for the control
 to apply, i.e. the comment is not required if the statement part has
 less lines than the indicated value.
 
@@ -4089,7 +4090,7 @@ The <unit_kind> keyword detemines the kind of program unit to which
 the rule applies (``all'' stands for all kinds). This subrule can be
 given only once of each kind of program unit.
 @item
-``unnamed_end_record'' controls the @code{@b{end record}} of a record
+``unnamed_end_record'' controls the @code{@strong{end record}} of a record
 type declaration (including tagged types and type extensions) that
 does not have a comment that repeats the name of the record type.  The
 type name must be the first word of the comment (after any number of
@@ -4135,11 +4136,11 @@ The following subrules generate fixes:
 @itemize @bullet
 @item
 ``Unnamed_Begin'': a comment with the name of the entity is added to
-the @code{@b{begin}} if it has no comment, or replaces an existing
+the @code{@strong{begin}} if it has no comment, or replaces an existing
 comment.
 @item
 ``Unnamed_End_Record'': a comment with the name of the type is added to
-the @code{@b{end record}} if it has no comment, or replaces an existing
+the @code{@strong{end record}} if it has no comment, or replaces an existing
 comment.
 @end itemize
 
@@ -4156,7 +4157,7 @@ in the declaration is less than <value>; however if a comment is
 present, it has to be the name of the corresponding type.
 
 ``unnamed_end_record'' does not control null record definitions
-(i.e. ``@code{@b{is null}}'') since there is no @code{@b{end record}} in
+(i.e. ``@code{@strong{is null}}'') since there is no @code{@strong{end record}} in
 that case (anyway, these declarations are so short that it would make
 little sense to require a naming comment).
 
@@ -4267,7 +4268,7 @@ declaration is controlled except at this location. Several
 controlled at places where all the keywords apply. If there is no
 <location_kw>, it is assumed to be ``all''.
 
-If ``ignore "<pattern>"'' is specified, declarations whose @i{full}
+If ``ignore "<pattern>"'' is specified, declarations whose @emph{full}
 name matches the <pattern> are not  controlled. The full name is the
 fully qualified name (including the enclosing packages, etc...). The
 <pattern> is a regular expression.  @xref{Syntax of regular
@@ -4301,7 +4302,7 @@ specification or body are controlled.
 @item
 @code{task_body}: only declarations appearing directly in a task body
 are controlled. Note that it would not make sense to have a
-<location_kw> for task @i{specifications}, since only entries can
+<location_kw> for task @emph{specifications}, since only entries can
 appear there, and they cannot appear anywhere else.
 @end itemize
 
@@ -4334,9 +4335,9 @@ or unconstrained array types, @code{access_def_discriminated_type},
 discriminants with default values, without default values, and unknown
 discriminants, respectively. @code{access_formal_type} controls access
 to (generic) formal types, @code{access_all_type} control generalized
-access to variables types (aka "@code{@b{access} @b{all} T}", and
+access to variables types (aka "@code{@strong{access} @strong{all} T}", and
 @code{access_constant_type} control generalized access to constants
-types (aka "@code{@b{access} @b{constant} T}"). @code{access_language_type}
+types (aka "@code{@strong{access} @strong{constant} T}"). @code{access_language_type}
 controls access to language defined private types.
 @item
 @code{aliased_variable} and @code{aliased_constant} control the
@@ -4354,7 +4355,7 @@ that are of an anonymous access type (but not discriminants, which are
 controlled by @code{anonymous_access_discriminant}). Similarly,
 @code{anonymous_access_constant} and  @code{anonymous_access_variable}
 control constants and  variables that are of an anonymous access type
-(including generic formal @code{@b{in}} and @code{@b{in} @b{out}}
+(including generic formal @code{@strong{in}} and @code{@strong{in} @strong{out}}
 parameters, respectively). @code{anonymous_access_parameter} controls
 subprogram parameters that are of an anonymous access type, the only
 ones that existed in Ada 95. Note that to avoid unnecessary messages,
@@ -4367,8 +4368,8 @@ anonymous subtypes and ranges that are part of some other
 declaration. Similarly, @code{anonymous_subtype_allocator},
 @code{anonymous_subtype_case}, @code{anonymous_subtype_for}, and
 @code{anonymous_subtype_indexing} control anonymous subtype
-declarations and ranges that are part of allocators, @code{@b{case}}
-statements (ranges in the @code{@b{when}} path), @code{@b{for}} loop
+declarations and ranges that are part of allocators, @code{@strong{case}}
+statements (ranges in the @code{@strong{when}} path), @code{@strong{for}} loop
 statements, and indexing of slices or array aggregates, respectively.
 @item
 @code{array} controls all array definitions (array types and single
@@ -4406,7 +4407,7 @@ i.e. descendants of @code{Ada.Finalization.Controlled} or
 @code{Ada.Finalization.Limited_Controlled}. Note that this includes
 also private types that are not visibly controlled.
 @item
-@code{defaulted_parameter} controls subprogram or entry (@b{in})
+@code{defaulted_parameter} controls subprogram or entry (@strong{in})
 parameters that provide a default value, while
 @code{defaulted_generic_parameter} controls generic formal objects
 that provide a default value.
@@ -4424,11 +4425,11 @@ provided. @code{unknown_discriminants} controls only unknown
 discriminants (AKA ``@code{(<>)}'' discriminants).
 @item
 @code{empty_private_part} controls package specification with an empty
-private part, i.e. where the word @code{@b{private}} appears, but the
+private part, i.e. where the word @code{@strong{private}} appears, but the
 private part contains no declaration (even if it contains pragmas).
 @item
 @code{empty_visible_part} controls package specifications that contain
-no declaration in the visible part (before the word @code{@b{private}}
+no declaration in the visible part (before the word @code{@strong{private}}
 if any), even if it contains pragmas.
 @item
 @code{enumeration_type} controls the declaration of enumeration types.
@@ -4439,7 +4440,7 @@ if any), even if it contains pragmas.
 @code{function} controls all ``regular'' function declarations.
 @item
 @code{extension} controls type extensions, i.e. derivations from a tagged type
-with a @code{@b{with record}} extension part.
+with a @code{@strong{with record}} extension part.
 @item
 @code{fixed_type} controls all declarations of fixed point types while
 @code{ordinary_fixed_type} controls only ordinary (binary) fixed point
@@ -4470,9 +4471,9 @@ package, procedure) declarations.
 handled sequence of statements.
 @item
 @code{in_out_parameter} and @code{out_parameter} control subprogram
-and entry parameters of modes @code{@b{in}} @code{@b{out}} and
-@code{@b{out}} (respectively), while @code{in_out_generic_parameter}
-and @code{out_generic_parameter} do the same for @i{generic} formal
+and entry parameters of modes @code{@strong{in}} @code{@strong{out}} and
+@code{@strong{out}} (respectively), while @code{in_out_generic_parameter}
+and @code{out_generic_parameter} do the same for @emph{generic} formal
 parameters. Note that to avoid unnecessary messages, if a subprogram
 has an explicit specification, the message is given on the
 specification and not repeated on the body.
@@ -4538,17 +4539,17 @@ because Gnatcheck has it).
 types) that contain no new elements.  Similarly,
 @code{null_ordinary_record_type} and @code{null_tagged_type} control
 ordinary records and tagged types that contain no elements. Note that
-the record definitions may be plain ``@code{@b{null}}
-@code{@b{record}}'' definitions, or full record definitions that
+the record definitions may be plain ``@code{@strong{null}}
+@code{@strong{record}}'' definitions, or full record definitions that
 contain only null components. However, a definition is not considered
 null if it contains a variant part.
 @item
 @code{null_procedure_body} controls procedure declarations whose
-sequence of statements contain only @code{@b{null}} statements (or
-blocks without declarations and containing only @code{@b{null}}
+sequence of statements contain only @code{@strong{null}} statements (or
+blocks without declarations and containing only @code{@strong{null}}
 statements).  @code{null_procedure_declaration} controls Ada2005 null
-procedure declarations (i.e., ``@b{procedure} P @b{is}
-@b{null};''). @code{null_procedure} controls both.
+procedure declarations (i.e., ``@strong{procedure} P @strong{is}
+@strong{null};''). @code{null_procedure} controls both.
 @item
 @code{operator} controls the definition of operators (things like
 @code{"+"}); note that the message is given on the specification if
@@ -4562,7 +4563,7 @@ only operator definitions that overload a predefined operator (like
 statements in the bodies of packages (or generic packages).
 @item
 @code{private_extension} controls private extensions, i.e. derivations
-from a tagged type with a @code{@b{with private}} extension part.
+from a tagged type with a @code{@strong{with private}} extension part.
 @item
 @code{record_type} controls all record type declarations (tagged or
 not), while @code{ordinary_record_type} controls only non-tagged
@@ -4571,7 +4572,7 @@ record types, and @code{tagged_type} controls only tagged record types.
 @code{interface_type} controls interface type declarations.
 @item
 @code{relay_function} controls functions whose statement part includes
-only a single @code{@b{return}} statement whose expression is another
+only a single @code{@strong{return}} statement whose expression is another
 function call; similarly, @code{relay_procedure} controls procedures
 whose statement part includes only a call to another procedure, and
 @code{relay_package} controls packages whose visible part includes
@@ -4579,7 +4580,7 @@ only the declaration of another package (regular package,
 instantiation of a generic package, or renaming of package).
 @item
 @code{self_calling_function} controls functions whose body contains
-only a single (simple) @code{@b{return}} statement, and the return
+only a single (simple) @code{@strong{return}} statement, and the return
 expression is a (recursive) call to the same function. Similarly,
 @code{self_calling_procedure} controls procedures whose body contains
 only a single statement which is a (recursive) call to the same
@@ -4645,7 +4646,7 @@ variables of a limited type was not permitted until Ada 2005.
 
 @need 800
 @multitable @columnfractions .25 .20 .55
-@item @b{Variable} @tab @b{Values} @tab @b{Effect}
+@item @strong{Variable} @tab @strong{Values} @tab @strong{Effect}
 @item Limited_Initialization
 @tab off (default)
 @tab Uninitialized variables of a limited type are never reported.
@@ -4657,7 +4658,7 @@ since no initialization would be allowed in that case.
 @end multitable
 
 @subsection Tips
-Certain keywords are @i{not} exclusive, and it may be the case that
+Certain keywords are @emph{not} exclusive, and it may be the case that
 several keywords apply to the same declaration; in this case, they are
 all reported.  For example, if you specify:
 @example
@@ -4685,7 +4686,7 @@ bodies.
 
 Some modifiers do not make sense with certain declarations; for
 example,  a ``private out_parameter'' is impossible (a parameter
-occurs in a subprogram declaration, not @i{directly} in a private
+occurs in a subprogram declaration, not @emph{directly} in a private
 part). This is not a problem as far as the rule is concerned, but
 don't expect to find any...
 
@@ -4701,7 +4702,7 @@ to the full declaration). However, this is not done for an access type
 that designates a private type defined in a language defined unit
 (since the full type depends on the implementation); these are
 controlled as ``access_language_type'' instead. Of course, language
-defined @i{visible} types are controlled normally.
+defined @emph{visible} types are controlled normally.
 
 @subsection Limitation
 In some rare cases, AdaControl may not be able to evaluate the modulus
@@ -4711,7 +4712,7 @@ cases are detected by the rule ``uncheckable''.  @xref{Uncheckable}.
 
 @node Dependencies, Derivations, Declarations, Rules reference
 @section Dependencies
-This rule controls dependencies of units (i.e. @code{@b{with}}
+This rule controls dependencies of units (i.e. @code{@strong{with}}
 clauses, parents, child units...), either according to a set of
 allowed/forbidden units, or by count.
 
@@ -4755,11 +4756,11 @@ to infinity.
 @itemize
 @item
 ``raw'' controls the number of units textually given in
-@code{@b{with}} clauses. Redundant @code{@b{with}} clauses are
+@code{@strong{with}} clauses. Redundant @code{@strong{with}} clauses are
 counted, and a child unit counts for one.
 @item
 ``direct'' controls the number of different units that this unit
-really depends on: if a unit is mentionned in several @code{@b{with}}
+really depends on: if a unit is mentionned in several @code{@strong{with}}
 clauses, it is counted only once, but if a child unit is mentionned,
 all parents of this child unit are added to the count.
 @item
@@ -4802,7 +4803,7 @@ library renaming of a public unit.
 There is a slight overlap between this rule and the rule
 ``entities'. But ``entities'' will find all uses of an entity (not
 necessarily a compilation unit), while ``dependencies'' will control
-occurrences only of compilation units, and only in @code{@b{with}}
+occurrences only of compilation units, and only in @code{@strong{with}}
 clauses. @xref{Entities}.
 
 In certain contexts, only a set of the Ada predefined units is
@@ -4843,7 +4844,7 @@ indicated <category>.
 
 If <entity> is a type name, it controls types that are derived
 (directly or indirectly) from the given type (including interfaces),
-or one of its subtypes; however, if it is a @i{subtype} name, only
+or one of its subtypes; however, if it is a @emph{subtype} name, only
 types that are derived (directly or indirectly) from the given subtype
 are controlled. If <entity> is the name of a compilation unit, it
 controls types that are derived (directly or indirectly) from any type
@@ -4887,7 +4888,7 @@ search derivations (from, range, mod);
 ``max_parents'' controls the maximum number of parents in a
 derivation. The parents are the direct ancestor in a derived type
 definition, plus all of the progenitors (the interfaces that are
-implemented by the type). <value> is the maximum number of @i{allowed}
+implemented by the type). <value> is the maximum number of @emph{allowed}
 parents, i.e. the rule is triggered if the number of parents is
 strictly greater than <value>.
 
@@ -4910,7 +4911,7 @@ search derivations (max_parents, 3);
 ``max_depth'' controls the maximum derivation depth. The derivation
 depth of a non derived type is 0. Otherwise, the derivation depth of a
 type is the maximum of the derivation depths of its parent and of all
-progenitors, plus 1.  <value> is the maximum @i{allowed} depth,
+progenitors, plus 1.  <value> is the maximum @emph{allowed} depth,
 i.e. the rule is triggered when the number of parents is strictly
 greater than <value>.
 
@@ -4957,7 +4958,7 @@ there is no explicit specification).
 
 If ``body_required'' is given, the indicators are required also on
 subprogram bodies, while if ``body_forbidden'' is given, the rule
-controls that indicators are @i{not} given on bodies (except for those
+controls that indicators are @emph{not} given on bodies (except for those
 acting as specification). If none of these are given, indicators on
 bodies are not controlled.
 
@@ -4993,7 +4994,7 @@ forbidden indicators are deleted.
 @end itemize
 
 @subsection Tips
-Since categories are checked only for the @i{parent} type, the control
+Since categories are checked only for the @emph{parent} type, the control
 ``@code{check derivations (from, interface);}'' controls only the case
 where the parent type is an interface. To check all types that
 implement any interface, add the control ``@code{check derivations
@@ -5031,12 +5032,12 @@ prevent race conditions in multi-tasking programs.
 The rule controls global variables declared directly in (generic)
 package bodies that are accessed outside of dedicated callable
 entities (i.e. procedure or function, possibly protected, protected
-entries, and @code{@b{accept}} statements).
+entries, and @code{@strong{accept}} statements).
 
 This rule can be specified only once.  The parameters indicate which
 kinds of callable entity are allowed: ``plain'' for non-protected
 subprograms, ``protected'' for protected subprograms, and ``accept''
-for @code{@b{accept}} statements). Without parameters, all forms are
+for @code{@strong{accept}} statements). Without parameters, all forms are
 allowed.
 
 More precisely, the rule ensures that the global variables are read
@@ -5053,14 +5054,14 @@ generic.
 Protected subprograms used to read/write the variables must both be
 part of the same single protected object, which must be declared at
 the same level as the variable itself (i.e. not nested); they are not
-allowed to be declared in a protected @i{type}, since if there are
+allowed to be declared in a protected @emph{type}, since if there are
 several protected objects of the same type, mutual exclusion would not
 be enforced.
 @item
-@code{@b{accept}} statements used to read/write the variables must
+@code{@strong{accept}} statements used to read/write the variables must
 both be part of the same single task object, which must be declared at
 the same level as the variable itself (i.e. not nested); they are not
-allowed to be declared in a task @i{type}, since if there are several
+allowed to be declared in a task @emph{type}, since if there are several
 task objects of the same type, mutual exclusion would not be enforced.
 @end itemize
 In short, this rule enforces that all global variables are accessed by
@@ -5076,7 +5077,7 @@ check directly_accessed_globals
 @end example
 
 @subsection Tips
-Note that this rule controls global variables from package @i{bodies},
+Note that this rule controls global variables from package @emph{bodies},
 not those from the specification. This is intended, since it makes
 little sense to declare a variable in a specification, and then
 require it not to be accessed directly, but through provided
@@ -5097,7 +5098,7 @@ constructs is detected by the rule ``uncheckable''.
 @xref{Uncheckable}.
 
 Due to a weakness in the ASIS standard, it is not possible to know the
-mode (@b{in}, @b{out}) of variables used as parameters of dispatching
+mode (@strong{in}, @strong{out}) of variables used as parameters of dispatching
 calls. Such variables are considered to be read and written at the
 point of the call, therefore possibly creating false positives (which
 is safer than false negatives). Use of such constructs is detected by
@@ -5121,13 +5122,13 @@ More precisely, the initialization procedures must follow one of these
 patterns:
 @itemize @bullet
 @item
-The procedure only has @code{@b{in}} parameters. All actual parameters
+The procedure only has @code{@strong{in}} parameters. All actual parameters
 used in calls are static, and not two calls have the same values for
 all parameters.
 @item
-The procedure has exactly one @code{@b{out}} parameter (and no
-@code{@b{in out}} parameter). Not two calls refer the same actual variable
-for the @code{@b{out}} parameter.
+The procedure has exactly one @code{@strong{out}} parameter (and no
+@code{@strong{in out}} parameter). Not two calls refer the same actual variable
+for the @code{@strong{out}} parameter.
 @end itemize
 
 The rule controls any violation of these patterns. If a procedure passed as parameter
@@ -5139,7 +5140,7 @@ check duplicate_initialization_calls (pack.init_proc);
 @end example
 
 @subsection Limitation
-If a variable passed as an @code{@b{out}} parameter is not statically
+If a variable passed as an @code{@strong{out}} parameter is not statically
 determinable, it is not controlled by the rule. Such a case is
 detected by the rule ``uncheckable''.  @xref{Uncheckable}.
 
@@ -5195,8 +5196,8 @@ entity declared inside a generic unit, all corresponding uses in all
 instances will be reported. Uses of the generic entity itself will also
 be reported normally, unless the keyword @code{instance} is given.
 
-Note that this rules reports on the use of the @i{entity}, not the
-@i{name}: if an entity has been renamed, it will be found under its
+Note that this rules reports on the use of the @emph{entity}, not the
+@emph{name}: if an entity has been renamed, it will be found under its
 various names.
 
 Ex:
@@ -5224,7 +5225,7 @@ check entities (all 'Unchecked_Access);
 If you want to make sure that certain compilation units are not used,
 it is preferable to use the rule ``Depencies (with,...)'' rather than
 ``Entities'', because ``Entities'' will control all uses of the unit,
-while ``Dependencies'' will control only those in @code{@b{with}}
+while ``Dependencies'' will control only those in @code{@strong{with}}
 clauses (which is of course sufficient).
 
 In certain contexts, it can be useful to forbid certain entities, like
@@ -5306,10 +5307,10 @@ The ``local_exception'' subrule controls a design pattern that ensures
 that a local exception cannot propagate outside the scope where it is
 declared. If an exception is declared within a block, a subprogram
 body, an entry body, or a task body, then this body must have either a
-handler for this exception or for @code{@b{others}}; this handler must
+handler for this exception or for @code{@strong{others}}; this handler must
 not reraise the exception; and no handler is allowed to raise
 explicitely the exception. The subrule controls explicit
-@code{@b{raise}} statements and calls to @code{Raise_Exception} and
+@code{@strong{raise}} statements and calls to @code{Raise_Exception} and
 @code{Reraise_Occurrence}, but it does not control exceptions raised
 as a consequence of calling other subprograms.
 
@@ -5320,9 +5321,9 @@ is desirable to ensure that no exception can be propagated.
 A subprogram or task is considered as @emph{not} propagating if:
 @enumerate
 @item
-it has an exception handler with a ``@code{@b{when others}}'' choice
+it has an exception handler with a ``@code{@strong{when others}}'' choice
 @item
-no exception handler contains a @code{@b{raise}} statement, nor any
+no exception handler contains a @code{@strong{raise}} statement, nor any
 call to @code{Ada.Exception.Raise_Exception} or
 @code{Ada.Exception.Reraise_Occurrence}.
 @item
@@ -5416,7 +5417,7 @@ check exception_propagation (2, declaration);
 @end example
 
 The first example will report on any subprogram to which a
-@code{@b{pragma} Interface (C,...)} applies that can propagate
+@code{@strong{pragma} Interface (C,...)} applies that can propagate
 exceptions.
 
 If @code{Proc} is a procedure that can propagate exceptions, the
@@ -5436,9 +5437,9 @@ Note that the registration procedure for a call-back can be designated
 by an access type, but in this case, use the name of the formal for
 the access type. For example, given:
 @example
-@b{package} Pack @b{is}
-   @b{type} Acc_Proc @b{is} @b{access} @b{procedure};
-   @b{type} Acc_Reg @b{is} @b{access} @b{procedure} (CB : Acc_Proc);
+@strong{package} Pack @strong{is}
+   @strong{type} Acc_Proc @strong{is} @strong{access} @strong{procedure};
+   @strong{type} Acc_Reg @strong{is} @strong{access} @strong{procedure} (CB : Acc_Proc);
    ...
    Ptr : Acc_Reg := ...;
 @end example
@@ -5447,18 +5448,18 @@ You can give a rule such as:
 @example
 check exception_propagation (parameter, Pack.Acc_Reg.CB);
 @end example
-All procedures registered by a call to @code{Pack.Ptr.@b{all}} will be considered.
+All procedures registered by a call to @code{Pack.Ptr.@strong{all}} will be considered.
 
-The declaration of a @b{for} loop parameter is not checked by this
+The declaration of a @strong{for} loop parameter is not checked by this
 rule. In other words, the rule ``check exception_propagation (2,
 declaration)'' will not issue a message for:
 @example
-@b{for} I @b{in} Positive @b{range} 1 .. X @b{loop} ...
+@strong{for} I @strong{in} Positive @strong{range} 1 .. X @strong{loop} ...
 @end example
-although formally the @i{declaration} of I could raise
+although formally the @emph{declaration} of I could raise
 Constraint_Error if X is negative. We consider that for the casual
-user, Constraint_Error appears to be raised by the @b{for} loop
-@i{statement}.
+user, Constraint_Error appears to be raised by the @strong{for} loop
+@emph{statement}.
 
 @subsection Limitations
 An exception may be raised in a subprogram considered as not
@@ -5470,7 +5471,7 @@ are not statically known (i.e. if a subprogram is registered through a
 dereference of a pointer to subprogram), like in the following
 example:
 @example
-Pack.Register (CB => Pointer.@b{all}'Access);
+Pack.Register (CB => Pointer.@strong{all}'Access);
 @end example
 
 Due to a weakness of the ASIS standard, references to subprograms that
@@ -5555,18 +5556,18 @@ record aggregates, respectively, while @code{unqualified_aggregate}
 controls aggregates (both arrays and records) that do not appear
 directly within a qualified expression. @code{extension_aggregate}
 controls extension aggregates, while @code{extendable_aggregate}
-controls aggregates that are @i{not} extension aggregates, but whose
+controls aggregates that are @emph{not} extension aggregates, but whose
 type is a non-root tagged type, or are extension aggregates whose ancestor part
 is not their immediate parent (such aggregates could be written as
 extension aggregates).
 @item
 @code{array_others} and @code{record_others} control the occurrence of
-a @code{@b{others} =>} association in array and record
+a @code{@strong{others} =>} association in array and record
 aggregates, respectively.
 @item
 @code{array_partial_others} and @code{record_partial_others} do the
 same, but only if there are other associations in addition to the
-@code{@b{others} =>} in the aggregate. @code{array_named_others} and
+@code{@strong{others} =>} in the aggregate. @code{array_named_others} and
 @code{array_positional_others} do the same, but only for named
 (respectively positional) array aggregates.
 @item
@@ -5575,7 +5576,7 @@ same, but only if there are other associations in addition to the
 @code{array_non_static_range} does the same, but only if (at least)
 one of the bounds is not static.
 @item
-@code{case} controls @b{case} expressions (introduced in Ada 2012).
+@code{case} controls @strong{case} expressions (introduced in Ada 2012).
 @item
 @code{complex_parameter} controls complex expressions used as actual
 parameters in subprogram (or entry) calls. A complex expression is any
@@ -5584,7 +5585,7 @@ rule is not applied to the parameters of operators, since otherwise
 it would forbid any expression with more than a single operator.
 @item
 @code{explicit_dereference} controls explicit dereferences of access
-values (i.e. with an explicit @code{.@b{all}}).
+values (i.e. with an explicit @code{.@strong{all}}).
 @item
 @code{fixed_multiplying_op} controls calls to predefined fixed-point
 multiplication and division (regular fixed-point or decimal-fixed
@@ -5596,12 +5597,12 @@ type (not Integer); this is when type conversion is required by Ada
 @code{for_all} and @code{for_some} control the two forms of
 quantifiers introduced by Ada 2012.
 @item
-@code{if} controls all @b{if} expressions (introduced in Ada 2012),
-while @code{if_elsif} only controls those that have an @b{elsif} part,
-and @code{if_no_else} only controls those that have no @b{else} part.
+@code{if} controls all @strong{if} expressions (introduced in Ada 2012),
+while @code{if_elsif} only controls those that have an @strong{elsif} part,
+and @code{if_no_else} only controls those that have no @strong{else} part.
 @item
 @code{implicit_dereference} controls implicit dereferences of access
-values (i.e. when the @code{.@b{all}} is omitted).
+values (i.e. when the @code{.@strong{all}} is omitted).
 @item
 @code{inconsistent_attribute_dimension} controls when no dimension is
 explicitely given for a @code{'First}, @code{'Last}, @code{'Range} or
@@ -5629,10 +5630,10 @@ below).
 @item
 @code{mixed_operators} controls expressions that involve several
 different operators, without parentheses. In a sense, it extends the
-language rule that forbids mixing @code{@b{and}} and @code{@b{or}} in
+language rule that forbids mixing @code{@strong{and}} and @code{@strong{or}} in
 logical expressions to all other operators. Note that for the purpose
-of this subrule, membership tests (@code{@b{in}}, @code{@b{not in}})
-and short circuit forms (@code{@b{and then}}, @code{@b{or else}}) are
+of this subrule, membership tests (@code{@strong{in}}, @code{@strong{not in}})
+and short circuit forms (@code{@strong{and then}}, @code{@strong{or else}}) are
 considered operators.
 @item
 @code{prefixed_operator} controls calls to operators that use prefixed
@@ -5647,10 +5648,10 @@ point) values.
 @item
 @code{slice} controls usage of array slices.
 @item
-@code{static_membership} controls membership tests (@code{@b{in}} and
-@code{@b{not in}}) where the expression on the left is statically
+@code{static_membership} controls membership tests (@code{@strong{in}} and
+@code{@strong{not in}}) where the expression on the left is statically
 known to belong to the range (or subtype) on the right, and is
-therefore always True (or false for @code{@b{not in}}).
+therefore always True (or false for @code{@strong{not in}}).
 @item
 @code{target_name} controls occurrences of the (Ada202X) symbol of
 assignment target name (AKA ``@@''), while @code{trivial_target_name}
@@ -5659,12 +5660,12 @@ identifier (and where the use of ``@@'' doesn't bring much).
 @item
 @code{type_conversion} controls all (sub)type conversions, while
 @code{underived_conversion} controls conversions between types that do
-@i{not} belong to the same derivation
+@emph{not} belong to the same derivation
 family. @code{downward_conversion} and @code{upward_conversion}
 control conversions between types that belong to the same family,
 converting away from the root or toward the root,
 respectively. @code{parameter_view_conversion} controls conversions
-that appear as @code{@b{out}} or @code{@b{in out}} actual parameters.
+that appear as @code{@strong{out}} or @code{@strong{in out}} actual parameters.
 
 One or two categories can be specified; if one <category> is
 specified, only conversions whose result type belong to that
@@ -5718,7 +5719,7 @@ displayed with the various *_function_calls subrules.
 
 @need 800
 @multitable @columnfractions .25 .20 .55
-@item @b{Variable} @tab @b{Values} @tab @b{Effect}
+@item @strong{Variable} @tab @strong{Values} @tab @strong{Effect}
 @item Called_Info
 @tab none (default)
 @tab No extra information.
@@ -5743,10 +5744,10 @@ little sense to write a function and then forbid its use! However, if
 control of calls to such a function is desired, it can be easily
 accomplished by using the @code{entities} rule. @xref{Entities}.
 
-This rule does not check the use of allocators (@code{@b{new}}), use
+This rule does not check the use of allocators (@code{@strong{new}}), use
 the rule @code{Allocators} instead. @xref{Allocators}.
 
-``inherited_function_call'' controls only @i{function} calls. For
+``inherited_function_call'' controls only @emph{function} calls. For
 procedure calls, see rule @ref{Statements}.
 
 Specifying @code{array_partial_others} is the same as specifying both
@@ -5907,16 +5908,16 @@ means that a same reference may or may not be global, depending on the
 indicated entity. Consider:
 
 @example
-@b{procedure} Outer @b{is}
+@strong{procedure} Outer @strong{is}
    Inner_V : Integer;
 
-   @b{procedure} Inner_P @b{is}
-   @b{begin}
+   @strong{procedure} Inner_P @strong{is}
+   @strong{begin}
       Inner_V := 1;
-   @b{end} Inner_P;
-@b{begin}
+   @strong{end} Inner_P;
+@strong{begin}
    Inner_P;
-@b{end} Outer;
+@strong{end} Outer;
 @end example
 
 The rule
@@ -6077,7 +6078,7 @@ is checked only at the start of a compilation unit.
 @node  Improper_Initialization, Instantiations, Header_Comments, Rules reference
 @section Improper_Initialization
 This rule enforces a coding pattern that ensures that variables and
-@code{@b{out}} parameters are properly initialized befor use.
+@code{@strong{out}} parameters are properly initialized befor use.
 @subsection Syntax
 @example
 <control_kind> improper_initialization [(<subrule> @{,<subrule>@})]
@@ -6086,14 +6087,14 @@ This rule enforces a coding pattern that ensures that variables and
 <target>  ::= out_parameter | variable | initialized_variable
 @end example
 @subsection Action
-This rule controls variables and/or @code{@b{out}} parameters that are
+This rule controls variables and/or @code{@strong{out}} parameters that are
 not ``properly'' initialized, i.e. those that are not ``safely''
 initialized, those that have a useless initialization in their
 declaration, and those where the value is known to be used before
 having been assigned. The notion of variable includes the return
 object of an extended return statement (Ada 2005+).
 
-A variable (or @code{@b{out}} parameter) is considered safely
+A variable (or @code{@strong{out}} parameter) is considered safely
 initialized if there is an initialization expression in its
 declaration, or if it is given a value in the first statements of the
 corresponding body, before any ``non-trivial'' statement. The goal is
@@ -6118,17 +6119,17 @@ raise statements;
 extended return statements, unless they contain a nested non-trivial
 statement.
 @item
-@code{@b{if}} and @code{@b{case}} statements, unless they contain a
+@code{@strong{if}} and @code{@strong{case}} statements, unless they contain a
 nested non-trivial statement.
 @end itemize
 The <target> parameters determines what is to be checked:
 @itemize @bullet
 @item
-@code{out_parameter} controls that @code{@b{out}} parameters are
+@code{out_parameter} controls that @code{@strong{out}} parameters are
 safely initialized before the first non-trivial statement, and before
-every (trivial) @code{@b{return}} statement. Note that  @code{@b{out}}
-parameters are @i{not} checked before  @code{@b{raise}} statements,
-since the language does not guarantee that  @code{@b{out}} parameters
+every (trivial) @code{@strong{return}} statement. Note that  @code{@strong{out}}
+parameters are @emph{not} checked before  @code{@strong{raise}} statements,
+since the language does not guarantee that  @code{@strong{out}} parameters
 are transmitted back in the case of exceptions.
 @item
 @code{variable} controls that local variables are safely initialized
@@ -6147,15 +6148,15 @@ initialized are reported.
 
 A variable is considered initialized if it is the target of an
 assignment statement, or if it is used as an actual for an
-@code{@b{out}} (but not @code{@b{in out}}) parameter of a procedure
-call. Variables assigned in @code{@b{if}} or @code{@b{case}}
+@code{@strong{out}} (but not @code{@strong{in out}}) parameter of a procedure
+call. Variables assigned in @code{@strong{if}} or @code{@strong{case}}
 statements must receive a value in all paths to be considered
 initialized after the statement.  Note that the variable must be
 assigned to globally, i.e. assigning to some elements of an array, or
 some fields of a record, does not count as an initialization of the
 variable.
 
-Some variables are @i{not} controlled, unless the corresponding
+Some variables are @emph{not} controlled, unless the corresponding
 <extra> modifier is given:
 @itemize
 @item
@@ -6197,7 +6198,7 @@ modifier.
 Due to a weakness of the ASIS standard, dispatching calls and calls to
 procedures that are attributes are not considered for the
 initialization of variables. Note that for attributes, only
-@code{'Read} and @code{'Input} have an @code{@b{out}} parameter.
+@code{'Read} and @code{'Input} have an @code{@strong{out}} parameter.
 
 In the rare case where a variable is initialized by a dispatching call
 or an attribute call, this limitation will result in a false
@@ -6272,7 +6273,7 @@ specification or body are controlled.
 @item
 @code{task_body}: only instantiations appearing directly in a task
 body are controlled. Note that it would not make sense to have a
-<location_kw> for task @i{specifications}, since instantiations are
+<location_kw> for task @emph{specifications}, since instantiations are
 not allowed there.
 @end itemize
 
@@ -6303,7 +6304,7 @@ already an instantiation with the same value for this parameter
 (i.e. it matches the second time it is encountered).
 @end enumerate
 
-Formal @code{@b{in}} parameters cannot be matched, since the actual
+Formal @code{@strong{in}} parameters cannot be matched, since the actual
 can be any expression and it is not clear how to specify it in the
 rule; therefore, the rule should normally specify a box (@code{<>}) at
 the place of such parameters.
@@ -6361,8 +6362,8 @@ check instantiations (ada.unchecked_deallocation (standard.integer));
 will find instantiations that use either @code{Integer},
 @code{Positive}, or @code{Natural}.
 
-If an equal sign (@code{=}) is provided for a formal @code{@b{in}}
-parameter, it is @i{not} part of the comparison of existing
+If an equal sign (@code{=}) is provided for a formal @code{@strong{in}}
+parameter, it is @emph{not} part of the comparison of existing
 instantiations (it behaves like a  box (@code{<>})), i.e.  given:
 @example
 generic
@@ -6381,7 +6382,7 @@ check instantiations (Gen, =, =);
 @end example
 Adacontrol will issue a message for Inst2 that it has already been
 instantiated with the same parameters, although the second
-(@code{@b{in}}) parameter is different.
+(@code{@strong{in}}) parameter is different.
 
 @subsection Limitation
 GNAT defines @code{Unchecked_Conversion} and
@@ -6454,7 +6455,7 @@ The parameters are subrule keywords:
 @itemize
 @item
 ``access'': controls dereferences (explicit and implicit) where the
-access value is statically known to be @code{@b{null}}.
+access value is statically known to be @code{@strong{null}}.
 @item
 ``assignment'': controls assignments (including object initialization)
 where the assigned expression value is known to be outside of the
@@ -6467,10 +6468,10 @@ to have an incompatible value.
 ``index'': controls indexings where the index value is statically known
 to be out of range.
 @item
-``raise_expression'': controls @code{@b{raise}} expressions that
+``raise_expression'': controls @code{@strong{raise}} expressions that
 appear anywhere else than as the right expression of a short-circuit
-test (@code{@b{and then}} and @code{@b{or else}}), as a dependent
-expression of an @code{@b{if}} expression or a @code{@b{case}}
+test (@code{@strong{and then}} and @code{@strong{or else}}), as a dependent
+expression of an @code{@strong{if}} expression or a @code{@strong{case}}
 expression, or as the expression of an expression function (the later
 being assumed to be a function that raises the exception on purpose).
 @item
@@ -6493,10 +6494,10 @@ search Known_Exceptions (raise_expression);
 The following subrule generates fixes:
 @itemize @bullet
 @item
-``raise_expression'': when the @code{@b{raise}}
-expression appears as the right expression of an @code{@b{and}} or
-@code{@b{or}} operator, the operator is changed to the corresponding
-short-circuit operation (@code{@b{and then}} or @code{@b{or else}},
+``raise_expression'': when the @code{@strong{raise}}
+expression appears as the right expression of an @code{@strong{and}} or
+@code{@strong{or}} operator, the operator is changed to the corresponding
+short-circuit operation (@code{@strong{and then}} or @code{@strong{or else}},
 respectively).
 @end itemize
 
@@ -6507,12 +6508,12 @@ discriminant name (for the ``discriminant'' subrule). Note that if the
 value is from an enumerated type (including character types), the
 value given is the integer position value (i.e. the @code{'Pos}).
 
-A @code{@b{raise}} expression should not be evaluated unconditionally,
+A @code{@strong{raise}} expression should not be evaluated unconditionally,
 it is rather to be used as a default in cases where other conditions
 are not met (and especially in pre/post conditions). The subrule is
 especially useful to catch pre/post conditions of the form
-``... @code{@b{or raise} Constraint_Error}'' instead of
-``... @code{@b{or else raise} Constraint_Error}''.
+``... @code{@strong{or raise} Constraint_Error}'' instead of
+``... @code{@strong{or else raise} Constraint_Error}''.
 
 @node Local_Access, Local_Hiding, Known_Exceptions, Rules reference
 @section Local_Access
@@ -6631,7 +6632,7 @@ messages for the subrule ``overloading'' when it encounters a
 construct that overloads several other constructs.
 @need 800
 @multitable @columnfractions .25 .20 .55
-@item @b{Variable} @tab @b{Values} @tab @b{Effect}
+@item @strong{Variable} @tab @strong{Values} @tab @strong{Effect}
 @item Overloading_Report
 @tab compact
 @tab Issue a single message mentionning how many constructs are overloaded,
@@ -6652,7 +6653,7 @@ prevent error messages for these declarations.
 
 Note that the name is given between ``@code{^}'' and
 ``@code{$}''. Otherwise, following normal regexp syntax, any
-identifier @i{containing} ``instance'' would be allowed.
+identifier @emph{containing} ``instance'' would be allowed.
 
 A confusion between names belonging to different ``families'' (as
 defined here) always leads to a compilation error; it may be
@@ -6705,7 +6706,7 @@ call to a task entry (not a  protected entry) has always a depth of 1, since
 the accept body that corresponds to the entry is executed on a
 different stack.
 
-The value of the first parameter is the maximum @i{allowed} depth,
+The value of the first parameter is the maximum @emph{allowed} depth,
 i.e. the rule will trigger if the call depth is strictly greater than
 the indicated value. A call to a (directly or indirectly) recursive
 procedure is considered of infinite depth, and will be therefore
@@ -6739,7 +6740,7 @@ functions (Ada 2012).
 
 @need 800
 @multitable @columnfractions .25 .20 .55
-@item @b{Variable} @tab @b{Values} @tab @b{Effect}
+@item @strong{Variable} @tab @strong{Values} @tab @strong{Effect}
 @item Count_Expr_Fun_Calls
 @tab off
 @tab Calls to expression functions are assumed to be inlined and do not add
@@ -6792,15 +6793,15 @@ This rule controls expressions that have too many elements and are therefore too
 This rule controls the complexity of expression, as defined by the
 number of primaries (i.e. simple elements connected by operators,
 including short circuit operations). The indicated value is the
-maximum @i{allowed} value, i.e. the rule will trigger if that value is
+maximum @emph{allowed} value, i.e. the rule will trigger if that value is
 exceeded.
 
 More precisely, for the purpose of evaluating the complexity of an
 expression, every simple element counts for 1. A parenthesized
 expression is not counted (it is counted for the value of the
 expression within the parentheses). True (not operators) function
-calls, aggregates, @code{@b{if}} and @code{@b{case}} expressions,
-predicates (@code{@b{for all}}, @code{@b{for some}}), etc. are counted
+calls, aggregates, @code{@strong{if}} and @code{@strong{case}} expressions,
+predicates (@code{@strong{for all}}, @code{@strong{for some}}), etc. are counted
 for 1, but every subexpression within them is rechecked.
 
  This rule can be given once for each of check, search, and
@@ -6853,7 +6854,7 @@ The first parameter is a subrule keyword:
 @item
 ``all'': controls the nesting of declarative constructs (like subprograms,
 packages, generics, block statements@dots{}) that exceed a given
-depth. Nesting of statements (@code{@b{loop}}, @code{@b{case}}) is not
+depth. Nesting of statements (@code{@strong{loop}}, @code{@strong{case}}) is not
 considered.
 @item
 ``generic'': controls the nesting of generics, ignoring all
@@ -6871,7 +6872,7 @@ way, it is possible to have a level considered a warning (search), and
 one considered an error (check). Of course, this makes sense only if
 the level for search is less than the one for check.
 
-Note that the value given is the maximum @i{allowed} nesting; f.e. if the
+Note that the value given is the maximum @emph{allowed} nesting; f.e. if the
 value given for ``generic'' is 1, it means that a generic inside a
 generic is allowed, but not more.
 
@@ -6920,7 +6921,7 @@ considered a warning (search), and one considered an error (check).
 Of course, this makes sense only if the level for search is less than
 the one for check.
 
-Note that the value given is the maximum @i{allowed} primitives.
+Note that the value given is the maximum @emph{allowed} primitives.
 
 Ex:
 @example
@@ -6954,7 +6955,7 @@ The first parameter is a subrule keyword:
 @item
 ``block'': controls all block statements
 @item
-``simple_block'': controls only blocks without a @code{@b{declare}} part
+``simple_block'': controls only blocks without a @code{@strong{declare}} part
 @item
 ``unnamed_block'': controls only blocks without a name.
 @item
@@ -6963,7 +6964,7 @@ The first parameter is a subrule keyword:
 ``unnamed_loop'': controls only loops without a name.
 @item
 ``if_branch'', ``case_branch'': controls the length of each
-alternative of an @code{@b{if}} (respectively @code{@b{case}})
+alternative of an @code{@strong{if}} (respectively @code{@strong{case}})
 statement.
 @item
 ``package_spec'', ``package_body'', ``procedure_body'',
@@ -6977,7 +6978,7 @@ the declaration of the corresponding element.
 For each kind of element, the indicated value is the maximum allowed
 size of the full element; however, for branches (``if_branch'' and
 ``case_branch'') it is the maximum size of the sequence of statements
-in the branch (i.e., the line that contains the @code{@b{elsif}} is
+in the branch (i.e., the line that contains the @code{@strong{elsif}} is
 not counted as part of an ``if_branch'').
 
 This rule can be given once for each of check, search, and count for
@@ -7016,11 +7017,11 @@ The first parameter is a subrule keyword:
 @item
 ``block'', ``case'', ``if'', or ``loop'':
 controls the nesting of statements of the same kind, i.e. an
-@code{@b{if}} within a @code{@b{loop}} within an @code{@b{if}} counts
+@code{@strong{if}} within a @code{@strong{loop}} within an @code{@strong{if}} counts
 only 2 for the ``if'' keyword.
 @item
 ``all'': controls the global nesting of all compound statements,
-i.e. an @code{@b{if}} within a @code{@b{loop}} within an @code{@b{if}}
+i.e. an @code{@strong{if}} within a @code{@strong{loop}} within an @code{@strong{if}}
 counts for 3.
 @end itemize
 
@@ -7236,7 +7237,7 @@ rule variable ``Default_Case_Sensitivity'', see below. Note that the
 rule checks the name only at the place where it is declared; casing
 might be different when the name is used later.
 
-If a pattern is preceded by ``not'', then the pattern must @i{not} be
+If a pattern is preceded by ``not'', then the pattern must @emph{not} be
 matched (i.e. the rule reports when there is a match).
 
 The rule will be activated if an identifier is declared that does not
@@ -7302,10 +7303,10 @@ specify filters down to the deepest level; if you specify a rule for
 is a more specific rule or not.
 
 Subtypes and derived types must follow the rule for their respective
-original (full) type. Incomplete type declarations are @i{not}
+original (full) type. Incomplete type declarations are @emph{not}
 checked, since their corresponding full declaration is (normally)
 checked. Private types (including of course the full declaration of a
-private type) follow the rule for private types, @i{not} the rules for
+private type) follow the rule for private types, @emph{not} the rules for
 their full type view (otherwise it would be privacy breaking).
 
 Renamings are treated specially: if there is no explicit rule for a
@@ -7361,7 +7362,7 @@ The rule provides a variable to specify the default casing.
 
 @need 800
 @multitable @columnfractions .25 .20 .55
-@item @b{Variable} @tab @b{Values} @tab @b{Effect}
+@item @strong{Variable} @tab @strong{Values} @tab @strong{Effect}
 @item Default_Case_Sensitivity
 @tab off (default)
 @tab controls that do not explicitely specify case sensitivity are not case sensitive.
@@ -7379,7 +7380,7 @@ the case of a subprogram and its parameters, the check is not done on
 the body if there is an explicit specification (since specification
 and body have to match anyway).
 
-The rule does @i{not} check the names of operators, since it would
+The rule does @emph{not} check the names of operators, since it would
 make little sense to have naming conventions for things whose name is
 imposed. If you want to prevent the definition of operators, refer to
 the rule ``declarations'' and its subrules ``operator'',
@@ -7464,13 +7465,13 @@ categories}.
 When such a type is found, it migh be interesting to find out other
 usages to determine a possible better kind of type. ``relational''
 means that relational operators (@code{<}, @code{<=}, @code{>},
-@code{>=}, @code{@b{in}}, @code{@b{not in}}) are used, ``logical''
-means that logical operators (@code{@b{and}}, @code{@b{or}},
-@code{@b{xor}}) are used, and  ``indexing'' means  that the type is
+@code{>=}, @code{@strong{in}}, @code{@strong{not in}}) are used, ``logical''
+means that logical operators (@code{@strong{and}}, @code{@strong{or}},
+@code{@strong{xor}}) are used, and  ``indexing'' means  that the type is
 used as an index in some array type.
 
 If an <observed> property is given as parameter, only types that
-feature the property are controlled, or those that do @i{not} feature
+feature the property are controlled, or those that do @emph{not} feature
 the property if the <observed> is preceded by ``not''. If the
 <observed> is preceded by ``ignore'' the type is controlled
 irrrespectively of the property, and the message does not mention it
@@ -7566,7 +7567,7 @@ or more generally as statically provable.
 
 @need 1800
 @multitable @columnfractions .25 .20 .55
-@item @b{Variable} @tab @b{Values} @tab @b{Effect}
+@item @strong{Variable} @tab @strong{Values} @tab @strong{Effect}
 @item RM_Static
 @tab off
 @tab Staticness is defined as statically provable.
@@ -7579,7 +7580,7 @@ or more generally as statically provable.
 Currently, ``constant_initialization'' and ``variable_initialization''
 do not control structured (record and array) variables. For access
 variables, the initial value is considered static only if it is a plain
-@code{@b{null}}. This may improve in future versions of AdaControl.
+@code{@strong{null}}. This may improve in future versions of AdaControl.
 
 @subsection Tips
 If all index and discriminant constraints are static, the space
@@ -7632,7 +7633,7 @@ cannot be detected either.
 @node Not_Selected_Name, Object_Declarations, Not_Elaboration_Calls, Rules reference
 @section Not_Selected_Name
 This rule controls that certain entities are always refered to using
-selected notation, even in the presence of @code{@b{use}} clauses.
+selected notation, even in the presence of @code{@strong{use}} clauses.
 @subsection Syntax
 @example
 <control_kind> not_selected_name
@@ -7644,7 +7645,7 @@ A name is ``selected'' if it is prefixed by the name of the construct
 where it is declared. Only one level of prefix is required, unless the
 prefix itself is the target of a not_selected_name rule.
 
-The first parameter specifies places where the rule is @i{not}
+The first parameter specifies places where the rule is @emph{not}
 enforced, i.e. where simple notation is allowed:
 @itemize @bullet
 @item
@@ -7736,7 +7737,7 @@ type. As usual, the whole syntax for entities is allowed for
 subtype, only objects of that exact subtype are controlled; if the
 <entity> is a type, objects declared with the type or any subtype of
 it are controlled. The rule controls variables, constants, formal
-parameters and @code{@b{for}} loop parameters. The control can be
+parameters and @code{@strong{for}} loop parameters. The control can be
 restricted to only constants or only other kinds of objects
 (i.e. ``variable'' applies to all objects that are not constants); if
 no modifier (``constant'' or ``variable'') is supplied, both are
@@ -7754,7 +7755,7 @@ It is used in an expression given as an actual of a call to a
 language-defined or implementation-defined subprogram, unless it is a
 call to a predefined operator.
 @item
-It is used as part of the definition of a @code{@b{for}} loop, and the loop index
+It is used as part of the definition of a @code{@strong{for}} loop, and the loop index
 is required to be of the type.
 @item
 It is part of an expression that requires the type.
@@ -7842,18 +7843,18 @@ calls.
 
 @subsection Action
 This rule identifies calls (including function calls) where the same
-variable is given as an actual to more than one @code{@b{out}} or
-@code{@b{in out}} parameter, like in the following example:
+variable is given as an actual to more than one @code{@strong{out}} or
+@code{@strong{in out}} parameter, like in the following example:
 @example
-@b{procedure} Proc (X, Y : @b{out} Integer);
+@strong{procedure} Proc (X, Y : @strong{out} Integer);
    ...
 Proc (X => V, Y => V);
 @end example
 
 If the modifier ``@code{with_in}'' is given, aliasing between
-@code{@b{out}} or @code{@b{in out}} parameters and @code{@b{in}}
-parameters is also considered (unless the @code{@b{in}} parameter is
-of a user-defined by-copy type). Although aliasing of @code{@b{in}}
+@code{@strong{out}} or @code{@strong{in out}} parameters and @code{@strong{in}}
+parameters is also considered (unless the @code{@strong{in}} parameter is
+of a user-defined by-copy type). Although aliasing of @code{@strong{in}}
 parameters is generally considered less of an issue, it can lead to
 unexpected results when the parameter is passed by reference.
 
@@ -7888,10 +7889,10 @@ not be true aliasing, depending on the algorithm, but should normally
 occur only as the result of very strange practices, like in the
 following example:
 @example
-@b{type} R @b{is}
-   @b{record}
-      X : @b{aliased} Integer;
-   @b{end} @b{record};
+@strong{type} R @strong{is}
+   @strong{record}
+      X : @strong{aliased} Integer;
+   @strong{end} @strong{record};
 X : R;
 Y : Access_All_Integer := R.X'access;
    ...
@@ -7954,8 +7955,8 @@ parameters is less than the given ``min'' or greater than the given
 ``max''. ``min'' defaults to 0 and ``max'' to infinity.
 @item
 ``in_parameters'', ``out_parameters'', ``in_out_parameters'': Do the
-same, counting only parameters of modes @code{@b{in}},
-@code{@b{out}}, or @code{@b{in out}} respectively.
+same, counting only parameters of modes @code{@strong{in}},
+@code{@strong{out}}, or @code{@strong{in out}} respectively.
 @item
 ``defaulted_parameters'': Does the same, counting only parameters
 declared with an explicit default expression.
@@ -7970,9 +7971,9 @@ a specific tagged type.
 a class-wide type.
 @item
 ``single_out_parameter'': Controls callable entities that have exactly
-one @code{@b{out}} parameter. if ``no_inout'' is specified, the rule
-does not report a single @code{@b{out}} parameter if there is also at
-least one @code{@b{in}} @code{@b{out}} parameter.
+one @code{@strong{out}} parameter. if ``no_inout'' is specified, the rule
+does not report a single @code{@strong{out}} parameter if there is also at
+least one @code{@strong{in}} @code{@strong{out}} parameter.
 @end itemize
 
 If one or more <callable_kind> is specified after the <value>, the
@@ -8017,10 +8018,10 @@ check parameter_declarations (tagged_parameter,
 @end example
 
 @subsection Tips
-Procedures with a single @code{@b{out}} parameter are candidates
+Procedures with a single @code{@strong{out}} parameter are candidates
 to becoming functions. Whether this applies also to procedures with
-@code{@b{in}} @code{@b{out}} parameters is debatable, now that
-functions can have @code{@b{in}} @code{@b{out}} parameters...
+@code{@strong{in}} @code{@strong{out}} parameters is debatable, now that
+functions can have @code{@strong{in}} @code{@strong{out}} parameters...
 
 This rule applies to generic subprograms as well as to regular ones.
 On the other hand, it does not apply to generic formal subprograms,
@@ -8084,7 +8085,7 @@ clauses. For ``pragma'', ''call'', and ``instantiation'', entities can
 also be specified; such entities are exempted from the rule (i.e. the
 rule will not control these entities). See examples below.
 
-For calls, positional association is @i{not} reported for operators
+For calls, positional association is @emph{not} reported for operators
 that use infix notation (since named notation is not possible); in
 addition, if the ``not_operator'' modifier is specified before the
 ``call'' keyword (not allowed elsewhere), positional association is
@@ -8136,7 +8137,7 @@ syntax).
 
 @need 1800
 @multitable @columnfractions .25 .20 .55
-@item @b{Variable} @tab @b{Values} @tab @b{Effect}
+@item @strong{Variable} @tab @strong{Values} @tab @strong{Effect}
 @item Count_Prefix_Operand
 @tab off
 @tab The parameter given as prefix is not counted as a positional parameter.
@@ -8249,7 +8250,7 @@ to multiple entities, because one of the parameters is an overloaded
 name.
 
 If ``not'' is specified before a pragma name, the corresponding
-pragma(s) is @i{not} controlled.  This is useful to specify exceptions
+pragma(s) is @emph{not} controlled.  This is useful to specify exceptions
 to ``all'' or ``nonstandard''.
 
 Ex:
@@ -8274,7 +8275,7 @@ C1 : count pragmas (annotate);
 C2 : count pragmas (nonstandard);
 C3 : count pragmas (all);
 @end example
-Counter C1 will report the number of occurrences of @code{@b{pragma}
+Counter C1 will report the number of occurrences of @code{@strong{pragma}
 Annotate} (a non-standard GNAT pragma), counter C2 will report the
 number of non-standard pragmas (including occurrences of
 @code{Annotate}), and counter C3 will report the total number of
@@ -8385,7 +8386,7 @@ scope.
 @end example
 @subsection Action
 The rule reports on any declaration that is referenced only from a
-single, inner scope, or in the case of @code{@b{use}} clauses (three
+single, inner scope, or in the case of @code{@strong{use}} clauses (three
 kinds), it will report on packages (or types) named in the clause
 whose elements made visible by the clause are in a single, inner
 scope. For entitities declared in package specifications, the rule
@@ -8437,7 +8438,7 @@ The following subrules generate fixes:
 @end itemize
 
 @subsection Tips
-If you think that @code{@b{use}} clauses are acceptable, but should be
+If you think that @code{@strong{use}} clauses are acceptable, but should be
 limited to the smallest possible scope, you would generally specify:
 @example
 check unnecessary_use_clause;
@@ -8447,8 +8448,8 @@ check reduceable_scope (use);
 Note that there is some overlap between the two rules: use clauses
 that serve no purpose or could be moved to body are reported by
 both. There are differences too: ``unnecessary_use_clause'' reports
-@code{@b{use}} clauses that could be changed to @code{@b{use type}} or
-@code{@b{use all type}} clauses, or where all uses are qualified,
+@code{@strong{use}} clauses that could be changed to @code{@strong{use type}} or
+@code{@strong{use all type}} clauses, or where all uses are qualified,
 while ``reduceable_scope'' reports clauses that are useful, but only
 in an inner scope.
 
@@ -8499,12 +8500,12 @@ specification or body are controlled.
 @item
 @code{task_body}: only declarations appearing directly in a task body
 are controlled. Note that it would not make sense to have a
-<location> for task @i{specifications}, since renaming declarations are not
+<location> for task @emph{specifications}, since renaming declarations are not
 allowed there.
 @end itemize
 
 The <filter> restricts the renaming declarations that are
-controlled to those with certain properties (or to those @i{not}
+controlled to those with certain properties (or to those @emph{not}
 having the property, if preceded by @code{not}). Several <filter>
 can be given, in which case the declaration is controlled when all the
 keywords apply.
@@ -8718,7 +8719,7 @@ The rule controls various metrics related to the use of return statements, depen
 ``depth'': controls the depth of nesting of return statements within
 compound statements. A statement that appears directly in the sequence
 of statements of a subprogram has a depth of 0, if it is in an
-@code{@b{if}} statement it has a depth of 1, etc.
+@code{@strong{if}} statement it has a depth of 1, etc.
 @item
 ``regular_count'': controls the number of return statements that
 appear in the regular sequence of statements of a callable  entity.
@@ -8738,7 +8739,7 @@ value).
 If one or several <callable> is given after the bounds, the rule
 applies only to return statements from the corresponding kind of
 callable entity (procedure, function, or in the case of
-@code{@b{entry}}, entry body and accept statements). Otherwise, the
+@code{@strong{entry}}, entry body and accept statements). Otherwise, the
 rule applies to all kinds of callable entities.
 
 This rule can be specified once for each combination of <subrule>,
@@ -8760,17 +8761,17 @@ check return_statement (depth, max 1);
 @end example
 
 @subsection Tips
-@code{@b{return}} statements appear in so-called callable entities
+@code{@strong{return}} statements appear in so-called callable entities
 (procedures, functions, entry bodies and accept statements), but they
 can also appear in blocks nested in one of these. The block itself
 counts as a compound statement for the purpose of the ``depth''
 subrule. For the ``regular_count'' and ``handler_count'' subrules,
-@code{@b{return}} statements from the regular statements of the block
+@code{@strong{return}} statements from the regular statements of the block
 are counted as belonging to the enclosing callable entity or handler,
 but each exception handler of the block has its own counter of
-@code{@b{return}} statements.
+@code{@strong{return}} statements.
 
-For the simple case of just forbidding several @code{@b{return}}
+For the simple case of just forbidding several @code{@strong{return}}
 statements in a subprogram, see the simpler rule @ref{Statements}.
 
 @node Return_Type, Side_Effect_Parameters, Return_Statements, Rules reference
@@ -8895,7 +8896,7 @@ report-item  ::= raise   | explicit_raise | reraise | return |
 @end example
 
 @subsection Action
-The rule controls handlers that do @i{not} call one of the given
+The rule controls handlers that do @emph{not} call one of the given
 subprograms (for example a reporting procedure) nor perform other
 required operations, like returning, requeuing, or re-raising an
 exception.
@@ -8916,9 +8917,9 @@ the first <control-item> is a ``with'', or starting from the set of
 all exceptions if the  first <control-item> is a ``not''. See examples
 below.
 
-``@code{@b{when others}}'' handlers are always controlled, unless
+``@code{@strong{when others}}'' handlers are always controlled, unless
 there is an explicit ``not others'' <control-item>. A ``with others''
-<control-item> can be specified to check @emph{only} ``@code{@b{when
+<control-item> can be specified to check @emph{only} ``@code{@strong{when
 others}}'' handlers.
 
 The other parameters are <report-item> and define the constructs
@@ -8948,9 +8949,9 @@ A handler where @emph{all} exceptions are uncontrolled is not
 controlled at all (i.e. it is allowed to be non reporting). Otherwise,
 the rule reports if the handler does not contain at least one of the
 <report-item> in each possible path of the handler. If the
-<report-item> appear only in @code{@b{if}} or @code{@b{case}}
+<report-item> appear only in @code{@strong{if}} or @code{@strong{case}}
 statements, but not in all possible paths, or if they appear only in
-the body of @code{@b{loop}} statements, the rule will issue a message
+the body of @code{@strong{loop}} statements, the rule will issue a message
 asking for a manual verification, since it cannot be statically
 determined whether the proper treatment happens in every case.
 
@@ -9042,22 +9043,22 @@ universal type (a litteral or named number), or where the target
 subtype is either the same as the expression's subtype, or the first
 named subtype of the expression.
 @item
-``if_not'': controls @code{@b{if}} expressions with an
-@code{@b{else}} path and no @code{@b{elsif}} path, and where the
-condition is given in negative form (i.e. it is a @code{@b{not}}, or a
+``if_not'': controls @code{@strong{if}} expressions with an
+@code{@strong{else}} path and no @code{@strong{elsif}} path, and where the
+condition is given in negative form (i.e. it is a @code{@strong{not}}, or a
 @code{"/="} comparison). Such expressions could be made positive (and
-thus less error-prone) by interverting the @code{@b{if}} and
-@code{@b{else}} paths.
+thus less error-prone) by interverting the @code{@strong{if}} and
+@code{@strong{else}} paths.
 @item
 ``logical_true'': controls redundant boolean expressions of the form
 @code{<expr> = True} (or @code{/=}), and ``logical_false'' does the
 same for comparisons with @code{false}.
 @item
-``logical_redundant'': controls ``@code{@b{and}}'', ``@code{@b{or}}'',
-``@code{@b{and then}}'', and ``@code{@b{or else}}'' operations where the
+``logical_redundant'': controls ``@code{@strong{and}}'', ``@code{@strong{or}}'',
+``@code{@strong{and then}}'', and ``@code{@strong{or else}}'' operations where the
 left and right parts are identical.
 @item
-``logical_not'': controls @code{@b{not}} operators whose argument is a
+``logical_not'': controls @code{@strong{not}} operators whose argument is a
 comparison (which could be inverted).
 @item
  ``logical'': is the same as specifying ``logical_true'',
@@ -9065,14 +9066,14 @@ comparison (which could be inverted).
 @item
 ``membership'': controls multiple comparisons of a same variable that
 could be changed to the new (Ada2012) membership test with multiple
-values. Multiple comparisons for equality, ``@code{@b{in}}''
+values. Multiple comparisons for equality, ``@code{@strong{in}}''
 membership tests, and range comparisons of the form ``@code{X >= E1
-@b{and} X <= E2}'', all connected by ``@code{@b{or}}'' operators, can be
-changed to a single ``@code{@b{in}}'' membership test.  Multiple
-comparisons for inequality, ``@code{@b{not in}}'' membership tests,
-and range comparisons of the form ``@code{X <= E1 @b{or} X >= E2}'',
-all connected by ``@code{@b{and}}'' operators, can be changed to a
-single ``@code{@b{not in}}'' membership test.
+@strong{and} X <= E2}'', all connected by ``@code{@strong{or}}'' operators, can be
+changed to a single ``@code{@strong{in}}'' membership test.  Multiple
+comparisons for inequality, ``@code{@strong{not in}}'' membership tests,
+and range comparisons of the form ``@code{X <= E1 @strong{or} X >= E2}'',
+all connected by ``@code{@strong{and}}'' operators, can be changed to a
+single ``@code{@strong{not in}}'' membership test.
 @item
 ``parentheses'': controls unnecessary parentheses like those
 surrounding the expression of an assignment, an ``if'' or a ``case''
@@ -9103,7 +9104,7 @@ The following subrules generate fixes:
 are removed.
 @item
 ``Membership'': The expression is transformed to a single
-``@code{@b{in}}'' or ``@code{@b{not in}}'' membership test.
+``@code{@strong{in}}'' or ``@code{@strong{not in}}'' membership test.
 @item
 ``Parentheses'': The unnecessary parentheses are removed.
 @end itemize
@@ -9124,7 +9125,7 @@ a less contrieved example, note that:
 @example
   X mod (A*B)
 @end example
-is @i{not} the same as:
+is @emph{not} the same as:
 @example
   X mod A * B
 @end example
@@ -9139,7 +9140,7 @@ replaced by a qualification, rather than being simply removed.
 Logical redundant operations may result from cut-and-paste errors, and are
 often hard to spot. Typically:
 @example
-   @b{if} A < Limit1 @b{or} A < Limit1 @b{then} ...
+   @strong{if} A < Limit1 @strong{or} A < Limit1 @strong{then} ...
 @end example
 where the right ``Limit1'' should have been changed to ``Limit2''.
 
@@ -9179,56 +9180,56 @@ declarations, and no exception handlers.
 known to be never executed. This includes:
 @itemize @bullet
 @item
-statements that follow a @code{@b{return}}, @code{@b{requeue}}, or @code{@b{goto}} statement,
-or an @code{@b{exit}} statement that is either unconditional or whose
+statements that follow a @code{@strong{return}}, @code{@strong{requeue}}, or @code{@strong{goto}} statement,
+or an @code{@strong{exit}} statement that is either unconditional or whose
 condition is statically known to be true;
 @item
-@code{@b{while}} statements and @code{@b{if}} statements (including
-@code{@b{elsif}} paths) whose condition is statically false;
+@code{@strong{while}} statements and @code{@strong{if}} statements (including
+@code{@strong{elsif}} paths) whose condition is statically false;
 @item
-@code{@b{else}} and @code{@b{elsif}} paths that follow an
-@code{@b{if}} statement (or @code{@b{elsif}} path) whose condition is
+@code{@strong{else}} and @code{@strong{elsif}} paths that follow an
+@code{@strong{if}} statement (or @code{@strong{elsif}} path) whose condition is
 known to be true;
 @item
-@code{@b{elsif}} paths whose condition is identical
-to the one of a preceding @code{@b{if}} or @code{@b{elsif}} path;
+@code{@strong{elsif}} paths whose condition is identical
+to the one of a preceding @code{@strong{if}} or @code{@strong{elsif}} path;
 @item
-branches of @code{@b{case}} statements whose choices are all
+branches of @code{@strong{case}} statements whose choices are all
 statically null ranges;
 @item
-@code{@b{for}} loops whose range is
+@code{@strong{for}} loops whose range is
 statically empty.
 @end itemize
-For @code{@b{case}} statements, it is possible to
-not control branches that contain only @code{@b{null}} or
-@code{@b{raise}} statements, see variable ``acceptable_dead_case''
+For @code{@strong{case}} statements, it is possible to
+not control branches that contain only @code{@strong{null}} or
+@code{@strong{raise}} statements, see variable ``acceptable_dead_case''
 below.
 @item
-``for_in_for_for_of'': controls @code{@b{for}} .. @code{@b{in}} loops
+``for_in_for_for_of'': controls @code{@strong{for}} .. @code{@strong{in}} loops
 where the loop index is used only for indexing a single variable. Such
-loops can be changed to a  @code{@b{for}} .. @code{@b{of}} on the
+loops can be changed to a  @code{@strong{for}} .. @code{@strong{of}} on the
 corresponding array, often resulting in simpler code. For example:
 @example
-@b{declare}
-   S : @b{constant} String := Function_Returning_String;
-@b{begin}
-   @b{for} I @b{in} S'range @b{loop}
+@strong{declare}
+   S : @strong{constant} String := Function_Returning_String;
+@strong{begin}
+   @strong{for} I @strong{in} S'range @strong{loop}
       --  Do something with S(I)
-   @b{end} @b{loop};
-@b{end};
+   @strong{end} @strong{loop};
+@strong{end};
 @end example
 can be changed to:
 @example
-@b{for} C @b{of} Function_Returning_String @b{loop}
+@strong{for} C @strong{of} Function_Returning_String @strong{loop}
    --  Do something with c
-@b{end} @b{loop};
+@strong{end} @strong{loop};
 @end example
 If the ``full_range'' modifier is given, the rule controls only loops
 whose range is statically known to cover the whole range of the
 indexed variable.
 
 This subrule applies only to monodimensional arrays. Although
-@code{@b{for}} .. @code{@b{of}} loops can be used with
+@code{@strong{for}} .. @code{@strong{of}} loops can be used with
 multidimensional arrays, this usage is dubious in most
 cases.
 
@@ -9239,12 +9240,12 @@ value assigned are such that the loop may be replaced by a single
 slice assignment, a full array assignment, or an aggregate assignment.
 For example (where S is some String),
 @example
-@b{for} I @b{in} S'First .. S'Last-1 @b{loop}
+@strong{for} I @strong{in} S'First .. S'Last-1 @strong{loop}
    S (I+1) := S(I);
-@b{end} @b{loop};
-@b{for} I @b{in} S'Range @b{loop}
+@strong{end} @strong{loop};
+@strong{for} I @strong{in} S'Range @strong{loop}
    S (I) := ' ';
-@b{end} @b{loop};
+@strong{end} @strong{loop};
 @end example
 can be changed to:
 @example
@@ -9253,151 +9254,151 @@ S := (others => ' ');
 @end example
 @item
 ``handler'': controls ``trivial'' exception handlers, i.e. handlers
-whose sequence of statements includes only a single @code{@b{raise}}
+whose sequence of statements includes only a single @code{@strong{raise}}
 statement without an exception name. However, a handler is not
-reported if there is also a non trivial handler for @code{@b{others}}.
+reported if there is also a non trivial handler for @code{@strong{others}}.
 These examples show the situation:
 @example
-@b{exception}
-  @b{when} Constraint_Error => --Reported (no when others)
-    @b{raise};
-@b{end};
+@strong{exception}
+  @strong{when} Constraint_Error => --Reported (no when others)
+    @strong{raise};
+@strong{end};
 
-@b{exception}
-  @b{when} Constraint_Error => --Reported (trivial when others)
-    @b{raise};
-  @b{when} @b{others} =>            --Reported
-    @b{raise};
-@b{end};
+@strong{exception}
+  @strong{when} Constraint_Error => --Reported (trivial when others)
+    @strong{raise};
+  @strong{when} @strong{others} =>            --Reported
+    @strong{raise};
+@strong{end};
 
-@b{exception}
-  @b{when} Constraint_Error =>  --Not reported (non trivial when others)
-    @b{raise};
-  @b{when} @b{others} =>
+@strong{exception}
+  @strong{when} Constraint_Error =>  --Not reported (non trivial when others)
+    @strong{raise};
+  @strong{when} @strong{others} =>
     Put_Line ("Error");
-@b{end};
+@strong{end};
 @end example
 @item
-``if'': controls @code{@b{if}} statements with an @code{@b{else}}
-path that contains only @code{@b{null}} statements (and can thus be
+``if'': controls @code{@strong{if}} statements with an @code{@strong{else}}
+path that contains only @code{@strong{null}} statements (and can thus be
 removed).
 @item
-``if_for_case'': controls usage of @code{@b{if}} statements that
-could be replaced by @code{@b{case}} statements. An  @code{@b{if}}
+``if_for_case'': controls usage of @code{@strong{if}} statements that
+could be replaced by @code{@strong{case}} statements. An  @code{@strong{if}}
 statement is assumed to be replaceable if it has at least one
-@code{@b{elsif}} and all conditions are comparisons (or membership
+@code{@strong{elsif}} and all conditions are comparisons (or membership
 tests, possibly connected by logical operators) of the same discrete
 variable with static values. Typically, this subrule will spot
 constructs like:
 @example
-   @b{if} X = 1 @b{then}
+   @strong{if} X = 1 @strong{then}
       ...
-   @b{elsif} X = 2 or X = 3 or X = 4 @b{then}
+   @strong{elsif} X = 2 or X = 3 or X = 4 @strong{then}
       ...
-   @b{elsif} X >= 5 and X <= 10 @b{then}
+   @strong{elsif} X >= 5 and X <= 10 @strong{then}
       ...
-   @b{elsif} X in 11 .. 20 @b{then}
+   @strong{elsif} X in 11 .. 20 @strong{then}
       ...
-   @b{else}
+   @strong{else}
       ...
-   @b{end} @b{if};
+   @strong{end} @strong{if};
 @end example
 @item
-``if_not'': controls @code{@b{if}} statements with an
-@code{@b{else}} path and no @code{@b{elsif}} path, and where the
-condition is given in negative form (i.e. it is a @code{@b{not}}, or a
+``if_not'': controls @code{@strong{if}} statements with an
+@code{@strong{else}} path and no @code{@strong{elsif}} path, and where the
+condition is given in negative form (i.e. it is a @code{@strong{not}}, or a
 @code{"/="} comparison). Such statements could be made positive (and
-thus less error-prone) by interverting the @code{@b{if}} and
-@code{@b{else}} paths.
+thus less error-prone) by interverting the @code{@strong{if}} and
+@code{@strong{else}} paths.
 @item
 ``loop'': controls @code{while} loop statements where the condition
 is statically known to be @code{True}, and can thus be changed to simple loops.
 @item
 ``loop_for_while'': controls simple loop statements whose first
-statement is an @code{@b{exit}} (for the same loop), and which can
+statement is an @code{@strong{exit}} (for the same loop), and which can
 therefore be turned into a @code{while} loop. If the ``no_exit''
 modifier is given, the loop is not controlled if it includes another
-@code{@b{exit}} statement that applies to it.
+@code{@strong{exit}} statement that applies to it.
 @item
-``nested_path'': controls paths from @code{@b{if}} statements that
-can be moved outside. This happens if the @code{@b{if}} has only
-@code{@b{then}} and @code{@b{else}} paths, and either of them ends
-with a ``breaking'' statement (@code{@b{raise}}, @code{@b{return}},
-@code{@b{exit}} or @code{@b{goto}}); in this case, the other path
-needs not be nested inside the @code{@b{if}} statement. However, if
-both paths end with the @i{same} ``breaking'' statement, no error is
+``nested_path'': controls paths from @code{@strong{if}} statements that
+can be moved outside. This happens if the @code{@strong{if}} has only
+@code{@strong{then}} and @code{@strong{else}} paths, and either of them ends
+with a ``breaking'' statement (@code{@strong{raise}}, @code{@strong{return}},
+@code{@strong{exit}} or @code{@strong{goto}}); in this case, the other path
+needs not be nested inside the @code{@strong{if}} statement. However, if
+both paths end with the @emph{same} ``breaking'' statement, no error is
 reported. In short, the rule signals the following examples:
 @example
-@b{if} Cond @b{then}
-   @b{return};
-@b{else}
+@strong{if} Cond @strong{then}
+   @strong{return};
+@strong{else}
    I := 1;
-@b{end} @b{if};
+@strong{end} @strong{if};
 
-@b{if} Cond @b{then}
+@strong{if} Cond @strong{then}
    I := 1;
-@b{else}
-   @b{return};
-@b{end} @b{if};
+@strong{else}
+   @strong{return};
+@strong{end} @strong{if};
 @end example
 because they can be changed to:
 @example
-@b{if} Cond @b{then}
-   @b{return};
-@b{end} @b{if};
+@strong{if} Cond @strong{then}
+   @strong{return};
+@strong{end} @strong{if};
 I := 1;
 
-@b{if} @b{not} Cond @b{then}
-   @b{return};
-@b{end} @b{if};
+@strong{if} @strong{not} Cond @strong{then}
+   @strong{return};
+@strong{end} @strong{if};
 I := 1;
 @end example
 The rule will not signal the following example, where both paths end
-with the same ``breaking'' statement (@code{@b{return}}), because it
+with the same ``breaking'' statement (@code{@strong{return}}), because it
 would break the symetry of the statement:
 @example
-@b{if} Cond @b{then}
-   @b{return} 1;
-@b{else}
-   @b{return} 2;
-@b{end} @b{if};
+@strong{if} Cond @strong{then}
+   @strong{return} 1;
+@strong{else}
+   @strong{return} 2;
+@strong{end} @strong{if};
 @end example
 @item
-``null'': controls @code{@b{null}} statements that serve no purpose
-and can be removed.  Note that if a @code{@b{null}} statement carries
+``null'': controls @code{@strong{null}} statements that serve no purpose
+and can be removed.  Note that if a @code{@strong{null}} statement carries
 a label, it is not considered  simplifiable.
 @item
-``true_if'': controls @code{@b{if}} statements and @code{@b{elsif}} paths
+``true_if'': controls @code{@strong{if}} statements and @code{@strong{elsif}} paths
 whose condition is statically known to be true.
 @item
-``unnecessary_if'': controls @code{@b{if}} statements with no
-@code{@b{elsif}} path whose @code{@b{then}} and @code{@b{else}} paths
-are both assignments to the same variable or @code{@b{return}}
+``unnecessary_if'': controls @code{@strong{if}} statements with no
+@code{@strong{elsif}} path whose @code{@strong{then}} and @code{@strong{else}} paths
+are both assignments to the same variable or @code{@strong{return}}
 statements and whose (assigned or returned) value is a plain @code{True}
 in one path and a plain @code{False} in the other path. The
-@code{@b{if}} statement can be removed, and its logical expression
+@code{@strong{if}} statement can be removed, and its logical expression
 directly assigned to the variable, or returned (possibly with a
 negation  of the condition). Typically:
 @example
-@b{if} V=1 @b{then}  -- Equivalent to "Flag := V=1;"
+@strong{if} V=1 @strong{then}  -- Equivalent to "Flag := V=1;"
    Flag := True;
-@b{else}
+@strong{else}
    Flag := False;
-@b{end} @b{if};
+@strong{end} @strong{if};
 
-@b{if} V=1 @b{then}  -- Equivalent to "return V /= 1;"
-   @b{return} False;
-@b{else}
-   @b{return} True;
-@b{end} @b{if};
+@strong{if} V=1 @strong{then}  -- Equivalent to "return V /= 1;"
+   @strong{return} False;
+@strong{else}
+   @strong{return} True;
+@strong{end} @strong{if};
 @end example
 @item
-``while_for_for'': controls @code{@b{while}} loops that could be
-changed into @code{@b{for}} loops. More precisely, it controls
-@code{@b{while}} loops where:
+``while_for_for'': controls @code{@strong{while}} loops that could be
+changed into @code{@strong{for}} loops. More precisely, it controls
+@code{@strong{while}} loops where:
 @itemize
 @item
-the condition of the @code{@b{while}} is a greater, greater or equal,
+the condition of the @code{@strong{while}} is a greater, greater or equal,
 less than, less than or equal, or not equal comparison involving only
 a simple variable on one side and an expression on the other side whose acceptable
 elements depend on the rule variable @code{While_For_Expression}. See below.
@@ -9406,13 +9407,13 @@ the variable is incremented/decremented exactly once in the loop, in
 the form of being the target of an addition or subtraction of  +1 or
 -1 to the variable, or of a 'Pred or 'Succ attribute applied to the
 variable, and the value of increment is consistent with the direction
-of the test in the @code{@b{while}} condition.
+of the test in the @code{@strong{while}} condition.
 @item
-the variable is not passed as an @code{@b{out}} or @code{@b{in out}}
+the variable is not passed as an @code{@strong{out}} or @code{@strong{in out}}
 parameter to a procedure (or entry)
 @item
 if the ``no_exit'' modifier is given, the loop does not include an
-@code{@b{exit}} statement that applies to it.
+@code{@strong{exit}} statement that applies to it.
 @end itemize
 @end itemize
 
@@ -9426,18 +9427,18 @@ check simplifiable_statements (no_exit while_for_for);
 @end example
 
 @subsection Variables
-The rule provides a variable to define branches of @code{@b{case}}
+The rule provides a variable to define branches of @code{@strong{case}}
 statements that are not to be controlled.
 
 The rule provides a variable to define the maximum number of allowed
 indexings for the @code{for_in_for_for_of} subrule.
 
 The rule provides a variable to define the complexity of expressions
-accepted by the @code{while_for_for} subrule for @code{@b{while}}
-loops to be considered changeable to @code{@b{for}} loops.
+accepted by the @code{while_for_for} subrule for @code{@strong{while}}
+loops to be considered changeable to @code{@strong{for}} loops.
 @need 400
 @multitable @columnfractions .25 .20 .55
-@item @b{Variable} @tab @b{Values} @tab @b{Effect}
+@item @strong{Variable} @tab @strong{Values} @tab @strong{Effect}
 @item Acceptable_Dead_Case
 @tab none (default)
 @tab All dead branches are controlled.
@@ -9452,7 +9453,7 @@ loops to be considered changeable to @code{@b{for}} loops.
 @tab Dead branches that contain only null statements or a raise statement are not controlled.
 @item Acceptable_Indexings
 @tab <Integer> (default = 0)
-@tab @code{@b{for}} loops that use their loop index for indexing a variable up to the indicated number of times are not controlled by the @code{for_in_for_for_of} subrule.
+@tab @code{@strong{for}} loops that use their loop index for indexing a variable up to the indicated number of times are not controlled by the @code{for_in_for_for_of} subrule.
 @item While_For_Expression
 @tab any (default)
 @tab No restriction on the expression used for comparisons
@@ -9476,33 +9477,33 @@ The following subrules generate fixes:
 @item
 ``Handler'': The useless handler is removed.
 @item
-``Loop'': the `` @code{@b{while}} <cond> @code{@b{loop}}'' is changed to a
-plain @code{@b{loop}}
+``Loop'': the `` @code{@strong{while}} <cond> @code{@strong{loop}}'' is changed to a
+plain @code{@strong{loop}}
 @item
-``Null'': The useless @code{@b{null}} statement is removed.
+``Null'': The useless @code{@strong{null}} statement is removed.
 @item
-``Unnecessary_If'': The @code{@b{if}} statement is removed and its expression assigned to the
+``Unnecessary_If'': The @code{@strong{if}} statement is removed and its expression assigned to the
 variable, or as the return value. Negation of the condition is performed if necessary.
 @end itemize
 
 @subsection Tips
-The ``dead'' subrule does not signal a @code{@b{when} @b{others}} branch
-of a @code{@b{case}} statement
+The ``dead'' subrule does not signal a @code{@strong{when} @strong{others}} branch
+of a @code{@strong{case}} statement
 that covers no value at all; this can be checked with:
 @example
 check case_statement (others_span, min 1);
 @end example
 
-Ignoring dead @code{@b{case}} branches that contain only
-@code{@b{null}} or @code{@b{raise}} statements is useful when the
+Ignoring dead @code{@strong{case}} branches that contain only
+@code{@strong{null}} or @code{@strong{raise}} statements is useful when the
 language requires some branches to be given due to the completion
-check of the @code{@b{case}} statement, but these values are actually
+check of the @code{@strong{case}} statement, but these values are actually
 impossible due to the logic of the program.
 
-A @code{@b{for} .. @b{in}} loop whose index does not cover the
+A @code{@strong{for} .. @strong{in}} loop whose index does not cover the
 totality of the range of the indexed variable can be replaced by a
-@code{@b{for} .. @b{of}} loop over a slice of the variable. However,
-some might prefer to keep using a  @code{@b{for} .. @b{in}} loop in
+@code{@strong{for} .. @strong{of}} loop over a slice of the variable. However,
+some might prefer to keep using a  @code{@strong{for} .. @strong{in}} loop in
 that case, hence the modifier ``full_range''.
 
 ``loop'' may seem a strange thing to check, since no Ada
@@ -9519,10 +9520,10 @@ acceptable compromise in-between.
 @subsection Limitation
 ``while_for_for'' may trigger false positives in some unlikely cases
 that are impossible (or deemed too costly) to check, like passing the
-control variable as an @code{@b{out}} or @code{@b{in out}} parameter
+control variable as an @code{@strong{out}} or @code{@strong{in out}} parameter
 to a function, modifying the variable directly from a called
 subprogram or from a concurrently running task... If the user replaces
-the @code{@b{while}} loop with a @code{@b{for}} loop in those cases,
+the @code{@strong{while}} loop with a @code{@strong{for}} loop in those cases,
 the control variable will be changed to a constant and the program
 will not compile any more; there is therefore no risk.
 
@@ -9595,27 +9596,27 @@ intended to forbid all statements in a program (!), but
 @emph{counting} all statements can be quite useful.
 @item
 @code{accept_return} controls return statements that return from an
-@code{@b{accept}} statement, @code{entry_return} controls return
+@code{@strong{accept}} statement, @code{entry_return} controls return
 statements that return from a (protected) entry body, and
 @code{procedure_return} controls return statements that return from a
 procedure. @code{loop_return} controls return statements (including
-extended return statements) that appear inside a @code{@b{loop}}
+extended return statements) that appear inside a @code{@strong{loop}}
 statement.
 @item
 @code{assignment} controls all assignment statements.
 @item
-@code{asynchronous_select} controls the @code{@b{select}}
-... @code{@b{then abort}} statement. @code{conditional_entry_call}
-controls the @code{@b{select}} ... @code{@b{else}}
-statement. @code{timed_entry_call} controls the @code{@b{select}}
-... @code{@b{or delay}} statement. @code{selective_accept} controls
-the regular @code{@b{select}} statement.
+@code{asynchronous_select} controls the @code{@strong{select}}
+... @code{@strong{then abort}} statement. @code{conditional_entry_call}
+controls the @code{@strong{select}} ... @code{@strong{else}}
+statement. @code{timed_entry_call} controls the @code{@strong{select}}
+... @code{@strong{or delay}} statement. @code{selective_accept} controls
+the regular @code{@strong{select}} statement.
 @item
 @code{block} controls all block statements, while @code{unnamed_block}
 controls blocks without a name, @code{declare_block} controls blocks
-with an explicit @code{@b{declare}} (even if the declarative part is
+with an explicit @code{@strong{declare}} (even if the declarative part is
 empty), and @code{effective_declare_block} controls blocks with a
-declarative part that includes anything else than @code{@b{use}}
+declarative part that includes anything else than @code{@strong{use}}
 clauses and pragmas. @code{simple_block} controls block statements
 that have no declarative part (or an empty declarative part) and no
 exception handlers, and @code{unnamed_simple_block}  does the same,
@@ -9623,15 +9624,15 @@ but only for blocks without a name.
 @item
 @code{case} controls all @code{case} statements.
 @item
-@code{case_others} controls any @code{@b{when others}} path in a
-@code{@b{case}} statement, while @code{case_others_null} controls only
-@code{@b{when others}} paths in a @code{@b{case}} statement that
-contain only @code{@b{null}} statements.
+@code{case_others} controls any @code{@strong{when others}} path in a
+@code{@strong{case}} statement, while @code{case_others_null} controls only
+@code{@strong{when others}} paths in a @code{@strong{case}} statement that
+contain only @code{@strong{null}} statements.
 @item
 @code{code} controls code statements.
 @item
-@code{delay} controls only relative @code{@b{delay}} statements, while
-@code{delay_until} controls absolute @code{@b{delay until}}
+@code{delay} controls only relative @code{@strong{delay}} statements, while
+@code{delay_until} controls absolute @code{@strong{delay until}}
 statements.
 @item
 @code{entry_call} controls all entry call statements, including those
@@ -9639,36 +9640,36 @@ that are part of a conditional or timed entry call statement.
 @item
 @code{exit} controls all exit statements, while @code{exit_for_loop},
 @code{exit_while_loop}, and @code{exit_plain_loop} control
-@code{@b{exit}} statements that terminate @code{@b{for}} loops,
-@code{@b{while}} loops, and plain (neither @code{@b{for}} nor
-@code{@b{while}}) loops, respectively. @code{unconditional_exit}
-controls @code{@b{exit}} statements without a @code{@b{when}}
+@code{@strong{exit}} statements that terminate @code{@strong{for}} loops,
+@code{@strong{while}} loops, and plain (neither @code{@strong{for}} nor
+@code{@strong{while}}) loops, respectively. @code{unconditional_exit}
+controls @code{@strong{exit}} statements without a @code{@strong{when}}
 condition.  @code{multiple_exits} controls loop that have more than
-one @code{@b{exit}} statement.  @code{unnamed_loop_exited} controls
+one @code{@strong{exit}} statement.  @code{unnamed_loop_exited} controls
 exit statements that terminate an unnamed loop. @code{exit_outer_loop}
-controls @code{@b{exit}} statements that exit from an outer loop
+controls @code{@strong{exit}} statements that exit from an outer loop
 (i.e. not the innermost one). @code{exit_expanded_name} controls named
-@code{@b{exit}} statements where the name is given as an expanded
+@code{@strong{exit}} statements where the name is given as an expanded
 name.
 @item
-@code{exception_others} controls any @code{@b{when others}} exception
+@code{exception_others} controls any @code{@strong{when others}} exception
 handler, while @code{exception_others_null} controls only
-@code{@b{when others}} exception handlers that contain only
-@code{@b{null}} statements.
+@code{@strong{when others}} exception handlers that contain only
+@code{@strong{null}} statements.
 @item
 @code{extended_return} controls extended return statements (i.e. the
-Ada 2005 construct ``@code{@b{return} V : T @b{do} ... @b{end}
-@b{return}}'').  @code{exited_extended_return} controls extended
+Ada 2005 construct ``@code{@strong{return} V : T @strong{do} ... @strong{end}
+@strong{return}}'').  @code{exited_extended_return} controls extended
 return statements that can be left without actually returning due to
-an @b{exit} or @b{goto} statement  within their sequence of
+an @strong{exit} or @strong{goto} statement  within their sequence of
 statements.
 @item
-@code{for_loop} controls all @code{@b{for}} loops, while
+@code{for_loop} controls all @code{@strong{for}} loops, while
 @code{for_in_loop} controls only the traditional form of
-@code{@b{for}} loop (@code{@b{for} I @b{in} @i{range} @b{loop}}),
-@code{for_iterator_loop} controls the iterator form (@code{@b{for} I
-@b{in} @i{Iterator} @b{loop}}), and @code{for_of_loop} controls the
-components form (@code{@b{for} V @b{of} ... @b{loop}}).
+@code{@strong{for}} loop (@code{@strong{for} I @strong{in} @emph{range} @strong{loop}}),
+@code{for_iterator_loop} controls the iterator form (@code{@strong{for} I
+@strong{in} @emph{Iterator} @strong{loop}}), and @code{for_of_loop} controls the
+components form (@code{@strong{for} V @strong{of} ... @strong{loop}}).
 @code{multi_for_of_loop} controls the components form only when the
 iterated-on array has more than one dimension (this is allowed by the
 language, but ``flattens'' the array which might be undesirable).
@@ -9680,15 +9681,15 @@ one return statement in the body of functions, and at most one return
 statement in each exception handler of the exception part of
 functions.
 @item
-@code{goto} controls all @code{@b{goto}} statements, while
-@code{goto_not_continue} controls @code{@b{goto}} statements except
-those whose target statement is a @code{@b{null}} statement (including
-the implicit @code{@b{null}} statement of Ada 2012) which is the last
-statement of the body of a @code{@b{loop}} statement (i.e. when the
-@code{@b{goto}} statement is used as a replacement for the
-@code{@b{continue}} statement of other
-languages). @code{backward_goto} controls @code{@b{goto}} statements
-whose target label is located ahead of the @code{@b{goto}} (i.e. those
+@code{goto} controls all @code{@strong{goto}} statements, while
+@code{goto_not_continue} controls @code{@strong{goto}} statements except
+those whose target statement is a @code{@strong{null}} statement (including
+the implicit @code{@strong{null}} statement of Ada 2012) which is the last
+statement of the body of a @code{@strong{loop}} statement (i.e. when the
+@code{@strong{goto}} statement is used as a replacement for the
+@code{@strong{continue}} statement of other
+languages). @code{backward_goto} controls @code{@strong{goto}} statements
+whose target label is located ahead of the @code{@strong{goto}} (i.e. those
 that could create loops).
 @item
 @code{hard_bounds_array_for_loop} controls for loops whose loop
@@ -9696,25 +9697,25 @@ parameter is used in (or as part of) the indexing of an array
 variable, and where the given bounds of the loop parameter do not use
 any of the @code{'First},  @code{'Last}, or @code{'Range} attributes.
 @item
-@code{if} controls all @code{@b{if}} statements.
+@code{if} controls all @code{@strong{if}} statements.
 @item
-@code{if_elsif} controls @code{@b{if}} statements that have at least
-one @code{@b{elsif}}.
+@code{if_elsif} controls @code{@strong{if}} statements that have at least
+one @code{@strong{elsif}}.
 @item
 @code{labelled} controls statements with a label (true statement
 labels, not block and loop names).
 @item
-@code{named_exit} controls @code{@b{exit}} statements with a loop
+@code{named_exit} controls @code{@strong{exit}} statements with a loop
 name.
 @item
-@code{no_else} controls @code{@b{if}} statements that have no @code{@b{else}}
+@code{no_else} controls @code{@strong{if}} statements that have no @code{@strong{else}}
 path.
 @item
-@code{null} controls all @code{@b{null}}
+@code{null} controls all @code{@strong{null}}
 statements. @code{null_if_path}, @code{null_case_path} and
-@code{null_loop_body} control paths (branches) of @code{@b{if}} or
-@code{@b{case}} statements, or bodies of @code{@b{loop}} statements
-(respectively) that contain only @code{@b{null}} statements.
+@code{null_loop_body} control paths (branches) of @code{@strong{if}} or
+@code{@strong{case}} statements, or bodies of @code{@strong{loop}} statements
+(respectively) that contain only @code{@strong{null}} statements.
 @item
 @code{procedure_call} controls all calls to
 procedures. @code{dispatching_call} does the same, but only for
@@ -9725,13 +9726,13 @@ does the same, but only for calls through pointers.
 @code{inherited_procedure_call} controls calls to procedures that have
 been inherited by a derived type and not redefined.
 @item
-@code{raise} controls all @code{@b{raise}} statements.
+@code{raise} controls all @code{@strong{raise}} statements.
 @item
-@code{reraise} controls @code{@b{raise}} statements in exception
+@code{reraise} controls @code{@strong{raise}} statements in exception
 handlers that reraise the same exception, and calls to the
 @code{Ada.Exceptions.Reraise_Occurrence} procedure.
 @item
-@code{raise_standard} controls @code{@b{raise}} statements that raise
+@code{raise_standard} controls @code{@strong{raise}} statements that raise
 one of the predefined exceptions (those declared in package
 @code{Standard}). @code{raise_nonpublic} controls statements that
 raise exceptions that are neither predefined nor defined in the
@@ -9743,14 +9744,14 @@ statements that raise an exception which is handled by a handler in
 the same subprogram body as the statement.
 
 Note that for these subrules, the exception can be raised either by a
-@code{@b{raise}} statement, or by a call to
+@code{@strong{raise}} statement, or by a call to
 @code{Ada.Exceptions.Raise_Exception} where the raised exception is
 statically determinable.
 @item
 @code{simple_loop} controls simple loops, i.e. those that are neither
-@code{@b{while}} nor @code{@b{for}} loops.
+@code{@strong{while}} nor @code{@strong{for}} loops.
 @item
-@code{unnamed_exit} controls @code{@b{exit}} statements without a
+@code{unnamed_exit} controls @code{@strong{exit}} statements without a
 loop name that exits from a named loop.
 @item
 @code{unnamed_for_loop}, @code{unnamed_simple_loop}, and
@@ -9760,17 +9761,17 @@ named.
 @code{unnamed_multiple_loop} controls nested loops that are not named
 (i.e.  under this rule, only loops that contain no inner loop, and are
 not nested in another loop, are allowed not to be named).  The kind of
-loop (plain, @code{@b{for}}, @code{@b{while}}) is not considered.
+loop (plain, @code{@strong{for}}, @code{@strong{while}}) is not considered.
 @item
-@code{untyped_for_in} controls regular @code{@b{for} .. @b{in}} loops
-that use a range without an explicitely named type (i.e. @code{@b{for}
-I @b{in} 1..10 @b{loop}}). Using a @code{'Range} attribute is
-OK. @code{untyped_for_of} controls @code{@b{for} .. @b{of}} loops that
+@code{untyped_for_in} controls regular @code{@strong{for} .. @strong{in}} loops
+that use a range without an explicitely named type (i.e. @code{@strong{for}
+I @strong{in} 1..10 @strong{loop}}). Using a @code{'Range} attribute is
+OK. @code{untyped_for_of} controls @code{@strong{for} .. @strong{of}} loops that
 have no subtype indication. @code{untyped_for} controls both. Note
-that generalized iterators are @i{not} controlled, since the syntax
+that generalized iterators are @emph{not} controlled, since the syntax
 does not allow the specification of an explicit subtype for them.
 @item
-@code{while_loop} controls all @code{@b{while}} loops.
+@code{while_loop} controls all @code{@strong{while}} loops.
 @end itemize
 
 Ex:
@@ -9790,7 +9791,7 @@ loops'' that are not  controlled by the @code{unnamed_for_loop},
 
 @need 800
 @multitable @columnfractions .25 .20 .55
-@item @b{Variable} @tab @b{Values} @tab @b{Effect}
+@item @strong{Variable} @tab @strong{Values} @tab @strong{Effect}
 @item Called_Info
 @tab none (default)
 @tab No extra information.
@@ -9814,13 +9815,13 @@ named are not controlled by the @code{unnamed_for_loop},
 @end multitable
 
 @subsection Tips
-It may seem strange to control things like @code{@b{if}} or
-@code{@b{case}} statements, since no coding standard would prohibit
+It may seem strange to control things like @code{@strong{if}} or
+@code{@strong{case}} statements, since no coding standard would prohibit
 their use. However, this may be useful, especially with ``count'', for
-statistical purposes, like measuring the ratio of @code{@b{if}} to
-@code{@b{case}} statements.
+statistical purposes, like measuring the ratio of @code{@strong{if}} to
+@code{@strong{case}} statements.
 
-The plain ``raise'' subrule controls the @code{@b{raise}} statement,
+The plain ``raise'' subrule controls the @code{@strong{raise}} statement,
 and only this one. If you want to check all places where exceptions
 can be raised, use also the ``entities'' rule like this:
 @example
@@ -9833,10 +9834,10 @@ Other subrules of the ``raise'' family are more about which kind of
 exception is being raised, and therefore control also exceptions
 raised by calling the procedures from @code{Ada.Exceptions}.
 
-``inherited_procedure_call'' controls only @i{procedure} calls. For
+``inherited_procedure_call'' controls only @emph{procedure} calls. For
 function calls, see rule @ref{Expressions}.
 
-For more sophisticated controls over @code{@b{return}} statements, see
+For more sophisticated controls over @code{@strong{return}} statements, see
 the rule @ref{Return_Statements}.
 
 ``hard_bounds_array_for_loop'' is quite tolerant, it just controls the
@@ -9907,10 +9908,10 @@ If more than one <casing_kw> is given, it means that any of them is
 allowed.
 @item
 ``compound_statement'': controls that compound statements span at least
-a minimum number of lines: 3 for @code{@b{if}} statements,
-@code{@b{loop}} statements, block statements, and @code{@b{accept}}
-statements with a body; 4 for @code{@b{case}} statements, selective
-@code{@b{accept}} statements, and timed entry call statements; and 5
+a minimum number of lines: 3 for @code{@strong{if}} statements,
+@code{@strong{loop}} statements, block statements, and @code{@strong{accept}}
+statements with a body; 4 for @code{@strong{case}} statements, selective
+@code{@strong{accept}} statements, and timed entry call statements; and 5
 for conditional entry call statements and asynchronous select
 statements.
 @item
@@ -9949,11 +9950,11 @@ declarations.
 ``multiple_elements'': controls clauses, pragmas, declarations,
 statements, and handlers that do not start on a line of their own
 (i.e. when there are more than one of these on the same
-line). Similarly, @code{@b{begin}}, @code{@b{end}}, @code{@b{then}}
-and @code{@b{when}} are required to be on a line of their own,
+line). Similarly, @code{@strong{begin}}, @code{@strong{end}}, @code{@strong{then}}
+and @code{@strong{when}} are required to be on a line of their own,
 together with the possible keyword or identifier attached to them and
-the semi-colon.  In addition, the @code{@b{is}}, @code{@b{loop}} or
-@code{@b{do}} that terminates the first part of some declarations or
+the semi-colon.  In addition, the @code{@strong{is}}, @code{@strong{loop}} or
+@code{@strong{do}} that terminates the first part of some declarations or
 statements is required to be on the same line as the begining of the
 element, or on a line of its own.
 
@@ -9961,9 +9962,9 @@ Extra parameters specify which kind of element to check; if not
 specified, all kind of elements are controlled. ``keywords'' is a
 shorthand for specifying all keywords. If ``flexible'' is specified in
 front of ``clause'' (not allowed otherwise), it allows a
-@code{@b{use}} clause to be on the same line as a @code{@b{with}}
-clause, provided all packages named in the @code{@b{use}} clause are
-also named in the preceding @code{@b{with}} clause.
+@code{@strong{use}} clause to be on the same line as a @code{@strong{with}}
+clause, provided all packages named in the @code{@strong{use}} clause are
+also named in the preceding @code{@strong{with}} clause.
 @item
 ``no_closing_name'': controls declarations, like package or subprograms,
 that allow (but do not require) repeating the name at the end of the
@@ -10073,12 +10074,12 @@ The following subrules generate fixes:
 @item
 ``Casing_Pragma'': The casing of the pragma name is adjusted.
 @item
-``Default_In'': The missing ``@code{@b{in}}'' is added.
+``Default_In'': The missing ``@code{@strong{in}}'' is added.
 @item
 ``Multiple_Elements'': Line breaks are inserted before the second
 element on the same line.
 @item
-``No_Closing_Name'': The name of the construct is added after ``@code{@b{end}}''.
+``No_Closing_Name'': The name of the construct is added after ``@code{@strong{end}}''.
 @item
 ``Renamed_Entity'': The original name is replaced by the renaming name.
 @end itemize
@@ -10113,9 +10114,9 @@ If a predefined operator or an attribute is renamed, the
 used in the scope of the renaming.  Such cases are
 detected by the rule ``uncheckable''. @xref{Uncheckable}.
 
-For a ``@code{@b{pragma} Interface}", both subrules ``casing_keyword"
+For a ``@code{@strong{pragma} Interface}", both subrules ``casing_keyword"
 and ``casing_pragma'' apply to the word ``Interface''. You should not
-use ``@code{@b{pragma} Interface}" anyway...
+use ``@code{@strong{pragma} Interface}" anyway...
 
 @node Terminating_Tasks, Type_Initial_Values, Style, Rules reference
 @section Terminating_Tasks
@@ -10130,7 +10131,7 @@ This rule controls tasks that can terminate.
 A task is considered a terminating task if its last statement is not
 an unconditional loop, or this if this loop is exited. It is also
 considered terminating if it contains a selective accept with a
-@code{@b{terminate}} alternative.
+@code{@strong{terminate}} alternative.
 
 Since this rule has no parameters, it can be given only once.
 
@@ -10210,7 +10211,7 @@ The meaning of <aspect> is:
 ``representation'': the type has an enumeration representation clause
 or a record representation clause.
 @item
-``pack'': the type is the target of a pack @code{@b{pragma}}.
+``pack'': the type is the target of a pack @code{@strong{pragma}}.
 @item
 ``size'' and ``component_size'': the type has the corresponding
 attribute specified.
@@ -10362,8 +10363,8 @@ derivation.
 pragmas) given on top of the unit. Each parameter of the rule consists
 in one or several of the <clause> keywords, and describes, in order,
 which kind of clause is allowed. Note that ``use_type'' covers only
-the regular @code{@b{use type}} clause, specify also ``use_all_type''
-to include the Ada 2012 @code{@b{use all type}} clause as well. Note
+the regular @code{@strong{use type}} clause, specify also ``use_all_type''
+to include the Ada 2012 @code{@strong{use all type}} clause as well. Note
 that all <clause>s not specified explicitely have no place, and thus
 are not allowed at all.
 @item
@@ -10500,7 +10501,7 @@ on the main program.
 
 @node Unnecessary_Use_Clause, Unsafe_Elaboration, Units, Rules reference
 @section Unnecessary_Use_Clause
-This rule controls @code{@b{use}} clauses (all three kinds) that do
+This rule controls @code{@strong{use}} clauses (all three kinds) that do
 not serve any purpose, could be moved, or reduced to a more specific
 one.
 
@@ -10512,65 +10513,65 @@ one.
 @end example
 
 @subsection Action
-The rule controls @code{@b{use}} clauses (including @code{@b{use
-type}} and @code{@b{use all type}} clauses) that can safely be removed,
-moved, or changed to a @code{@b{use type}} or  @code{@b{use all type}}
+The rule controls @code{@strong{use}} clauses (including @code{@strong{use
+type}} and @code{@strong{use all type}} clauses) that can safely be removed,
+moved, or changed to a @code{@strong{use type}} or  @code{@strong{use all type}}
 clause. The subrules define which cases are controlled; if no subrule
 is given, all cases are controlled.
 @itemize
 @item
-``unused'': a @code{@b{use}} clause is given, but no element from the
+``unused'': a @code{@strong{use}} clause is given, but no element from the
 corresponding package is used within the scope of the
-clause. Similarly, for @code{@b{use type}} and  @code{@b{use all
+clause. Similarly, for @code{@strong{use type}} and  @code{@strong{use all
 type}} clauses, no primitive operator (respectively operation) is used
 within the scope of the clause. The message starts with ``Unused:''.
 
 In this case, the clause can safely be removed.
 @item
-``qualified'': a @code{@b{use}} clause is given, but all elements from
+``qualified'': a @code{@strong{use}} clause is given, but all elements from
 the corresponding package are refered to using a qualified name
 (i.e. prefixed by the name of the package).  Similarly, for
-@code{@b{use type}} and  @code{@b{use all type}} clauses, all uses of
+@code{@strong{use type}} and  @code{@strong{use all type}} clauses, all uses of
 primitive operators (respectively operations) use a qualified
 name. The message starts with ``Qualified:''.
 
-In this case, the @code{@b{use}} clause can safely be removed, but you
+In this case, the @code{@strong{use}} clause can safely be removed, but you
 may want to keep it for documentation purposes, since the package is
 actually used within its scope.
 @item
-``operator'': a @code{@b{use}} clause or @code{@b{use all type}}
+``operator'': a @code{@strong{use}} clause or @code{@strong{use all type}}
 clause is given, but the only elements within its scope that do not
 use a qualified name are primitive operators. The message starts with
 ``Operator:''.
 
-In this case, the @code{@b{use}} or @code{@b{use all type}} clause can
-be replaced by one or several @code{@b{use type}} clause(s).
+In this case, the @code{@strong{use}} or @code{@strong{use all type}} clause can
+be replaced by one or several @code{@strong{use type}} clause(s).
 @item
-``primitive'': a @code{@b{use}} clause is given, but the only elements
+``primitive'': a @code{@strong{use}} clause is given, but the only elements
 within its scope that do not use a qualified name are primitive
 operations (including operators, enumeration literals,
 subprograms...). The message starts with ``Primitive:''
 
-In this case, the @code{@b{use}} clause can be replaced by one or
-several @code{@b{use all type}} clause(s).
+In this case, the @code{@strong{use}} clause can be replaced by one or
+several @code{@strong{use all type}} clause(s).
 @item
-``nested'': a @code{@b{use}}, @code{@b{use type}}, or @code{@b{use all
+``nested'': a @code{@strong{use}}, @code{@strong{use type}}, or @code{@strong{use all
 type}} clause is given within the scope of an enclosing
-@code{@b{use}}, @code{@b{use type}}, or @code{@b{use all type}} clause
+@code{@strong{use}}, @code{@strong{use type}}, or @code{@strong{use all type}} clause
 for the same package (or types declared in the same package), or in a
 child unit for some ancestor, or inside its own package. The message
-tells the location of the other @code{@b{use}} clause or the
+tells the location of the other @code{@strong{use}} clause or the
 ancestor. The message starts with ``Nested:''
 
 In this case, it is possible that some clauses may be removed, but
 which ones depends on the structure of your program - there might even
 be several acceptable combinations.
 @item
-``movable'': a @code{@b{use}} clause is given in a package
+``movable'': a @code{@strong{use}} clause is given in a package
 specification, but all uses are from the corresponding body. The
 message starts with ``Movable: ''.
 
-In this case, the @code{@b{use}} clause can safely be moved to the
+In this case, the @code{@strong{use}} clause can safely be moved to the
 body, unless it appears in a library package, and there are
 unqualified references to its elements from child units.
 @end itemize
@@ -10585,17 +10586,17 @@ use_type: check unnecessary_use_clause (operator);
 
 @subsection Variable
 The rule provides a variable to define the maximum acceptable number
-of @code{@b{use type}} or  @code{@b{use all type}} clauses for
-replacing a @code{@b{use}} clause.
+of @code{@strong{use type}} or  @code{@strong{use all type}} clauses for
+replacing a @code{@strong{use}} clause.
 
 @need 800
 @multitable @columnfractions .25 .20 .55
-@item @b{Variable} @tab @b{Values} @tab @b{Effect}
+@item @strong{Variable} @tab @strong{Values} @tab @strong{Effect}
 @item Max_Replacements
 @tab <Integer> (default = infinity)
-@tab The replacement of @code{@b{use}} clauses is not performed if it
-would generate more than the indicated number of @code{@b{use type}}
-and @code{@b{use all type}} clauses.
+@tab The replacement of @code{@strong{use}} clauses is not performed if it
+would generate more than the indicated number of @code{@strong{use type}}
+and @code{@strong{use all type}} clauses.
 @end multitable
 
 @subsection Fixes
@@ -10606,21 +10607,21 @@ If a package or type is totally unnecessary, the name is removed from
 the corresponding clause. If all packages or types named by the clause
 are removed, the clause as a whole is removed.
 @item
-If a @code{@b{use}} package clause can be replaced by @code{@b{use
-type}} or @code{@b{use all type}} clauses, the package name is removed
-from the @code{@b{use}} clause, and @code{@b{use type}} or
-@code{@b{use all type}} clauses are inserted, unless the number of
+If a @code{@strong{use}} package clause can be replaced by @code{@strong{use
+type}} or @code{@strong{use all type}} clauses, the package name is removed
+from the @code{@strong{use}} clause, and @code{@strong{use type}} or
+@code{@strong{use all type}} clauses are inserted, unless the number of
 inserted clauses exceeds the value of the variable
 @code{Max_Replacements}. If all packages named by the clause are
 removed, the clause as a whole is removed.
 @end itemize
 
 @subsection Tips
-This rule checks only usage of @code{@b{use}} clauses. The rule
-``reduceable_scope'' can be used to check that @code{@b{use}} clauses
+This rule checks only usage of @code{@strong{use}} clauses. The rule
+``reduceable_scope'' can be used to check that @code{@strong{use}} clauses
 do not span unnecessarily too wide a scope. @xref{Reduceable_Scope}.
 
-A @code{@b{use type}} or  @code{@b{use all type}} clause that mentions
+A @code{@strong{use type}} or  @code{@strong{use all type}} clause that mentions
 a type that is not declared in a package specification is always
 useless, since it occurs necessarily within the scope of the type,
 where all its primitive operations are visible.  This is mentionned in
@@ -10628,16 +10629,16 @@ the message (subrule ``nested'').
 
 @subsection Limitations
 There are some rare cases where the rule may signal that a
-@code{@b{use}} clause is not necessary, where it actually is. There is
-no risk associated to this since if you remove the @code{@b{use}}
+@code{@strong{use}} clause is not necessary, where it actually is. There is
+no risk associated to this since if you remove the @code{@strong{use}}
 clause, the program will not compile.
 
 The first one comes from a limitation of the ASIS standard: if the
-@i{only} use of the @code{@b{use}} clause is for making the ``root''
+@emph{only} use of the @code{@strong{use}} clause is for making the ``root''
 definition of a dispatching call visible.
 
 The second one comes from a limitation in ASIS-for-Gnat. This happens
-when the @i{only} use of the @code{@b{use}} clause is for making an
+when the @emph{only} use of the @code{@strong{use}} clause is for making an
 implicitely declared operation (an operation which is declared by the
 compiler as part of a type derivation) visible, and when:
 @itemize
@@ -10665,7 +10666,7 @@ elaboration order dependencies.
 @subsection Action
 The rule controls library packages (or generic packages) whose
 elaboration calls or instantiates elements from other units (except
-language defined units) that are not subject to a @code{@b{pragma}}
+language defined units) that are not subject to a @code{@strong{pragma}}
 @code{Elaborate} or @code{Elaborate_All}. The elaboration of such
 packages may depend on elaboration order.
 
@@ -10708,17 +10709,17 @@ calls that need to be properly paired.
 The rule can deal with three different kinds of locks:
 @itemize @bullet
 @item
-@i{abstract state machines}: There is no ``lock'' object, locking is
+@emph{abstract state machines}: There is no ``lock'' object, locking is
 done directly inside the procedures. The <lock type> parameter of the
 rule must not be provided in that case.
 @item
-@i{object abstract data types}: The procedure operates on an object
+@emph{object abstract data types}: The procedure operates on an object
 (generally of a private type) representing the ``lock'' object, passed
 as an ``in out'' parameter. The third parameter must be the
 corresponding type, and the rule will control that all matching pairs of
 calls refer statically to the same variable.
 @item
-@i{reference abstract data types}: The procedure operates on a
+@emph{reference abstract data types}: The procedure operates on a
 reference that designates the ``lock'' object, passed as an
 ``in''parameter. The third parameter must be the corresponding type,
 which must be discrete or access, and the rule will control that all
@@ -10732,16 +10733,16 @@ Since this rule is safety related, staticness is
 As usual, the whole syntax for entities is allowed for
 <entity>. @xref{Specifying an Ada entity name}.
 
-An @i{opening block} is either a call to the first procedure given to
+An @emph{opening block} is either a call to the first procedure given to
 the rule, or an if statement whose condition is a simple reference to
 a boolean constant (that needs not be static) and whose if path or
 else path is itself an opening block.
 
-A @i{closing block} is either a call to the second procedure given to
+A @emph{closing block} is either a call to the second procedure given to
 the rule, or an if statement whose condition is a simple reference to
 a boolean constant (that needs not be static) and whose if path or
 else path is itself a closing block, possibly followed by
-@code{@b{exit}}, @code{@b{return}}, and @code{@b{null}} statements
+@code{@strong{exit}}, @code{@strong{return}}, and @code{@strong{null}} statements
 (and no others).
 
 An opening and a closing block match if:
@@ -10751,7 +10752,7 @@ corresponding calls to the
 procedures of a pair use the appropriate value for the ``lock''
 parameter (if any), as explained above
 @item
-@code{@b{if}} statements have their conditions refer to the
+@code{@strong{if}} statements have their conditions refer to the
 same constant, and their if and else paths contain matching blocks.
 @end itemize
 
@@ -10762,13 +10763,13 @@ An opening block is the first statement of a
 handled sequence of statements;
 @item
 A closing block is the last statement of the same handled sequence of
-statements, except for possible @b{exit}, @b{return}, and @b{null}
+statements, except for possible @strong{exit}, @strong{return}, and @strong{null}
 statements following it.
 @item
 The opening and closing blocks match.
 @item
-Any ``breaking'' statement (@code{@b{exit}}, @code{@b{return}} or
-@code{@b{goto}} statements) that transfers control out of the handled
+Any ``breaking'' statement (@code{@strong{exit}}, @code{@strong{return}} or
+@code{@strong{goto}} statements) that transfers control out of the handled
 sequence of statements is preceded by a closing block.
 @item
 There is no other call to either operation in the statements of the
@@ -10787,69 +10788,69 @@ sequence of statements.
 Typically, the ``safe'' pattern corresponds to the following structures:
 @example
 -- Abstract state machine
-@b{begin}
+@strong{begin}
    P;
    -- Do something
-   @b{if} Found @b{then}
+   @strong{if} Found @strong{then}
       V;
-      @b{return}
-   @b{end} @b{if}
+      @strong{return}
+   @strong{end} @strong{if}
    V;
-@b{exception}
-   @b{when} @b{others} =>
+@strong{exception}
+   @strong{when} @strong{others} =>
       V;
       -- handle exception
-@b{end};
+@strong{end};
 
 -- Object abstract data type
-@b{declare}
+@strong{declare}
    My_Lock : Lock_Type;
-@b{begin}
+@strong{begin}
    P (My_Lock);
    -- Do something
    V (My_Lock);
-@b{exception}
-   @b{when} @b{others} =>
+@strong{exception}
+   @strong{when} @strong{others} =>
       V (My_Lock);
       -- handle exception
-@b{end};
+@strong{end};
 
 -- Reference abstract data type
-@b{declare}
-   Lock_Ptr : @b{constant} Lock_Access := Get_Lock;
-@b{begin}
+@strong{declare}
+   Lock_Ptr : @strong{constant} Lock_Access := Get_Lock;
+@strong{begin}
    P (Lock_Ptr);
    -- Do something
    V (Lock_Ptr);
-@b{exception}
-   @b{when} @b{others} =>
+@strong{exception}
+   @strong{when} @strong{others} =>
       V (Lock_Ptr);
       -- handle exception
-@b{end};
+@strong{end};
 
 -- Conditional blocks
-@b{declare}
-   Lockable : @b{constant} Boolean := ...;
-   Lock1    : @b{constant} Boolean := ...;
-@b{begin}
-   @b{if} Lockable @b{then}
-      @b{if} Lock1 @b{then}
+@strong{declare}
+   Lockable : @strong{constant} Boolean := ...;
+   Lock1    : @strong{constant} Boolean := ...;
+@strong{begin}
+   @strong{if} Lockable @strong{then}
+      @strong{if} Lock1 @strong{then}
          Lock (V1);
-      @b{else}
+      @strong{else}
          Lock (V2);
-      @b{end} @b{if};
-   @b{end} @b{if};
+      @strong{end} @strong{if};
+   @strong{end} @strong{if};
    -- Do something
-   @b{if} Lockable @b{then}
-      @b{if} Lock1 @b{then}
+   @strong{if} Lockable @strong{then}
+      @strong{if} Lock1 @strong{then}
          Unlock (V1);
-         @b{return};
-      @b{else}
+         @strong{return};
+      @strong{else}
          Unlock (V2);
-         @b{exit};
-      @b{end} @b{if};
-   @b{end} @b{if};
-@b{end};
+         @strong{exit};
+      @strong{end} @strong{if};
+   @strong{end} @strong{if};
+@strong{end};
 @end example
 
 Ex:
@@ -10859,11 +10860,11 @@ check unsafe_paired_calls (Sema.P, Sema.V, Sema.Lock_Access);
 
 @subsection Variable
 The rule provides a variable to control whether opening and closing
-blocks can contain @b{if} statements, or just calls to the procedures.
+blocks can contain @strong{if} statements, or just calls to the procedures.
 
 @need 800
 @multitable @columnfractions .25 .20 .55
-@item @b{Variable} @tab @b{Values} @tab @b{Effect}
+@item @strong{Variable} @tab @strong{Values} @tab @strong{Effect}
 @item Conditionals_Allowed
 @tab off
 @tab Only direct calls to the indicated procedures are allowed as opening
@@ -10943,7 +10944,7 @@ There are cases where a size clause is given for a type, but
 AdaControl is unable to evaluate it.  This happens especially if the
 size clause refers to a size attribute of a predefined type, like:
 @example
-@b{for} T'Size @b{use} Integer'size;
+@strong{for} T'Size @strong{use} Integer'size;
 @end example
 
 This can lead to false positives (i.e. detection of instantiations of
@@ -10999,7 +11000,7 @@ private part, or in any part, respectively. ``[not] from_task_guard''
 restrict entities being checked to those that appear (or not) in the
 expression of a guard in a selective accept statement; moreover, usage
 of the entity in the guard itself and in the corresponding accept statement is
-@i{not} taken into account (i.e. only ``external'' usage is reported).
+@emph{not} taken into account (i.e. only ``external'' usage is reported).
 
 ``accessed'' (available for subprograms only) restricts entities being
 checked to those that appear as the prefix of a @code{'Access} or
@@ -11094,11 +11095,11 @@ The following subrules generate fixes (unless they are
 accept statement is not taken into account):
 @itemize @bullet
 @item
-``variable'': A @code{@b{constant}} keyword is added to the
+``variable'': A @code{@strong{constant}} keyword is added to the
 declaration of variables that are initialized, read, but not written.
 @item
-``in_out_parameter'': The mode is changed to @code{@b{in}} for
-parameters that are not written. The mode is changed to @code{@b{out}}
+``in_out_parameter'': The mode is changed to @code{@strong{in}} for
+parameters that are not written. The mode is changed to @code{@strong{out}}
 for parameters that are not read. This does not apply to parameters
 that are neither read nor written, since they are useless and should
 be removed.
@@ -11167,7 +11168,7 @@ renamings. Such cases are detected by the rule
 ``uncheckable''. @xref{Uncheckable}.
 
 Due to a weakness of the ASIS standard, it is not possible to know the
-mode (@b{in}, @b{out}) of variables used as parameters of dispatching
+mode (@strong{in}, @strong{out}) of variables used as parameters of dispatching
 calls. Such variables are considered to be read and written at the
 point of the call, therefore possibly creating false positives (which
 is safer than false negatives). Use of such constructs is detected by
@@ -11175,7 +11176,7 @@ the rule ``uncheckable''.  @xref{Uncheckable}.
 
 @node Use_Clauses, With_Clauses, Usage, Rules reference
 @section Use_Clauses
-This rule controls usage of @code{@b{use}} clauses.
+This rule controls usage of @code{@strong{use}} clauses.
 
 @subsection Syntax
 @example
@@ -11187,39 +11188,39 @@ This rule controls usage of @code{@b{use}} clauses.
 @end example
 
 @subsection Action
-The rule controls every  @code{@b{use}},  @code{@b{use type}}, or
-@code{@b{use all type}} clause, @i{except} those that name one of the
+The rule controls every  @code{@strong{use}},  @code{@strong{use type}}, or
+@code{@strong{use all type}} clause, @emph{except} those that name one of the
 mentioned packages/types. It is therefore possible to allow
-@code{@b{use}}, @code{@b{use type}} or @code{@b{use all type}} clauses
+@code{@strong{use}}, @code{@strong{use type}} or @code{@strong{use all type}} clauses
 just for certain packages/types.
 
 The first parameter is a subrule keyword:
 @itemize
 @item
 ``package'': controls all
-package @code{@b{use}} clauses.
+package @code{@strong{use}} clauses.
 @item
-``global'': controls only @code{@b{use}} clauses that appear in
-context clauses (i.e. together with the @code{@b{with}} clauses)
+``global'': controls only @code{@strong{use}} clauses that appear in
+context clauses (i.e. together with the @code{@strong{with}} clauses)
 @item
-``local'' : controls only @code{@b{use}} clauses that appear as
+``local'' : controls only @code{@strong{use}} clauses that appear as
 declarations.
 @item
-``type'': controls all @code{@b{use type}} clauses
+``type'': controls all @code{@strong{use type}} clauses
 @item
-``type_global'': controls only @code{@b{use
+``type_global'': controls only @code{@strong{use
 type}} clauses that appear in context clauses (i.e. together with the
-@code{@b{with}} clauses)
+@code{@strong{with}} clauses)
 @item
-``type_local'': controls only @code{@b{use type}} clauses that appear as declarations.
+``type_local'': controls only @code{@strong{use type}} clauses that appear as declarations.
 @item
-``all_type'': controls all @code{@b{use all type}} clauses
+``all_type'': controls all @code{@strong{use all type}} clauses
 @item
-``all_type_global'': controls only @code{@b{use all type}} clauses
-that appear in context clauses (i.e. together with the @code{@b{with}}
+``all_type_global'': controls only @code{@strong{use all type}} clauses
+that appear in context clauses (i.e. together with the @code{@strong{with}}
 clauses)
 @item
-``all_type_local'': controls only @code{@b{use all type}} clauses that appear as declarations.
+``all_type_local'': controls only @code{@strong{use all type}} clauses that appear as declarations.
 @end itemize
 Without parameter, the rule defaults to ``package''.
 
@@ -11249,7 +11250,7 @@ one element in the clause, the clause as a whole is removed.
 
 @node With_Clauses,  , Use_Clauses, Rules reference
 @section With_Clauses
-This rule controls @code{@b{with}} clauses that should be removed or
+This rule controls @code{@strong{with}} clauses that should be removed or
 moved to a better place.
 
 @subsection Syntax
@@ -11263,46 +11264,46 @@ moved to a better place.
 The parameters are subrule keywords:
 @itemize
 @item
-@code{multiple_names} controls any @code{@b{with}} clause that
+@code{multiple_names} controls any @code{@strong{with}} clause that
 mentions more than one unit name.
 @item
 @code{reduceable} reports:
 @itemize @bullet
 @item
-Redundant @code{@b{with}} clauses, i.e. clauses given more than once
+Redundant @code{@strong{with}} clauses, i.e. clauses given more than once
 for the same unit. This includes the case where the same
-@code{@b{with}} clause is given in a specification and the
+@code{@strong{with}} clause is given in a specification and the
 corresponding body, and the case of renamings of a same unit
 (i.e. @code{Text_IO} and @code{Ada.Text_IO}). Note that giving a
-@code{@b{with}} clause in a unit, and repeating it in a child unit (or
-subunit) is @i{not} considered redundant. This also includes the case
-of a @code{@b{with}} clause for an ancestor of the current unit.
+@code{@strong{with}} clause in a unit, and repeating it in a child unit (or
+subunit) is @emph{not} considered redundant. This also includes the case
+of a @code{@strong{with}} clause for an ancestor of the current unit.
 @item
-Unused @code{@b{with}} clauses, i.e. when nothing from the withed unit
+Unused @code{@strong{with}} clauses, i.e. when nothing from the withed unit
 is referenced in the corresponding unit. The rule signals when a withed
 unit is not used in a unit, but used in one or more of its subunits. If
-an unused @code{@b{with}} clause is given on a package specification, the
+an unused @code{@strong{with}} clause is given on a package specification, the
 message reminds that it migh be useful for child units.
 @item
-Moveable @code{@b{with}} clauses, i.e. when the withed unit is not
+Moveable @code{@strong{with}} clauses, i.e. when the withed unit is not
 used in the specification, but only in the body, and should be moved
 to the body, or when the withed unit is only used in the private part,
-and could be replaced by a @code{@b{private}} @code{@b{with}}.
+and could be replaced by a @code{@strong{private}} @code{@strong{with}}.
 @end itemize
 @item
 @code{inherited} controls child units and subunits that reference a
 unit which is not directly withed, i.e. when withed only from a parent
-(or enclosing) unit. Although Ada rules imply that a @code{@b{with}}
+(or enclosing) unit. Although Ada rules imply that a @code{@strong{with}}
 clause carries on to child units and subunits, it can be considered
 better practice to ensure that every compilation unit withes directly
 the units it needs.
 @item
-@code{limited} controls any @code{@b{limited}} @code{@b{with}} clause.
+@code{limited} controls any @code{@strong{limited}} @code{@strong{with}} clause.
 @item
-@code{private} controls any @code{@b{private}} @code{@b{with}} clause.
+@code{private} controls any @code{@strong{private}} @code{@strong{with}} clause.
 @item
-@code{limited_private} controls any @code{@b{limited}}
-@code{@b{private}} @code{@b{with}} clause.
+@code{limited_private} controls any @code{@strong{limited}}
+@code{@strong{private}} @code{@strong{with}} clause.
 @end itemize
 
 Each of the subrules can be given at most once. If no keyword is
@@ -11316,21 +11317,21 @@ search with_clauses (inherited);
 
 @subsection Variables
 The rule provides a variable to control the handling of
-@code{@b{private}} @code{@b{with}}.
+@code{@strong{private}} @code{@strong{with}}.
 
 The rule provides a variable to control the handling of package names
-in in @code{@b{use}} clauses.
+in in @code{@strong{use}} clauses.
 
 @multitable @columnfractions .25 .20 .55
-@item @b{Variable} @tab @b{Values} @tab @b{Effect}
+@item @strong{Variable} @tab @strong{Values} @tab @strong{Effect}
 @item Check_Private_With
 @tab off
-@tab Do not issue a message when a @code{@b{with}} can be replaced with a
-@code{@b{private}} @code{@b{with}} (useful in Ada 95 mode).
+@tab Do not issue a message when a @code{@strong{with}} can be replaced with a
+@code{@strong{private}} @code{@strong{with}} (useful in Ada 95 mode).
 @item
 @tab on (default)
-@tab Issues a message when a @code{@b{with}} can be
-replaced with a @code{@b{private}} @code{@b{with}}.
+@tab Issues a message when a @code{@strong{with}} can be
+replaced with a @code{@strong{private}} @code{@strong{with}}.
 @item Ignore_Use_Clause
 @tab off
 @tab Names appearing in use clauses are treated like any other identifier
@@ -11345,39 +11346,39 @@ of the package.
 The following subrules generate fixes:
 @itemize @bullet
 @item
-``multiple_names'': The @code{@b{with}} clause is replaced by
-several @code{@b{with}} clauses, each with only one name.
+``multiple_names'': The @code{@strong{with}} clause is replaced by
+several @code{@strong{with}} clauses, each with only one name.
 @item
-``reduceable'' (various cases where the @code{@b{with}} is not
+``reduceable'' (various cases where the @code{@strong{with}} is not
 needed): The unnecessary package is removed from the clause. If all
 packages named by the clause are removed, the clause as a whole is
 removed.
 @item
-``reduceable'' (case of @code{@b{with}} that can be made private) : the keyword
-@code{@b{private}} is added to the declaration.
+``reduceable'' (case of @code{@strong{with}} that can be made private) : the keyword
+@code{@strong{private}} is added to the declaration.
 @item
-``inherited'': A @code{@b{with}} clause for the inherited package is added
+``inherited'': A @code{@strong{with}} clause for the inherited package is added
 just before the beginning of the unit.
 @end itemize
 
 @subsection Tips
-A @code{@b{with}} clause can safely be removed if it is unused, and no
+A @code{@strong{with}} clause can safely be removed if it is unused, and no
 child unit (or subunit) reports that the unit is inherited.
 
-Normally, use of a package name in a @code{@b{use}} clause is @i{not}
-considered a usage of the package; clearly, the @code{@b{with}} clause
+Normally, use of a package name in a @code{@strong{use}} clause is @emph{not}
+considered a usage of the package; clearly, the @code{@strong{with}} clause
 can (and should) be removed (or moved) if the only use of the package
-is in @code{@b{use}} clauses (removing or moving the @code{@b{use}}
+is in @code{@strong{use}} clauses (removing or moving the @code{@strong{use}}
 clauses by the same token). However, some programming rules may require
-placing @code{@b{use}} clauses in certain places, forcing the corresponding
-@code{@b{with}} clause. Set the variable @code{Ignore_Use_Clause} to
-@code{off} to make sure that a @code{@b{use}} clause does mark the
-@code{@b{with}} clause as necessary.
+placing @code{@strong{use}} clauses in certain places, forcing the corresponding
+@code{@strong{with}} clause. Set the variable @code{Ignore_Use_Clause} to
+@code{off} to make sure that a @code{@strong{use}} clause does mark the
+@code{@strong{with}} clause as necessary.
 
 @node Examples of using AdaControl for common programming rules, Specifying an Ada entity name, Rules reference, Top
 @chapter Examples of using AdaControl for common programming rules
 
-In most projects, there are @i{programming rules} that define the way
+In most projects, there are @emph{programming rules} that define the way
 a program should be written. AdaControl performs controls, i.e. it
 finds occurrences of certain kinds of constructs. In this chapter, we
 give examples of commonly found programming rules, and how the
@@ -11425,7 +11426,7 @@ Use file @code{no_io.aru}.
 
 @rule{Standard package XXX shall not be used}
 
-File @code{no_standard_unit.aru} controls usage of @i{all} standard
+File @code{no_standard_unit.aru} controls usage of @emph{all} standard
 packages. Comment out those that you do want to allow.
 
 @rule{Obsolescent features shall not be used}
@@ -11489,7 +11490,7 @@ Below are examples of rules that can be directly checked by AdaControl.
 check statements (goto);
 @end example
 
-@rule{Functions shall not have @code{@b{out}} or @code{@b{in out}} parameters (Ada 2012)}
+@rule{Functions shall not have @code{@strong{out}} or @code{@strong{in out}} parameters (Ada 2012)}
 @example
 check parameter_declarations (out_parameters,    max 0, function);
 check parameter_declarations (in_out_parameters, max 0, function);
@@ -11748,7 +11749,7 @@ the element's name. A profile has the syntax:
      ["return" <type-name>] "@}"
 @end example
 
-You must specify the @i{type} name, even if the <entity>
+You must specify the @emph{type} name, even if the <entity>
 declaration uses a subtype of the type; this is because Ada uses types
 for overloading resolution, not subtypes. Anonymous access parameters
 are specified by putting @code{access} in front of the type name. An
@@ -11761,9 +11762,9 @@ package @code{Pack}, you must specify it as @code{Pack.T}. As a
 convenience, the @code{Standard.} is optional for predefined types, so
 you can write @code{Standard.Integer} as @code{Integer}. There is no
 ambiguity, since a type is always declared within some construct. Note
-that omitting @code{Standard} works only for @i{types} that are part
+that omitting @code{Standard} works only for @emph{types} that are part
 of the profile used to distinguish between overloaded Ada entities but
-that the @i{Ada entity name} must always contain Standard if it is a
+that the @emph{Ada entity name} must always contain Standard if it is a
 predefined element.
 
 Overloaded names can be also be used with the @code{all <simple_name>}
@@ -11775,16 +11776,16 @@ Note that if you use an overloaded name, all overloadable names that
 are part of the <entity>, including those of the profile, must
 use the overloaded syntax. For example, given the following program
 @example
-@b{procedure} P @b{is}
-   @b{procedure} Q (I : Integer) @b{is}
+@strong{procedure} P @strong{is}
+   @strong{procedure} Q (I : Integer) @strong{is}
       ...
-   @b{end} Q;
-   @b{procedure} Q (F : Float) @b{is}
+   @strong{end} Q;
+   @strong{procedure} Q (F : Float) @strong{is}
       ...
-   @b{end} Q;
-@b{begin}
+   @strong{end} Q;
+@strong{begin}
    ...
-@b{end} P;
+@strong{end} P;
 @end example
 
 If you want to distinguish between the two procedures @code{Q}, you
@@ -11803,10 +11804,10 @@ parameterless function. If you want to distinguish between overloaded
 enumeration literals, you can use overloaded names for them. For
 example, given:
 @example
-@b{package} Pack @b{is}
-   @b{type} T1 @b{is} (A, B);
-   @b{type} T2 @b{is} (B, C);
-@b{end} Pack;
+@strong{package} Pack @strong{is}
+   @strong{type} T1 @strong{is} (A, B);
+   @strong{type} T2 @strong{is} (B, C);
+@strong{end} Pack;
 @end example
 
 Ada entities names are:
@@ -11835,24 +11836,24 @@ provide its profile, since there is no possible ambiguity in that
 case. For example, given:
 
 @example
-@b{procedure} P (I : Integer) @b{is}
-   @b{type} T @b{is} @b{range} 1 .. 10;
-@b{begin}
+@strong{procedure} P (I : Integer) @strong{is}
+   @strong{type} T @strong{is} @strong{range} 1 .. 10;
+@strong{begin}
    ...
-@b{end} P;
+@strong{end} P;
 @end example
 
 You can designate the @code{'Image} attribute for type @code{T} as
 @code{P@{Standard.Integer@}.T'Image} (the profile of the @code{'Image}
 function is not given, as would be necessary for a normal function).
 
-To designate all occurrences of an attribute, use @code{@b{all}} in
+To designate all occurrences of an attribute, use @code{@strong{all}} in
 front of the attribute. To designate only occurrences of an attribute
 whose prefix is a (sub) type (but any type or subtype), give it as
 @code{type'Attr} (i.e. the keyword ``type'' is put in front of the
 quote).
 
-@code{@b{all}} may be used in place of an attribute name to mean ``any
+@code{@strong{all}} may be used in place of an attribute name to mean ``any
 attribute''. See examples below.
 
 @example
@@ -11874,16 +11875,16 @@ indirectly) within unnamed loops or block statements. Everything
 happens as if the unnamed construct was named
 @code{_anonymous_}. Therefore if you have the following program:
 @example
-@b{procedure} P @b{is}
-@b{begin}
-   @b{for} I @b{in} 1..10 @b{loop}
-      @b{declare}
+@strong{procedure} P @strong{is}
+@strong{begin}
+   @strong{for} I @strong{in} 1..10 @strong{loop}
+      @strong{declare}
          J : Integer;
-      @b{begin}
+      @strong{begin}
          ...
-      @b{end};
-   @b{end} @b{loop};
-@b{end} P;
+      @strong{end};
+   @strong{end} @strong{loop};
+@strong{end} P;
 @end example
 You can refer to @code{I} as @code{P._anonymous_.I}, and to @code{J}
 as @code{P._anonymous_._anonymous_.J}.
@@ -11891,13 +11892,13 @@ as @code{P._anonymous_._anonymous_.J}.
 Similarly, an extended return statement is considered ``named'' @code{return}.
  Therefore if you have the following program:
 @example
-@b{function} F @b{return} Integer @b{is}
+@strong{function} F @strong{return} Integer @strong{is}
    I : Integer;
-@b{begin}
-   @b{return} I : Integer @b{do}
+@strong{begin}
+   @strong{return} I : Integer @strong{do}
       ...
-   @b{end} @b{return};
-@b{end} F;
+   @strong{end} @strong{return};
+@strong{end} F;
 @end example
 You can refer to the @code{I} declared in @code{F} as @code{F.I}, and
 to the return object @code{I} as @code{F.return.I}.
@@ -11910,11 +11911,11 @@ by the name of the type. This is a small extension to Ada syntax, but
 it is the simplest and most natural way to deal with this case. For
 example, given:
 @example
-@b{procedure} P @b{is}
-   @b{type} T @b{is}
-      @b{record}
+@strong{procedure} P @strong{is}
+   @strong{type} T @strong{is}
+      @strong{record}
          Name : Integer;
-      @b{end} @b{record};
+      @strong{end} @strong{record};
    ...
 @end example
 
@@ -11925,8 +11926,8 @@ The Ada entity name is @code{P.T.Name}.
 Similarly, you can designate the formal of an access to subprogram
 type by prefixing it by the access type. For example, given:
 @example
-@b{procedure} P @b{is}
-   @b{type} T @b{is} @b{access} @b{procedure} (X : Integer);
+@strong{procedure} P @strong{is}
+   @strong{type} T @strong{is} @strong{access} @strong{procedure} (X : Integer);
    ...
 @end example
 
@@ -12307,7 +12308,7 @@ check actual_parameters (default_positional, proc, param);
 @section Migrating from 1.17r3
 @subsection Statements
 The subrules @code{dispatching_call} and @code{redispatching_call} do
-not control @i{function} calls anymore, since these are controlled (more
+not control @emph{function} calls anymore, since these are controlled (more
 appropriately) by subrules of the @code{expressions} rule. In short, change:
 @example
 check statements (dispatching_call, redispatching_call);
@@ -12321,10 +12322,10 @@ check expressions (dispatching_function_call,
 
 The subrule @code{raise_nonpublic} does not control any more the
 raising of exceptions declared in visible parts of packages other than
-the one that contains the @code{@b{raise}} statement; these are now
+the one that contains the @code{@strong{raise}} statement; these are now
 controlled by the subrule @code{raise_foreign}. It also now accepts
 (i.e. does not control) exceptions declared in the visible part of an
-ancestor of the package that contains @code{@b{raise}} statement.
+ancestor of the package that contains @code{@strong{raise}} statement.
 
 @subsection Use of command line options -r and -s
 Previous versions mentionned in the command line syntax that ``-r''
@@ -12408,10 +12409,10 @@ count object_declarations (min_integer_span, 8);
 
 @subsection Statements
 The subrule ``exit'' was documented as controlling all exit
-statements, but it did not report exits from @code{@b{for}} and
-@code{@b{while}} loops if ``exit_for_loop'' (respectively
+statements, but it did not report exits from @code{@strong{for}} and
+@code{@strong{while}} loops if ``exit_for_loop'' (respectively
 ``exit_while_loop'') was also specified. It now behaves as documented,
-i.e. it controls all @code{@b{exit}} statements.
+i.e. it controls all @code{@strong{exit}} statements.
 
 Note that if you want separate messages for each kind of loop, the new
 rule ``exit_plain_loop'' controls exit from plain loops.
@@ -12468,8 +12469,8 @@ check local_hiding (overloading);
 @end example
 
 @subsection Max_Nesting
-The value given is now the @i{nesting} level (consistent with the rule name),
-no more the maximum @i{depth}. This is more natural (Max_Nesting(1) means
+The value given is now the @emph{nesting} level (consistent with the rule name),
+no more the maximum @emph{depth}. This is more natural (Max_Nesting(1) means
 that the construct can be nested once), but it is one less than in previous
 versions. For example, change:
 @example
@@ -12648,7 +12649,7 @@ check Special_Comments (pattern, "TBSL");
 @end example
 
 @subsection Statements
-The ``raise'' subrule now reports all occurrences of the @code{@b{raise}}
+The ``raise'' subrule now reports all occurrences of the @code{@strong{raise}}
 statement, even if another control is applicable to the same statement.
 
 The ``reraise'' subrule now reports calls to
