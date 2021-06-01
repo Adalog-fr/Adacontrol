@@ -504,10 +504,18 @@ package body Rules.Expressions is
             declare
                Params : constant Asis.Association_List := Function_Call_Parameters (Call);
             begin
-               if Operator_Kind (Called) /= Not_An_Operator and Params'Length = 2 then -- Only binary operators
-                  for P : Asis.Association of Params loop
-                     Do_Mixed_Report (Call, Actual_Parameter (P));
-                  end loop;
+               if Operator_Kind (Called) /= Not_An_Operator then
+                  if Params'Length = 2 then -- Only binary operators...
+                     for P : Asis.Association of Params loop
+                        Do_Mixed_Report (Call, Actual_Parameter (P));
+                     end loop;
+                  elsif Operator_Kind (Called) = A_Unary_Minus_Operator
+                       and then Expression_Kind (Actual_Parameter (Params (1))) = A_Function_Call
+                       and then Operator_Kind (Prefix (Actual_Parameter (Params (1)))) = A_Mod_Operator
+                  then
+                     -- ... except for the case of -A mod B (which means -(A mod B), /= (-A) mod B)
+                     Do_Mixed_Report (Call, Actual_Parameter (Params (1)));
+                  end if;
                end if;
             end;
          end if;

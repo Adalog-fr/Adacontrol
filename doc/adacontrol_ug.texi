@@ -5685,6 +5685,14 @@ logical expressions to all other operators. Note that for the purpose
 of this subrule, membership tests (@code{@strong{in}}, @code{@strong{not in}})
 and short circuit forms (@code{@strong{and then}}, @code{@strong{or else}}) are
 considered operators.
+
+This subrule controls only @emph{binary} operators, except for one
+case: expressions of the form @code{-A mod B} are controlled, since
+this is equivalent to @code{-(A mod B)}, which is different from
+@code{(-A) mod B} as a casual reading would understand. Requiring
+parentheses for other cases of unary operator would not change the
+meaning and be bad for readability.
+
 @item
 @code{prefixed_operator} controls calls to operators that use prefixed
 notation (i.e. @code{"+"(A, B)}).

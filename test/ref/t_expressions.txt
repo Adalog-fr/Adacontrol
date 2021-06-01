@@ -419,26 +419,26 @@ t_expressions-test_mixed.adb:11:18: Insert
 !)
 t_expressions-test_mixed.adb:11:13: Insert
 !(
-t_expressions-test_mixed.adb:12:10: Error: Mixed: Unparenthesized mixed operators in expression
-t_expressions-test_mixed.adb:12:17: Error: Mixed: Unparenthesized mixed operators in expression
-t_expressions-test_mixed.adb:12:13: Error: Operators: use of expression "or"
-t_expressions-test_mixed.adb:12:13: Error: Boolean: use of expression "or_boolean"
-t_expressions-test_mixed.adb:12:19: Insert
+t_expressions-test_mixed.adb:12:11: Error: Mixed: Unparenthesized mixed operators in expression
+t_expressions-test_mixed.adb:12:20: Error: Mixed: Unparenthesized mixed operators in expression
+t_expressions-test_mixed.adb:12:15: Error: Operators: use of expression "or"
+t_expressions-test_mixed.adb:12:15: Error: Boolean: use of expression "or_boolean"
+t_expressions-test_mixed.adb:12:23: Insert
 !)
-t_expressions-test_mixed.adb:12:16: Insert
+t_expressions-test_mixed.adb:12:18: Insert
 !(
-t_expressions-test_mixed.adb:12:12: Insert
+t_expressions-test_mixed.adb:12:14: Insert
 !)
 t_expressions-test_mixed.adb:12:9: Insert
 !(
-t_expressions-test_mixed.adb:13:13: Error: Boolean: use of expression "and_then"
-t_expressions-test_mixed.adb:13:10: Error: Mixed: Unparenthesized mixed operators in expression
-t_expressions-test_mixed.adb:13:23: Error: Mixed: Unparenthesized mixed operators in expression
-t_expressions-test_mixed.adb:13:25: Insert
+t_expressions-test_mixed.adb:13:15: Error: Boolean: use of expression "and_then"
+t_expressions-test_mixed.adb:13:11: Error: Mixed: Unparenthesized mixed operators in expression
+t_expressions-test_mixed.adb:13:26: Error: Mixed: Unparenthesized mixed operators in expression
+t_expressions-test_mixed.adb:13:29: Insert
 !)
-t_expressions-test_mixed.adb:13:22: Insert
+t_expressions-test_mixed.adb:13:24: Insert
 !(
-t_expressions-test_mixed.adb:13:12: Insert
+t_expressions-test_mixed.adb:13:14: Insert
 !)
 t_expressions-test_mixed.adb:13:9: Insert
 !(
@@ -446,7 +446,7 @@ t_expressions-test_mixed.adb:14:14: Error: Mixed: Unparenthesized mixed operator
 t_expressions-test_mixed.adb:14:11: Error: Operators: use of expression "or"
 t_expressions-test_mixed.adb:14:11: Error: Boolean: use of expression "or_boolean"
 t_expressions-test_mixed.adb:14:16: Error: In_operators: use of expression "in"
-t_expressions-test_mixed.adb:14:24: Insert
+t_expressions-test_mixed.adb:14:26: Insert
 !)
 t_expressions-test_mixed.adb:14:14: Insert
 !(
@@ -454,9 +454,27 @@ t_expressions-test_mixed.adb:15:21: Error: Boolean: use of expression "or_else"
 t_expressions-test_mixed.adb:15:29: Error: Mixed: Unparenthesized mixed operators in expression
 t_expressions-test_mixed.adb:15:11: Error: Boolean: use of expression "or_else"
 t_expressions-test_mixed.adb:15:31: Error: In_operators: use of expression "not_in"
-t_expressions-test_mixed.adb:15:43: Insert
+t_expressions-test_mixed.adb:15:45: Insert
 !)
 t_expressions-test_mixed.adb:15:29: Insert
+!(
+t_expressions-test_mixed.adb:18:12: Error: Mixed: Unparenthesized mixed operators in expression
+t_expressions-test_mixed.adb:18:17: Insert
+!)
+t_expressions-test_mixed.adb:18:10: Insert
+!(
+t_expressions-test_mixed.adb:19:15: Error: Mixed: Unparenthesized mixed operators in expression
+t_expressions-test_mixed.adb:19:20: Insert
+!)
+t_expressions-test_mixed.adb:19:13: Insert
+!(
+t_expressions-test_mixed.adb:20:9: Error: Mixed: Unparenthesized mixed operators in expression
+t_expressions-test_mixed.adb:20:12: Error: Mixed: Unparenthesized mixed operators in expression
+t_expressions-test_mixed.adb:20:10: Insert
+!(
+t_expressions-test_mixed.adb:20:17: Insert
+!))
+t_expressions-test_mixed.adb:20:9: Insert
 !(
 t_expressions-test_others.adb:17:9: Found: Aggregate: use of expression "array_aggregate"
 t_expressions-test_others.adb:17:15: Error: Others: use of expression "array_others"
