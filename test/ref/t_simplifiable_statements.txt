@@ -44,6 +44,14 @@ t_simplifiable_statements-test_dead.adb:142:4: Error: SIMPLIFIABLE_STATEMENTS: c
 t_simplifiable_statements-test_dead.adb:142:4: Delete:143:11
 t_simplifiable_statements-test_dead.adb:144:4: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_dead.adb:140:10
 t_simplifiable_statements-test_dead.adb:144:4: Delete:145:11
+t_simplifiable_statements-test_dead.adb:166:7: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_dead.adb:164:10
+t_simplifiable_statements-test_dead.adb:166:7: Delete:167:14
+t_simplifiable_statements-test_dead.adb:172:7: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_dead.adb:170:10
+t_simplifiable_statements-test_dead.adb:172:7: Delete:173:14
+t_simplifiable_statements-test_dead.adb:178:7: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_dead.adb:176:10
+t_simplifiable_statements-test_dead.adb:178:7: Delete:179:14
+t_simplifiable_statements-test_dead.adb:184:7: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_dead.adb:182:10
+t_simplifiable_statements-test_dead.adb:184:7: Delete:185:14
 t_simplifiable_statements-test_for_for_slice.adb:9:4: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
 t_simplifiable_statements-test_for_for_slice.adb:14:4: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
 t_simplifiable_statements-test_for_for_slice.adb:19:4: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
@@ -241,6 +249,14 @@ t_simplifiable_statements-test_dead.adb:142:4: Error: SIMPLIFIABLE_STATEMENTS: c
 t_simplifiable_statements-test_dead.adb:142:4: Delete:143:11
 t_simplifiable_statements-test_dead.adb:144:4: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_dead.adb:140:10
 t_simplifiable_statements-test_dead.adb:144:4: Delete:145:11
+t_simplifiable_statements-test_dead.adb:166:7: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_dead.adb:164:10
+t_simplifiable_statements-test_dead.adb:166:7: Delete:167:14
+t_simplifiable_statements-test_dead.adb:172:7: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_dead.adb:170:10
+t_simplifiable_statements-test_dead.adb:172:7: Delete:173:14
+t_simplifiable_statements-test_dead.adb:178:7: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_dead.adb:176:10
+t_simplifiable_statements-test_dead.adb:178:7: Delete:179:14
+t_simplifiable_statements-test_dead.adb:184:7: Error: SIMPLIFIABLE_STATEMENTS: condition is equivalent to the one at t_simplifiable_statements-test_dead.adb:182:10
+t_simplifiable_statements-test_dead.adb:184:7: Delete:185:14
 t_simplifiable_statements-test_for_for_slice.adb:9:4: Error: SIMPLIFIABLE_STATEMENTS: "for ... in" loop can be changed to "for ... of" loop
 t_simplifiable_statements-test_for_for_slice.adb:9:4: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
 t_simplifiable_statements-test_for_for_slice.adb:14:4: Error: SIMPLIFIABLE_STATEMENTS: For loop can be replaced by array, array slice, or aggregate assignments
