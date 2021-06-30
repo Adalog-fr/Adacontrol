@@ -382,9 +382,9 @@ Stay with GnatCE 2019, or keep a GnatCE 2019 installed together with
 another version. In the latter caser, it is better to @emph{not} put
 the corresponding ``bin'' directory in the path (to avoid confusion
 with the other Gnat installation), but put it into the environment
-variable @code{ASISGCC} (see above). Note that AdaControl may fail
-occasionnaly, due to ASIS bugs that have been fixed in more recent
-versions of ASIS.
+variable @code{ASISGCC} as @code{<install-directory>/bin/gcc}. Note
+that AdaControl may fail occasionnaly, due to ASIS bugs that have been
+fixed in more recent versions of ASIS.
 @item
 Find a Pro-user friend who provides you with a copy of ASISTools. This
 is free software, after all.
