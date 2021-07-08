@@ -104,7 +104,7 @@ begin
    
    end if;
 
-   if I + 2 > J + 3 then                          -- (3)
+   if I + 2 > Integer'(J) + 3 then                -- (3)
       null;
    
    
@@ -121,5 +121,48 @@ begin
    
    
    end if;
+
+   declare -- case of aggregates
+      type Rec1 is tagged
+         record
+            I, J : Integer;
+         end record;
+      V1 : Rec1;
+
+      type Rec2 is new Rec1 with
+         record
+            K : Integer;
+         end record;
+      V2 : Rec2;
+
+      type Arr1 is array (1 .. 5) of Integer;
+      A1 : Arr1;
+   begin
+      if V1 = (0, 1) then                         --  (6)
+         null;
+      
+      end if;
+
+      if V2 = (J => 1, I => 0, K=> 2) then        --  (7)
+         null;
+      
+      end if;
+
+      if A1 = (1, 2, 3, 4, 5) then                                      --  (8)
+         null;
+      
+      end if;
+
+      if A1 = Arr1'(1, 2, 3, others => 0) then                          --  (9)
+         null;
+      
+      end if;
+
+      if A1 = Arr1'(1, 2, 3, 4, others => 0) then
+         null;
+      elsif A1 = Arr1'(1, 2, 3, 4, 0) then                              --  OK (others vs. value)
+         null;
+      end if;
+   end;
 
 end Test_Dead;

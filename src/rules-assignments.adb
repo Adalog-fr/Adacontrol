@@ -576,6 +576,9 @@ package body Rules.Assignments is
                -- Certainly not replaceable by target name, but traverse the qualified expression
                Target_Traverse (Allocator_Qualified_Expression (Sub_Expr), Control, Target_Var);
                Control := Abandon_Children;
+            when A_Type_Conversion | A_Qualified_Expression =>
+               Target_Traverse (Converted_Or_Qualified_Expression (Sub_Expr), Control, Target_Var);
+               Control := Abandon_Children;
             when Not_An_Expression =>
                -- F.e. a definition/a_range from an array aggregate
                null;
@@ -607,7 +610,7 @@ package body Rules.Assignments is
       end Target_Pre;
 
       Control : Traverse_Control := Continue;
-      LHS_Var : Asis.Expression  := LHS;
+      LHS_Var : Asis.Expression  := LHS;   -- Because traverse requires a variable (in out parameter)
    begin  -- Process_Target_Name
       Target_Traverse (RHS, Control, LHS_Var);
    end Process_Target_Name;

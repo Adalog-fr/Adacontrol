@@ -18,8 +18,8 @@ procedure Test_Assignment is
    P2  : Ptr2;          -- Assignment (no initialization)
    subtype Ptr3 is not null Ptr1;
    P3  : Ptr3 := new Integer;
-   type Ptr4 is new not null Ptr1;
-   P4  : Ptr4;          -- Assignment (no initialization)
+   --  type Ptr4 is new not null Ptr1;                        -- This test commented out because of infinite loop with
+   --  P4  : Ptr4;          -- Assignment (no initialization) -- Gnat < Pro 220w
    P5  : not null Ptr1; -- Assignment (no initialization)
 
 begin
@@ -43,6 +43,6 @@ begin
    P1 := null;
    P3 := null;          -- Assignment
    P3 := P1;            -- Assignment
-   P4 := Ptr4 (P1);     -- Assignment
+   --  P4 := Ptr4 (P1);     -- Assignment
 
 end Test_Assignment;
