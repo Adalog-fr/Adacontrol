@@ -62,8 +62,8 @@ package body Framework.Reports is
    Std_Message_Format_Headers : constant array (Output_Format) of Unbounded_Wide_String :=
      (Source => To_Unbounded_Wide_String (""),
       Gnat   => To_Unbounded_Wide_String (""),
-      CSV    => To_Unbounded_Wide_String ("""file"",""line"",""column"",""key"",""label"",""rule"",""message"),
-      CSVX   => To_Unbounded_Wide_String ("""file"";""line"";""column"";""key"";""label"";""rule"";""message"),
+      CSV    => To_Unbounded_Wide_String ("""file"",""line"",""column"",""key"",""label"",""rule"",""message"""),
+      CSVX   => To_Unbounded_Wide_String ("""file"";""line"";""column"";""key"";""label"";""rule"";""message"""),
       None   => To_Unbounded_Wide_String (""));
 
    Std_Message_Formats : constant array (Output_Format) of Unbounded_Wide_String :=
