@@ -6363,10 +6363,9 @@ already an instantiation with the same value for this parameter
 (i.e. it matches the second time it is encountered).
 @end enumerate
 
-Formal @code{@strong{in}} parameters cannot be matched, since the actual
-can be any expression and it is not clear how to specify it in the
-rule; therefore, the rule should normally specify a box (@code{<>}) at
-the place of such parameters.
+Formal @code{@strong{in}} parameters cannot be given as <entity>, since the
+actual can be any expression; therefore, the rule should specify a box
+(@code{<>}) or equal (@code{=}) at the place of such parameters.
 
 Ex:
 @example
@@ -6421,29 +6420,13 @@ check instantiations (ada.unchecked_deallocation (standard.integer));
 will find instantiations that use either @code{Integer},
 @code{Positive}, or @code{Natural}.
 
-If an equal sign (@code{=}) is provided for a formal @code{@strong{in}}
-parameter, it is @emph{not} part of the comparison of existing
-instantiations (it behaves like a  box (@code{<>})), i.e.  given:
-@example
-generic
-   type T1 is private;
-   Val : String := "";
-package Gen;
-
-package body Gen is ...  end Gen;
-
-package Inst1 is new Gen (Float, "Some Message");
-package Inst2 is new Gen (Float, "Some Other Message");
-@end example
-and the rule:
-@example
-check instantiations (Gen, =, =);
-@end example
-Adacontrol will issue a message for Inst2 that it has already been
-instantiated with the same parameters, although the second
-(@code{@strong{in}}) parameter is different.
-
 @subsection Limitation
+Since the actual corresponding to a formal @code{@strong{in}}
+parameter can be any dynamic expression, if an equal sign (@code{=})
+is provided for such a parameter, only cases where it can be proven
+statically that the value is identical to a previous one will be
+reported.
+
 GNAT defines @code{Unchecked_Conversion} and
 @code{Unchecked_Deallocation} as separate entities, rather than
 renamings of @code{Ada.Unchecked_Conversion} and

@@ -18,7 +18,8 @@ Repeat2 : check instantiations (t_instantiations.G1, <>, =);
 Repeat3 : check instantiations (block t_instantiations.G1, =);
 Repeat4 : check instantiations (t_instantiations.g2, =,<>,=);
 Repeat5 : check instantiations (t_instantiations.g2, =,t_instantiations.proc1,=);
-Repeat6 : check instantiations (t_instantiations.G3, =, =);
+Repeat6 : check instantiations (t_instantiations.G3, =, <>);
 Repeat7 : check instantiations (t_instantiations.G4, =, <>, =);
+Repeat8 : check instantiations (t_instantiations.G5, =, =);
 
 GenGen : check instantiations (t_instantiations.gp.gpgp);

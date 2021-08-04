@@ -2,7 +2,7 @@
 --  Rules.Instantiations - Package body                             --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
---  of Air Navigation (EUROCONTROL) and Adalog 2004-2005.           --
+--  of Air Navigation (EUROCONTROL) and Adalog 2004-2021.           --
 --  The Ada Controller is  free software; you can  redistribute  it --
 --  and/or modify it under  terms of the GNU General Public License --
 --  as published by the Free Software Foundation; either version 2, --
@@ -49,11 +49,37 @@ pragma Elaborate (Framework.Language.Shared_Keys);
 package body Rules.Instantiations is
    use Asis, Framework, Framework.Control_Manager, Framework.Language.Shared_Keys;
 
+   -- Algorithm:
+   --
+   -- A multi-valued context is associated to each generic, containing the various specifications as
+   -- given in the rule.
+   -- For each instantiation, the parameter list is matched against the specifications
+   --
+   -- Case of "=":
+   -- The context contains a boolean discriminant to tell if the rule's parameter list contains at least one "="
+   -- If true, the context contains a list of parameters list already encountered:
+   --  - For an in parameter, the parameter is the expression
+   --  - For other parameters, it is a name, and the parameter is its full name image
+   -- When an instantiation is encountered, the same comparison as with the parameters of the rule can be used,
+   -- except for the special case of in parameters.
+
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
 
-   type Generic_Parameters is array (List_Index range <>) of Entity_Specification;
-   No_Parameters : constant Generic_Parameters (1 .. 0) := (others => Value ("Junk"));
+   type Parameter_Descr (Param_Mode : Mode_Kinds := An_In_Out_Mode) is
+      record
+         case Param_Mode is
+            when A_Default_In_Mode | An_In_Mode =>
+               Value : Asis.Expression;
+            when An_In_Out_Mode =>
+               Spec : Entity_Specification;
+            when others =>
+               null; -- impossible for generic parameters
+         end case;
+      end record;
+
+   type Generic_Parameters is array (List_Index range <>) of Parameter_Descr;
+   No_Parameters : constant Generic_Parameters (1 .. 0) := (others => (An_In_Out_Mode, Value ("Junk")));
 
    type Instance_Info (Nb_Param : List_Index) is
       record
@@ -87,14 +113,27 @@ package body Rules.Instantiations is
       -- Precondition: Values /= null
       use Ada.Strings.Wide_Unbounded;
 
-      Dummy : Unbounded_Wide_String := Null_Unbounded_Wide_String;
-   begin
-      Append (Dummy, "(");
-      Append (Dummy, Image (Values (Values'First)));
+      function Descr_Image (D : Parameter_Descr) return Wide_String is
+         use Thick_Queries, Utilities;
+      begin
+         case D.Param_Mode is
+            when An_In_Mode | A_Default_In_Mode =>
+               return Static_Expression_Value_Image (D.Value);
+            when An_In_Out_Mode =>
+               return Image (D.Spec);
+            when others =>
+               Failure ("Descr_Image: bad mode: " & Mode_Kinds'Wide_Image (D.Param_Mode));
+         end case;
+      end Descr_Image;
 
-      for V : Entity_Specification of Values (Values'First + 1 .. Values'Last) loop
+      Dummy : Unbounded_Wide_String := Null_Unbounded_Wide_String;
+   begin  -- Image
+      Append (Dummy, "(");
+      Append (Dummy, Descr_Image (Values (Values'First)));
+
+      for V : Parameter_Descr of Values (Values'First + 1 .. Values'Last) loop
          Append (Dummy, ", ");
-         Append (Dummy, Image (V));
+         Append (Dummy, Descr_Image (V));
       end loop;
 
       Append (Dummy, ")");
@@ -154,14 +193,14 @@ package body Rules.Instantiations is
                return (Basic_Rule_Context (Rest) with
                        Nb_Values     => Rest.Nb_Values + 1,
                        Has_Repeated  => True,
-                       Values        => Spec & Rest.Values,
+                       Values        => Parameter_Descr'(An_In_Out_Mode, Spec) & Rest.Values,
                        Places        => Rest.Places,
                        All_Instances => Empty_Queue);
             else
                return (Basic_Rule_Context (Rest) with
                        Nb_Values    => Rest.Nb_Values + 1,
                        Has_Repeated => False,
-                       Values       => Spec & Rest.Values,
+                       Values       => Parameter_Descr'(An_In_Out_Mode, Spec) & Rest.Values,
                        Places       => Rest.Places);
             end if;
          end;
@@ -219,8 +258,8 @@ package body Rules.Instantiations is
    -- Is_Corresponding --
    ----------------------
 
-   function Is_Corresponding (Specification : in Entity_Specification;
-                              Name          : in Asis.Expression) return Boolean
+   function Is_Corresponding (Descriptor : in Parameter_Descr;
+                              Name       : in Asis.Expression) return Boolean
    is
       use Asis.Elements, Asis.Expressions;
       use Utilities, Thick_Queries;
@@ -228,7 +267,11 @@ package body Rules.Instantiations is
       Declaration  : Asis.Declaration;
       Is_Attribute : Boolean := False;
    begin
-      if Entity_Specification_Kind (Specification) in Box .. Equal then
+      if Descriptor.Param_Mode in An_In_Mode | A_Default_In_Mode then
+         return Same_Value (Descriptor.Value, Name);
+      end if;
+
+      if Entity_Specification_Kind (Descriptor.Spec) in Equal | Box then
          return True;
       end if;
 
@@ -248,7 +291,7 @@ package body Rules.Instantiations is
             return False;
       end case;
 
-      if Matches (Specification, Name) then
+      if Matches (Descriptor.Spec, Name) then
          return True;
       end if;
 
@@ -265,7 +308,7 @@ package body Rules.Instantiations is
          when A_Type_Declaration =>
             null;
          when A_Subtype_Declaration =>
-            if Matches (Specification, First_Subtype_Name (Name)) then
+            if Matches (Descriptor.Spec, First_Subtype_Name (Name)) then
                return True;
             end if;
          when others =>
@@ -275,7 +318,7 @@ package body Rules.Instantiations is
       end case;
 
       -- Here we have a type or subtype
-      if Image (Type_Category (Declaration)) = To_Upper (Image (Specification)) then
+      if Image (Type_Category (Declaration)) = To_Upper (Image (Descriptor.Spec)) then
          return True;
       end if;
 
@@ -320,22 +363,25 @@ package body Rules.Instantiations is
       -- Make_Info --
       ---------------
 
-      function Make_Info (Origin : Generic_Parameters;
-                          Using  : Asis.Association_List)
-                          return Instance_Info
-      is
+      function Make_Info (Origin : Generic_Parameters; Using  : Asis.Association_List) return Instance_Info is
          use Asis.Elements, Asis.Expressions;
          use Framework.Locations, Thick_Queries;
          Result : Instance_Info := (List_Index'Min (Origin'Length, Using'Length), Get_Location (Instantiation), Origin);
+         P_Mode : Asis.Mode_Kinds;
       begin
          for I in Result.Values'Range loop
             -- We know that both Origin and Result have 'First = 1, so we can use the same index for both
             -- Replace any "=" by the actual parameter, except if the "=" corresponds to an "in" object
-            if Entity_Specification_Kind (Result.Values (I)) = Equal
-              and then Mode_Kind (Enclosing_Element (Formal_Parameter (Using (I))))
-                       not in A_Default_In_Mode .. An_In_Mode
-            then
-               Result.Values (I) := Value (Full_Name_Image (Actual_Parameter (Using (I)), With_Profile => True));
+            if Entity_Specification_Kind (Result.Values (I).Spec) = Equal then
+               P_Mode := Mode_Kind (Enclosing_Element (Formal_Parameter (Using (I))));
+               case P_Mode is
+                  when A_Default_In_Mode | An_In_Mode =>
+                     Result.Values (I) := (An_In_Mode, Actual_Parameter (Using(I)));
+                  when others =>
+                     Result.Values (I) := (An_In_Out_Mode,
+                                           Value (Full_Name_Image (Actual_Parameter (Using (I)),
+                                                  With_Profile => True)));
+               end case;
             end if;
          end loop;
 

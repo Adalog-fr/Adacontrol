@@ -51,7 +51,7 @@ procedure T_instantiations is
    function Cheater2 is new Ada.Unchecked_Conversion (Pack.Extend, Tagged_T); -- T9, local_instantiation
 
    type Derived is new Duration;
-   function Duration_To_Integer is new Ada.Unchecked_Conversion (Derived, Integer);  -- T10
+   function Duration_To_Integer is new Ada.Unchecked_Conversion (Derived, Integer);  -- T10, local_instantiation
 
    generic
       type T1 is private;
@@ -100,6 +100,20 @@ procedure T_instantiations is
    procedure G4 is begin null; end;
    procedure IG41 is new G4 (Integer, Integer, Integer);
    procedure IG42 is new G4 (Integer, Float,   Integer);   -- Repeat 7
+
+   generic
+      with procedure P;
+      X : Integer := 5;
+   procedure G5;
+   procedure G5 is null;
+   I : Integer := 1;
+   procedure I0 is new G5 (Proc);
+   procedure I1 is new G5 (Proc, 1);
+   procedure I2 is new G5 (Proc, 2);
+   procedure I3 is new G5 (Proc, 1);     -- Repeat 8
+   procedure I4 is new G5 (Proc, I);     -- Repeat 8
+   procedure I5 is new G5 (Proc, I + 1); -- Repeat 8
+   procedure I6 is new G5 (Proc, 5);     -- Repeat 8
 
    generic
    package GP is

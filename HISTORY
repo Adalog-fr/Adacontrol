@@ -7,6 +7,9 @@ Changes to existing rules:
 Expressions
    control expressions of the form -A mod B
 
+Instantiations
+   allow "=" for generic "in" parameters
+
 Known_Exceptions
    add zero_divide and assignment subrules
 
