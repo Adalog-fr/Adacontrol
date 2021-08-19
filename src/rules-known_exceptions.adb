@@ -35,6 +35,7 @@ with
 -- Adalog
 with
   A4G_Bugs,
+  Scope_Manager,
   Thick_Queries,
   Utilities;
 
@@ -613,7 +614,7 @@ package body Rules.Known_Exceptions is
 
       Current_Branch : Asis.Variant;
    begin  -- Process_Selected_Component
-      if Is_Expanded_Name (Expr) then   -- Certainly not a record component
+      if Scope_Manager.In_Context_Clauses or else Is_Expanded_Name (Expr) then   -- Certainly not a record component
          return;
       end if;
 
