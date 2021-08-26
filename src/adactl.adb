@@ -211,7 +211,7 @@ exception
       end if;
 
    when Framework.Interrupt.Interrupted =>
-      User_Message ("Interrupted");
+      User_Message ("Interrupted during (or after) " & Framework.Rules_Manager.Last_Rule);
       Ada.Command_Line.Set_Exit_Status (Failure);
       if Exit_Option.Value = On then
          raise;

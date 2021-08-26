@@ -22,7 +22,7 @@
 @end direntry
 
 @ifnottex
-@node Top
+@node Top, Introduction
 @top AdaControl User Guide
 @end ifnottex
 
@@ -4590,7 +4590,7 @@ all task type and task object declarations from a unit to which no
 @item
 @code{uninitialized_variable} controls variable declarations that
 do not include an initialization expression. Depending on the value of
-the rule variable ``limited_initialization'' (see below), variables of
+the rule variable ``Limited_Initialization'' (see below), variables of
 a limited type, or only variables of a task or protected type, are not
 reported, since initialization would not be allowed in that case.
 @item
@@ -5611,7 +5611,7 @@ that have been inherited by a derived type and not redefined.
 For all @code{*_function_call} subrules, a <category> (only one) can be
 specified.  In this case, only calls whose result type belongs to the
 <category> are controlled. In addition, the amount of information
-displayed can be selected with the rule variable ``called_info'' (see
+displayed can be selected with the rule variable ``Called_Info'' (see
 below).
 
 @item
@@ -6214,9 +6214,10 @@ automatically initialized, as it does for access types. Maybe later...
 @node Instantiations, Insufficient_Parameters, Improper_Initialization, Rules reference
 @section Instantiations
 This rule controls all instantiations of a generic, or only
-instantiations that are made with specific values of the
-parameters. Control can be restricted to instantiations in specified
-places.
+instantiations that are made with specific values of the parameters,
+including when the parameter has been already specified in a previous
+instantiation. Control can be restricted to instantiations in
+specified places.
 
 @subsection Syntax
 @example
@@ -9380,7 +9381,7 @@ changed into @code{@strong{for}} loops. More precisely, it controls
 the condition of the @code{@strong{while}} is a greater, greater or equal,
 less than, less than or equal, or not equal comparison involving only
 a simple variable on one side and an expression on the other side whose acceptable
-elements depend on the rule variable @code{While_For_Expression}. See below.
+elements depend on the rule variable ``While_For_Expression'', see below.
 @item
 the variable is incremented/decremented exactly once in the loop, in
 the form of being the target of an addition or subtraction of  +1 or
