@@ -1,23 +1,5 @@
 ==============
-== V1.22b14 ==
-==============
-
-Changes to existing rules:
---------------------------
-Expressions
-   control expressions of the form -A mod B
-
-Instantiations
-   allow "=" for generic "in" parameters
-
-Known_Exceptions
-   add zero_divide and assignment subrules
-
-Pragmas
-   add modifier "not"
-   
-==============
-== V1.22b13 ==
+== V1.22r15 ==
 ==============
 
 General:
@@ -39,9 +21,10 @@ Add data flow analysis, to extend cases that are
 Avoid cascading errors in case of Asis bugs;
    Shorten syntactic trace in case of bugs.
 
-New rule:
----------
+New rules:
+----------
 Known_Exceptions
+
 Renaming_Declarations
 
 Changes to existing rules:
@@ -55,18 +38,25 @@ Assignments:
 Comments
    Add subrule Unnamed_End_Record
    Unnamed_Begin: add "min" modifier
-   allow extra info after name for unnamed_begin and unnamed_end_record
+   Allow extra info after name for unnamed_begin and unnamed_end_record
 
 Declarations
    removed subrules related to renamings, now handled by renaming_declarations
 
 Expressions
    add subrules target_name, trivial_target_name
+   control expressions of the form -A mod B
+
+Instantiations
+   allow "=" for generic "in" parameters
 
 Non_Static
    Add a rule variable to select between "statically provable"
    and strictly RM static
 
+Pragmas
+   add modifier "not"
+   
 Simplifiable_Expressions:
    Add subrule logical_redundant
    
