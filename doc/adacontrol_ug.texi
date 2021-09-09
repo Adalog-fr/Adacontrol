@@ -6287,7 +6287,8 @@ that belongs to the indicated <category>. As usual, the whole syntax
 for entities is allowed for <entity>. @xref{Specifying an Ada entity
 name}. If the <entity> is a subtype, it is matched only by that
 subtype; if the <entity> is a type, it is matched by that type or any
-of its subtypes.
+of its subtypes, unless the rule variable ``Type_Matches_Subtype'' is
+set to ``Off'', see below.
 
 This subrule does not traverse derivations and privacy (the categories
 ``new'' and ``private'' can be given, to check instantiantions with a
@@ -6326,6 +6327,20 @@ check instantiations (ada.unchecked_conversion, =, =);
 check instantiations (ada.unchecked_conversion, private);
 @end example
 
+@subsection Variable
+The rule provides a variable to choose whether a type name given as a parameter should
+match only itself or all of its subtypes.
+@need 800
+@multitable @columnfractions .25 .20 .55
+@item @strong{Variable} @tab @strong{Values} @tab @strong{Effect}
+@item Type_Matches_Subtype
+@tab off
+@tab A type names matches only itself.
+@item
+@tab on (default)
+@tab A type name matches itself and all of its subtypes.
+@end multitable
+
 @subsection Tips
 The various forms of <formal_spec> make the rule quite powerful. For
 example:
@@ -6345,8 +6360,8 @@ check instantiations (Gen, =, Pack.Proc);
 check instantiations (Gen, =, all Proc);
 @end example
 
-Note that a generic actual wich is a subtype matches all types (and subtypes)
-above it. Therefore,
+Note that by default, a generic actual wich is a type matches all its
+subtypes. Therefore,
 @example
 check instantiations (ada.unchecked_deallocation (standard.natural));
 @end example
@@ -6355,7 +6370,8 @@ will find only instantiations that use @code{Natural}, while:
 check instantiations (ada.unchecked_deallocation (standard.integer));
 @end example
 will find instantiations that use either @code{Integer},
-@code{Positive}, or @code{Natural}.
+@code{Positive}, or @code{Natural}. If this is not desired, set the
+``Type_Matches_Subtype'' rule variable to ``Off''.
 
 @subsection Limitation
 Since the actual corresponding to a formal @code{@strong{in}}

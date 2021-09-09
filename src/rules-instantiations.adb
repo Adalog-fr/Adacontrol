@@ -43,11 +43,11 @@ with
 -- Adactl
 with
   Framework.Control_Manager.Generic_Context_Iterator,
-  Framework.Language.Shared_Keys;
+  Framework.Language.Shared_Keys, Framework.Variables.Shared_Types;
 pragma Elaborate (Framework.Language.Shared_Keys);
 
 package body Rules.Instantiations is
-   use Asis, Framework, Framework.Control_Manager, Framework.Language.Shared_Keys;
+   use Asis, Framework, Framework.Control_Manager, Framework.Language.Shared_Keys, Framework.Variables.Shared_Types;
 
    -- Algorithm:
    --
@@ -105,6 +105,9 @@ package body Rules.Instantiations is
 
    Expected_Categories : constant Categories_Set := Basic_Set + Cat_Any + Cat_New + Cat_Private;
 
+   -- Rule variable
+   Type_Matches_Subtype : aliased Switch_Type.Object := (Value => On);
+
    -----------
    -- Image --
    -----------
@@ -147,7 +150,7 @@ package body Rules.Instantiations is
    ----------
 
    procedure Help is
-      use Utilities;
+      use Framework.Variables, Utilities;
    begin
       User_Message ("Rule: " & Rule_Id);
       User_Message ("Control generic instantiations of specified units, either all of them");
@@ -158,6 +161,9 @@ package body Rules.Instantiations is
       User_Message ("Parameter(2..): <Entity name> | <category> | = (optional)");
       Help_On_Scope_Places (Header => "<location>:");
       Help_On_Categories (Expected => Expected_Categories);
+      User_Message ("Variable:");
+      Help_On_Variable (Rule_Id & ".Type_Matches_Subtype");
+
    end Help;
 
 
@@ -237,6 +243,7 @@ package body Rules.Instantiations is
          when Clear =>
             Rule_Used := False;
             Clear (Rule_Uses);
+            Type_Matches_Subtype := (Value => On);
          when Suspend =>
             Save_Used := Rule_Used;
             Rule_Used := False;
@@ -308,7 +315,9 @@ package body Rules.Instantiations is
          when A_Type_Declaration =>
             null;
          when A_Subtype_Declaration =>
-            if Matches (Descriptor.Spec, First_Subtype_Name (Name)) then
+            if Type_Matches_Subtype.Value = On
+              and then Matches (Descriptor.Spec, First_Subtype_Name (Name))
+            then
                return True;
             end if;
          when others =>
@@ -472,4 +481,7 @@ begin  -- Rules.Instantiations
                                      Add_Control_CB => Add_Control'Access,
                                      Command_CB     => Command'Access,
                                      Prepare_CB     => Prepare'Access);
+   Framework.Variables.Register (Type_Matches_Subtype'Access,
+                                 Variable_Name => Rule_Id & ".TYPE_MATCHES_SUBTYPE");
+
 end Rules.Instantiations;

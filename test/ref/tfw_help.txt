@@ -399,6 +399,8 @@ Parameter(2..): <Entity name> | <category> | = (optional)
 <category>: <>     | ()    | range   | mod    | delta     |
             digits | array | record  | tagged | interface |
             access | new   | private | task   | protected
+Variable:
+Instantiations.Type_Matches_Subtype: (Off, On) = On
 ----
 Rule: INSUFFICIENT_PARAMETERS
 Control calls where absence of named notation can lead to confusion

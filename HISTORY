@@ -49,6 +49,7 @@ Expressions
 
 Instantiations
    allow "=" for generic "in" parameters
+   add rule variable Type_Matches_Subtype
 
 Non_Static
    Add a rule variable to select between "statically provable"
