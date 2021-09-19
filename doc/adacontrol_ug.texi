@@ -252,6 +252,9 @@ There is a Wiki for questions about AdaControl at @*
 place to ask for information, make suggestions, or get help from the
 community.
 
+For general casual discussions, you can follow us on Twitter as
+@@adacontrol_prog (sorry, the name @@adacontrol was already used!)
+
 For problem reports, please create a ticket into our BT system at @*
 @url{https://sourceforge.net/p/adacontrol/tickets/}.
 
@@ -261,14 +264,11 @@ us continue and improve this nice project.
 @itemize @bullet
 @item
 Rate it, or even better post a review, on the
-@url{http://sourceforge.net/projects/adacontrol/reviews/,SourceForge
+@url{https://sourceforge.net/projects/adacontrol/reviews/,SourceForge
 review page}
 @item
 Click ``I use it'' from
-@url{http://www.adalog.fr/adacontrol2.htm,AdaControl's home page}.
-@item
-Rate it on @url{http://www.ohloh.net/p/11353?ref=sample, AdaControl's
-Ohloh page}
+@url{https://www.adacontrol.fr/,AdaControl's home page}.
 @item
 Get a support contract, or encourage your company, your friends, or
 anybody else to get a support contract!
@@ -276,13 +276,13 @@ anybody else to get a support contract!
 Provide good ideas, new rules, suggestions for improvements...
 @end itemize
 And remember: developing AdaControl is an expensive effort (according
-to Ohlo's COCOMO model, it is worth 22 man.year of development). We
-need support from our users to keep it running!
+to OpenHub's COCOMO model, it is worth 22 man.year, 1.18M$ cost of
+development). We need support from our users to keep it running!
 
 @node History, References, Support, Introduction
 @section History
 The development of AdaControl was initially funded by Eurocontrol
-(@url{http://www.eurocontrol.int}), which needed a tool to help in
+(@url{https://www.eurocontrol.int}), which needed a tool to help in
 verifying the million+ lines of code that does Air Traffic Flow
 Management over Europe. Because it was felt that such a tool would
 benefit the community at-large, and that further improvements made by
@@ -296,10 +296,11 @@ The requirements for AdaControl were written by Philippe Waroquiers
 AdaControl over the Eurocontrol software. The software was developped
 by Arnaud Lecanu and Jean-Pierre Rosen (Adalog). Rules, improvements,
 etc. were contributed by Pierre-Louis Escouflaire (Adalog), Alain
-Fontaine (ABF consulting), Richard Toy (Eurocontrol-Maastricht), and
-Isidro Ilasa Veloso (GMV). AdaGide support and improvement of icons
-were contributed by Gautier de Montmollin. Emmanuel Masker (Alstom),
-Yannick Duchene and Pascal Pignard contributed to GPS integration.
+Fontaine (ABF consulting), Richard Toy (Eurocontrol-Maastricht),
+Isidro Ilasa Veloso (GMV), and Quentin Dauprat (Adalog). AdaGide
+support and improvement of icons were contributed by Gautier de
+Montmollin. Emmanuel Masker (Alstom), Yannick Duchene and Pascal
+Pignard contributed to GPS integration.
 
 See file @code{HISTORY} for a description of the various versions of
 AdaControl, including enhancements of the current version over the
@@ -311,22 +312,34 @@ files. See @ref{Non upward-compatible changes} for details.
 
 @node  References,  , History, Introduction
 @section References
+A number of papers have been published about AdaControl or its usage
+for various verification tasks:
+
 @enumerate
 @item
-``On the benefits for industrials of sponsoring free software
-development'', @emph{Ada User Journal}, Volume 26, number 4, december 2005
+Jean-Pierre Rosen: ``On the benefits for industrials of sponsoring
+free software development'', @emph{Ada User Journal}, Volume 26,
+number 4, december 2005
 
-@url{http://www.adalog.fr/publicat/Free-software.pdf}
+@url{https://www.adalog.fr/publicat/Free-software.pdf}
 @item
-``A Comparison of Industrial Coding Rules'', @emph{Ada User Journal},
-Volume 29, number 4, december 2008
+Jean-Pierre Rosen: ``A Comparison of Industrial Coding Rules'',
+@emph{Ada User Journal}, Volume 29, number 4, december 2008
 
-@url{http://www.adalog.fr/publicat/coding-rules.pdf}
+@url{https://www.adalog.fr/publicat/coding-rules.pdf}
 @item
-``A Methodology for Avoiding Known Compiler Problems
-Using Static Analysis'', @emph{proceedings of the ACM SIGAda Annual International Conference (SIGAda 2010)}
+Jean-Pierre Rosen: ``A Methodology for Avoiding Known Compiler
+Problems Using Static Analysis'', @emph{proceedings of the ACM SIGAda
+Annual International Conference (SIGAda 2010)}
 
-@url{http://dl.acm.org/authorize?316395}
+@url{https://dl.acm.org/authorize?316395}
+@item
+Jacob Sparre Andersen: ``Introducing static analysis to a mature
+project'', @emph{Proceedings of the 22nd Ada-Europe International Conference
+on Reliable Software Technologies (Ada-Europe 2017)}
+
+@url{https://www.auto.tuwien.ac.at/~blieb/AE2017/presentations/Introducing_static_analysis_to_a_mature_project.pdf}
+
 @end enumerate
 
 @node Installation, Program Usage, Introduction, Top
@@ -366,18 +379,24 @@ speed. @xref{Customizing AdaControl}.
 @node Prerequisites, Building and installing AdaControl from source, Installation, Installation
 @section Prerequisites
 AdaControl is supported only in conjunction with the Gnat
-compiler. For versions of Gnat up to GnatPro 20.2 and GnatCE 2019, you
-just need the compiler installed.
+compiler. For versions of Gnat up to GnatPro 20.2 and GnatCE 2019, the
+compiler can be used as the tree-generator, therefore you just need
+the compiler installed.
 
 @subsection GnatPro users
 Starting from GnatPro 21.0, you'll need to install AdaCore's ASISTools
-package. This package is installed by default in Gnat's root
-directory. If you choose to install it in a different location, you
-need to set the environment variable @code{ASISGCC} to the path to the
-@code{asis-gcc} executable which is part of the ASISTools
-installation. It is normally of the form
+package. It can be obtained from AdaCore's ``Download'' page, click on
+the ``Download archives (all versions)'' link at the bottom of the page,
+then select the appropriate version of ``ASIS tools''.
+
+This package is installed by default in Gnat's root directory. If you
+choose to install it in a different location, you need to set the
+environment variable @code{ASISGCC} to the path to the @code{asis-gcc}
+executable which is part of the ASISTools installation. It is normally
+of the form
 @code{<install-directory>/asis-gnsa/libexec/bin/asis-gcc}. Alternatively,
-you can pass the ASIS option @code{--GCC=} to AdaControl; @xref{ASIS options}.
+you can pass the ASIS option @code{--GCC=} to AdaControl; @xref{ASIS
+options}.
 
 Get in touch with Adalog at
 @url{mailto::support@@adalog.fr,,support@@adalog.fr} if you experience
@@ -389,16 +408,16 @@ Gnat CE (although it is still available to Pro users). Gnat CE users
 have several options to benefit from AdaControl:
 @itemize @bullet
 @item
+Find a Pro-user friend who provides you with a copy of ASISTools. This
+is GPLed free software, and right to redistribute is granted by the
+terms of the GPL.
+@item
 Stay with GnatCE 2019, or keep a GnatCE 2019 installed together with
 another version. In the latter caser, it is better to @emph{not} put
-the corresponding ``bin'' directory in the path (to avoid confusion
-with the other Gnat installation), but put it into the environment
-variable @code{ASISGCC} as @code{<install-directory>/bin/gcc}. Note
-that AdaControl may fail occasionnaly, due to ASIS bugs that have been
-fixed in more recent versions of ASIS-for-Gnat.
-@item
-Find a Pro-user friend who provides you with a copy of ASISTools. This
-is free software, after all.
+the corresponding ``bin'' directory of GnatCE 2019 in the PATH
+variable (to avoid confusion with the other Gnat installation), but
+set the environment variable @code{ASISGCC} as
+@code{<GnatCE2019-directory>/bin/gcc}.
 @item
 Get in touch with Adalog at
 @url{mailto::support@@adalog.fr,,support@@adalog.fr}, and we'll be
@@ -438,9 +457,9 @@ line that says ``@code{with gnatcoll;}'' from the file
 @code{build.gpr}.
 
 @subsection Build and install with installer (Windows)
-Run the installer (@code{adactl_src-setup.exe}). This will
-automatically build and install AdaControl, no other installation is
-necessary.
+Make sure that ASIS is installed for your generator. Run the installer
+(@code{adactl_src-setup.exe}). This will automatically build and
+install AdaControl, no other installation is necessary.
 
 @anchor{Build and install with project file}
 @subsection Build and install with project file
@@ -11456,7 +11475,7 @@ while this command file controls the declaration of access types on tasks.
 
 Use file @code{nasa.aru}. This file is an example of how to convert
 guidelines (available from
-@url{http://fsw.gsfc.nasa.gov/gds/code_standards_ada.pdf}) into an
+@url{https://www.stephe-leake.org/ada/code_standards_ada.pdf}) into an
 AdaControl command file.
 
 @rule{Ada 83 unit names shall not be used (i.e. use @code{Ada.Text_IO}, not @code{Text_IO})}
@@ -11475,7 +11494,7 @@ AdaControl can provide measurements required by the SQALE quality
 measurement method. The corresponding file is @code{SQALE.aru}.
 
 For information about the SQALE method, please refer to J-P Rosen's paper at
-@url{http://www.adalog.fr/publicat/sqale.pdf}
+@url{https://www.adalog.fr/publicat/sqale.pdf}
 
 @node Automatically checkable rules, Rules that need manual inspection, command files provided with AdaControl, Examples of using AdaControl for common programming rules
 @section Automatically checkable rules
