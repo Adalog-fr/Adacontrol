@@ -1,4 +1,12 @@
 ==============
+== V1.22r16 ==
+==============
+
+General:
+--------
+Support modular types in static evaluator + mod and rem operators
+
+==============
 == V1.22r15 ==
 ==============
 

@@ -3,11 +3,14 @@ procedure Test_Assignment is
    type Int1 is range 0 .. 10;
    subtype Sub1 is Int1 range 5 .. Int1'Last - 1;
    subtype Sub2 is Sub1 with Static_Predicate => Sub2 /= 7;
+   type Mod1 is mod 2 ** 8;
+   subtype Sub3 is Mod1 range 1 .. 10;
 
    I1 : Int1;
    Is1 : Sub1;
    Is2 : Sub2;
    Is3 : Sub1 := 1;     -- Assignment
+   M   : Sub3;
 
    type Enum is (A, B, C);
    E : Enum range A .. B;
@@ -32,6 +35,9 @@ begin
    Is1 := 10;           -- Assignment
 
    Is2 := 0;            -- OK (predicate)
+
+   M := -1;             -- Assignment
+   M := 250 + 50;       -- Assignment
 
    E := B;
    E := Enum'Last;      -- Assignment
