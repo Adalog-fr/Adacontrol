@@ -4,6 +4,7 @@
 
 General:
 --------
+Bug fixes
 Support modular types in static evaluator + mod and rem operators
 
 ==============
