@@ -81,6 +81,9 @@ t_known_exceptions-test_discriminant.adb:259:16: Found: Discrim_Error: Access to
 t_known_exceptions-test_discriminant.adb:260:18: Found: Discrim_Error: Access to component F raises Constraint_Error, discriminant DRec1= 0
 t_known_exceptions-test_discriminant.adb:276:18: Error: Access_Error: Explicit dereference of D raises Constraint_Error (null pointer)
 t_known_exceptions-test_discriminant.adb:277:18: Error: Access_Error: Implicit dereference of D raises Constraint_Error (null pointer)
+t_known_exceptions-test_discriminant.adb:296:10: Error: Assignment: Assignment raises Constraint_Error, value 97 < 98
+t_known_exceptions-test_discriminant.adb:297:10: Error: Assignment: Assignment raises Constraint_Error, value 97 < 98
+t_known_exceptions-test_discriminant.adb:298:10: Error: Assignment: Assignment raises Constraint_Error, value 97 < 98
 t_known_exceptions-test_raise_expression.adb:7:44: Error: Exceptions: Raise_Expression executed unconditionally, use "and then" instead
 t_known_exceptions-test_raise_expression.adb:7:40: Replace:7:42
 !and then
@@ -103,4 +106,4 @@ t_known_exceptions-test_zero_divide.adb:26:14: Error: Zero_Divide: division by 0
 t_known_exceptions-test_zero_divide.adb:31:14: Error: Zero_Divide: division by 0 raises Constraint_Error
 
 Counts summary:
-All_Errors: 95
+All_Errors: 98

@@ -280,4 +280,26 @@ begin
    begin
       null;
    end;
+
+   -- Check access to discriminants from subprogram
+   declare
+      procedure P2 is
+         LocalV1 : constant Rec1 := V1;
+         LocalV2 : constant Rec1 := ('a', 0);
+         LocalV3 : Rec1 ('a') := V1;
+         LocalV4 : Rec1 := V1a;
+
+         C : Character range 'b' .. 'z';
+      begin
+         C := V1.D;          -- Unknown
+         C := LocalV1.D;    -- Unknown
+         C := LocalV2.D;    -- Constraint_Error
+         C := LocalV3.D;    -- Constraint_Error
+         C := LocalV4.D;    -- Constraint_Error
+         LocalV4 := (D => 'b', B => 0);
+         C := LocalV4.D;
+      end P2;
+   begin
+      null;
+   end;
 end Test_Discriminant;

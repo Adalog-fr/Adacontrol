@@ -685,6 +685,56 @@ package body Framework.Object_Tracker is
       end if;
    end Untrack_Variable;
 
+   function Var_Refers_To_Outer_Scope (Var : Asis.Element; Target_Decl : Asis.Declaration; From_Expansion : Boolean)
+                                          return Boolean
+   is
+   -- Check if the scope where Var appears is nested in a local subprogram or task in the scope of Target_Decl.
+   -- We don't know where this subprogram is called from (or the state of the task), therefore it is an
+   -- unknown value
+      use Asis.Elements;
+
+      Target_Scope : constant Asis.Declaration := Enclosing_Element (Enclosing_Program_Unit (Target_Decl));
+      Ref_Enclosing  : Asis.Element := Enclosing_Element (Var);
+   begin
+      while not Is_Nil (Ref_Enclosing) and then not Is_Equal (Ref_Enclosing, Target_Scope) loop
+         case Declaration_Kind (Ref_Enclosing) is
+            when A_Procedure_Body_Declaration
+               | A_Function_Body_Declaration
+               | An_Expression_Function_Declaration
+               | A_Task_Body_Declaration
+               =>
+               -- A variable accessed from a unit nested in the unit where the variable is declared
+
+               -- This is not applicable to expression functions when the evaluator expands a call to
+               --  the corresponding expression in place
+               if not From_Expansion
+                 or else Declaration_Kind (Ref_Enclosing) /= An_Expression_Function_Declaration
+               then
+                  if Declaration_Kind (Target_Scope) = A_Package_Declaration
+                    and then Is_Part_Of ((if Is_Part_Of_Instance (Target_Scope)
+                                         then Ultimate_Enclosing_Instantiation (Target_Scope)
+                                         else Target_Scope),
+                                         Inside => Ref_Enclosing)
+                  then
+                     -- This is a package nested in the subprogram, so it's OK
+                     exit;
+                  end if;
+                  return True;
+               end if;
+            when A_Package_Body_Declaration =>
+               -- The same goes for generic package bodies, since we don't know where they are instantiated
+               -- Non generic package bodies are OK, since they are elaborated in place
+               if Is_Generic_Unit (Ref_Enclosing) then
+                  return True;
+               end if;
+            when others =>
+               null;
+         end case;
+         Ref_Enclosing := Enclosing_Element (Ref_Enclosing);
+      end loop;
+      return False;
+   end Var_Refers_To_Outer_Scope;
+
    --------------------------------------------------------------------------------
    -- Exported elements
    --------------------------------------------------------------------------------
@@ -854,49 +904,9 @@ package body Framework.Object_Tracker is
       then
          -- Good_Var is a true variable. Check if Var (the reference to it) is nested in some procedure/function/generic
          -- local to the scope of the declaration of Good_Var
-         declare
-            Good_Var_Scope : constant Asis.Declaration := Enclosing_Element (Enclosing_Program_Unit (Good_Decl));
-            Ref_Enclosing  : Asis.Element := Enclosing_Element (Var);
-         begin
-            while not Is_Nil (Ref_Enclosing) and then not Is_Equal (Ref_Enclosing, Good_Var_Scope) loop
-               case Declaration_Kind (Ref_Enclosing) is
-                  when A_Procedure_Body_Declaration
-                     | A_Function_Body_Declaration
-                     | An_Expression_Function_Declaration
-                     | A_Task_Body_Declaration
-                     =>
-                  -- A variable accessed from a unit nested in the unit where the variable is declared
-                  -- We don't know where this subprogram is called from (or the state of the task), therefore it is an
-                  -- unknown value
-
-                  -- This is not applicable to expression functions when the evaluator expands a call to
-                  --  the corresponding expression in place
-                     if not From_Expansion
-                       or else Declaration_Kind (Ref_Enclosing) /= An_Expression_Function_Declaration
-                     then
-                        if Declaration_Kind (Good_Var_Scope) = A_Package_Declaration
-                          and then Is_Part_Of ((if Is_Part_Of_Instance (Good_Var_Scope)
-                                                  then Ultimate_Enclosing_Instantiation (Good_Var_Scope)
-                                                  else Good_Var_Scope),
-                                               Inside => Ref_Enclosing)
-                        then
-                           -- This is a package nested in the subprogram, so it's OK
-                           exit;
-                        end if;
-                        return Unknown_Value (Descriptor.Kind);
-                     end if;
-                  when A_Package_Body_Declaration =>
-                     -- The same goes for generic package bodies, since we don't know where they are instantiated
-                     -- Non generic package bodies are OK, since they are elaborated in place
-                     if Is_Generic_Unit (Ref_Enclosing) then
-                        return Unknown_Value (Descriptor.Kind);
-                     end if;
-                  when others =>
-                     null;
-               end case;
-               Ref_Enclosing := Enclosing_Element (Ref_Enclosing);
-            end loop;
-         end;
+         if Var_Refers_To_Outer_Scope (Var, Good_Decl, From_Expansion) then
+            return Unknown_Value (Descriptor.Kind);
+         end if;
       end if;
 
       -- If the variable is nested in an "intrinsically unknown" path, such as a loop, exception handler, etc.
@@ -1016,14 +1026,13 @@ package body Framework.Object_Tracker is
    --       are not allowed as LHS of assignments.
       use Asis.Declarations, Asis.Elements, Asis.Expressions, Asis.Statements;
       Good_Var             : Asis.Expression := Var;
+      Good_Var_Def         : Asis.Definition;
       Good_Expr            : Asis.Expression;
       Current_Unit         : Asis.Declaration;
       Good_Path            : Asis.Element := Path;
       Is_Discriminated_Var : Boolean;
 
       procedure Make_Discriminants_Unknown (Of_Var : Asis.Expression) is
-      -- make the discriminants unknown
-      -- TBSL: keep the discriminants if the variable is constrained
          use Discriminated_Descr_List;
          LHS_Queue : constant Queue := Discriminated_Object_Table.Fetch (Of_Var);
          LHS       : constant Discriminated_Variable_Descr := Fetch (First (LHS_Queue));
@@ -1040,7 +1049,6 @@ package body Framework.Object_Tracker is
       while Expression_Kind (Good_Var) = A_Type_Conversion loop
          Good_Var := Converted_Or_Qualified_Expression (Good_Var);
       end loop;
-
       if Expression_Kind (Good_Var) in An_Identifier | A_Selected_Component then
          Good_Var := Ultimate_Name (Good_Var);
          if Is_Nil (Good_Var)  -- Name includes a dereference or indexing
@@ -1089,32 +1097,58 @@ package body Framework.Object_Tracker is
          Good_Path := Enclosing_Element (Good_Path);
       end loop;
 
-      if Is_Discriminated_Var then
-         -- Simulate an assignment to every discriminant
-         case Expression_Kind (Expr) is
-            when An_Identifier | A_Selected_Component =>
-               Good_Expr := Ultimate_Name (Expr);
-               if not Is_Nil (Good_Expr) and then Discriminated_Object_Table.Is_Present (Good_Expr) then
-                  -- Variable_1 := Variable_2;
-                  declare
-                     use Discriminated_Descr_List;
-                     LHS_Queue : constant Queue := Discriminated_Object_Table.Fetch (Good_Var);
-                     RHS_Queue : constant Queue := Discriminated_Object_Table.Fetch (Good_Expr);
-                     LHS       : constant Discriminated_Variable_Descr := Fetch (First (LHS_Queue));
-                     RHS       : constant Discriminated_Variable_Descr := Fetch (First (RHS_Queue));
-                  begin
-                     for D in LHS.Discriminants'Range loop
-                        Update_Variable (Good_Path, Good_Var, LHS.Discriminants (D).Discrim_Name,
-                                         Min    => RHS.Discriminants (D).Value.Assigned_Min,
-                                         Max    => RHS.Discriminants (D).Value.Assigned_Max,
-                                         Target => Assigned);
+      if not Is_Discriminated_Var then
+         Update_Variable (Good_Path, Good_Var,
+                          Min    => Discrete_Static_Expression_Value (Expr, Minimum),
+                          Max    => Discrete_Static_Expression_Value (Expr, Maximum),
+                          Target => Assigned);
+         return;
+      end if;
 
-                     end loop;
-                  end;
-               else
-                  Make_Discriminants_Unknown (Good_Var);
-               end if;
-            when A_Record_Aggregate =>
+      -- Here, we have a discriminated variable
+      -- Simulate an assignment to every discriminant (if Expr allows to know the discriminants)
+      case Expression_Kind (Expr) is
+         when An_Identifier | A_Selected_Component =>
+            -- Variable_1 := Variable_2;
+
+            Good_Expr := Ultimate_Name (Expr);
+            if Is_Nil (Good_Expr) or else not Discriminated_Object_Table.Is_Present (Good_Expr) then
+               -- Dynamic or untracked Expr
+               Make_Discriminants_Unknown (Good_Var);
+               return;
+            end if;
+
+            -- Discriminants are unknown if var refers to an outer scope, except if it is constrained
+            -- It is constrained if its declaration contains a constraint, or if it is of a constrained subtype
+            -- Since we are dealing with discriminants, cannot be an anonymous type
+            if         not Is_Known_To_Be_Constrained (Good_Var)
+              and then not Is_Known_To_Be_Constrained (Good_Expr)
+              and then Var_Refers_To_Outer_Scope (Var,
+                                                  Corresponding_Name_Declaration (Good_Expr),
+                                                  From_Expansion => False)
+            then
+               -- an outer variable declared without constraint or of an unconstrained subtype => mutable
+               Make_Discriminants_Unknown (Good_Var);
+               return;
+            end if;
+
+            declare
+               use Discriminated_Descr_List;
+               LHS_Queue : constant Queue := Discriminated_Object_Table.Fetch (Good_Var);
+               RHS_Queue : constant Queue := Discriminated_Object_Table.Fetch (Good_Expr);
+               LHS       : constant Discriminated_Variable_Descr := Fetch (First (LHS_Queue));
+               RHS       : constant Discriminated_Variable_Descr := Fetch (First (RHS_Queue));
+            begin
+               for D in LHS.Discriminants'Range loop
+                  Update_Variable (Good_Path, Good_Var, LHS.Discriminants (D).Discrim_Name,
+                                   Min    => RHS.Discriminants (D).Value.Assigned_Min,
+                                   Max    => RHS.Discriminants (D).Value.Assigned_Max,
+                                   Target => Assigned);
+
+               end loop;
+            end;
+
+         when A_Record_Aggregate =>
                declare
                   use Discriminated_Descr_List;
                   LHS_Queue  : constant Queue                        := Discriminated_Object_Table.Fetch (Good_Var);
@@ -1132,17 +1166,12 @@ package body Framework.Object_Tracker is
                                                                                   Maximum),
                                       Target => Assigned);
                   end loop;
-               end;
-            when others =>
-               Make_Discriminants_Unknown (Good_Var);
-         end case;
+            end;
 
-      else   -- Not a discriminated variable
-         Update_Variable (Good_Path, Good_Var,
-                          Min    => Discrete_Static_Expression_Value (Expr, Minimum),
-                          Max    => Discrete_Static_Expression_Value (Expr, Maximum),
-                          Target => Assigned);
-      end if;
+         when others =>
+            Make_Discriminants_Unknown (Good_Var);
+      end case;
+
    end Process_Assignment;
 
 
@@ -1618,9 +1647,11 @@ package body Framework.Object_Tracker is
                Prepend (Descr_Queue, Var_Descr);
                Discriminated_Object_Table.Store (Var_Name, Descr_Queue);
 
-               -- Now, consider global initialization of the variable, handle like an assignment
+               -- Now, consider global initialization of the variable, handle like an assignment unless the
+               -- variable is constrained: if the constraint match, it changes nothing,and if they don't,
+               -- initialization will raise Constraint_Error, but the discriminants won't be changed
                Init_Expr := Initialization_Expression (Decl);
-               if not Is_Parameter and not Is_Nil (Init_Expr) then
+               if not Is_Parameter and not Is_Nil (Init_Expr) and Is_Nil (Object_Constraint) then
                   -- Don't consider initialization expression of formal parameters
                   Process_Assignment (Enclosing_Element (Decl), Var_Name, Init_Expr);
                end if;
