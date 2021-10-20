@@ -12,7 +12,15 @@ t_usage.adb:28:7: Error: Written_Private: (generic) T_Usage.Gen.Y4, private, var
 t_usage.adb:23:7: Found: Removable: (generic) T_Usage.Gen.Z, visible, constant, not read (can be removed)
 t_usage.adb:90:12: Found: USAGE: (normal) T_Usage.Gen_Gen, generic, instantiated
 t_usage.adb:88:7: Error: Written_Visible: (instance) T_Usage.Gen_Gen.P1.Y1, visible, variable, initialized, written, not read
+t_usage.adb:88:7: Error: Written_Visible: (instance) T_Usage.Gen_Gen.P1.Y2, visible, variable, not initialized, written, not read
+t_usage.adb:88:7: Found: Removable: (instance) T_Usage.Gen_Gen.P1.Y3, visible, variable, initialized, not written, not read
+t_usage.adb:88:7: Error: Written_Private: (instance) T_Usage.Gen_Gen.P1.Y4, private, variable, not initialized, written, not read
+t_usage.adb:88:7: Found: Removable: (instance) T_Usage.Gen_Gen.P1.Z, visible, constant, not read
+t_usage.adb:89:7: Found: Removable: (instance) T_Usage.Gen_Gen.P2.Y1, visible, variable, initialized, not written, not read
+t_usage.adb:89:7: Error: Written_Visible: (instance) T_Usage.Gen_Gen.P2.Y2, visible, variable, not initialized, written, not read
 t_usage.adb:89:7: Found: Constantable: (instance) T_Usage.Gen_Gen.P2.Y3, visible, variable, initialized, not written, read
+t_usage.adb:89:7: Error: Written_Private: (instance) T_Usage.Gen_Gen.P2.Y4, private, variable, not initialized, written, not read
+t_usage.adb:89:7: Found: Removable: (instance) T_Usage.Gen_Gen.P2.Z, visible, constant, not read
 t_usage.adb:6:14: Found: USAGE: (normal) T_Usage.Guards, procedure, not called, not accessed
 t_usage-guards.adb:3:14: Found: USAGE: (normal) T_Usage.Guards.P, procedure, not called, not accessed
 t_usage-guards.adb:11:7: Error: Guard4: (normal) T_Usage.Guards.P.Exc1, in task guard, exception, not raised, not handled
@@ -129,4 +137,4 @@ x_usage.ads:9:9: Error: type_used: (normal) X_Usage.TT2, visible, (sub)type, use
 x_usage.ads:10:12: Error: type_used: (normal) X_Usage.TT3, visible, (sub)type, used
 
 Counts summary:
-USAGE: 24
+USAGE: 28

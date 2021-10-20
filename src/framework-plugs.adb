@@ -465,6 +465,10 @@ package body Framework.Plugs is
                   Rules.Actual_Parameters.      Process_Call_Or_Instantiation (Element);
                   Rules.Side_Effect_Parameters. Process_Call_Or_Instantiation (Element);
                   Rules.Unnecessary_Use_Clause. Process_Instantiation         (Element);
+                  Rules.Usage.                  Process_Instantiation (Element);
+
+               when A_Formal_Package_Declaration_With_Box =>
+                  Rules.Usage.                  Process_Instantiation (Element);
 
                when A_Procedure_Instantiation =>
                   Rules.Actual_Parameters.      Process_Call_Or_Instantiation (Element);
@@ -472,15 +476,15 @@ package body Framework.Plugs is
                   Rules.Exception_Propagation.  Process_Instantiation         (Element);
                   Rules.Generic_Aliasing.       Process_Instantiation         (Element);
                   Rules.Instantiations.         Process_Instantiation         (Element);
-                  Rules.Parameter_Declarations. Process_Declaration           (Element);
+                  Rules.Max_Primitives.         Process_Instantiation         (Element);
                   Rules.Non_Static.             Process_Instantiation         (Element);
+                  Rules.Parameter_Declarations. Process_Declaration           (Element);
                   Rules.Reduceable_Scope.       Process_Instantiation         (Element);
                   Rules.Return_Type.            Process_Instantiation         (Element);
                   Rules.Side_Effect_Parameters. Process_Call_Or_Instantiation (Element);
                   Rules.Unnecessary_Use_Clause. Process_Instantiation         (Element);
                   Rules.Usage.                  Process_Instantiation         (Element);
                   Rules.With_Clauses.           Process_Instantiation         (Element);
-                  Rules.Max_Primitives.         Process_Instantiation         (Element);
 
                when A_Function_Instantiation =>
                   Rules.Actual_Parameters.           Process_Call_Or_Instantiation (Element);

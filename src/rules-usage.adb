@@ -531,14 +531,23 @@ package body Rules.Usage is
       end if;
 
       if Is_Part_Of_Instance (Name) then
-         -- We are analyzing something from an expanded generic => no source is available,
-         -- and Is_Part_Of does not work (as specified). We must therefore use the corresponding
-         -- generic element.
-         if Defining_Name_Kind (Name) = A_Defining_Expanded_Name then
-            Name := Defining_Selector (Name);
-         end if;
-         Name := Corresponding_Generic_Element (Name);
+         begin
+            -- We are analyzing something from an expanded generic => no source is available,
+            -- and Is_Part_Of does not work (as specified). We must therefore use the corresponding
+            -- generic element.
+            if Defining_Name_Kind (Name) = A_Defining_Expanded_Name then
+               Name := Defining_Selector (Name);
+            end if;
+            Name := Corresponding_Generic_Element (Name);
+         exception
+            when Asis.Exceptions.Asis_Inappropriate_Element =>
+               -- In some hard to reproduce cases, it seems that formal declarations are not classified as such, which
+               -- in turn crashes Corresponding_Generic_Element.
+               -- TBSL: this is really a work-around
+               return Not_From_Spec;
+         end;
       end if;
+
       Enclosing_PU_Name := Enclosing_Program_Unit (Name);
       if Is_Nil (Enclosing_PU_Name) then
          -- Element is a compilation unit
@@ -833,10 +842,17 @@ package body Rules.Usage is
          case Value.Origin is
             when From_Instance =>
                -- Add usages from the generic itself
-               Generic_Elem := Corresponding_Generic_Element (Value.Declaration);
-               -- Generic_Elem can be Nil for implicit elements inherited from a derivation in the generic,
-               -- which have no corresponding generic elements. But then, there are certainly no usage inside
-               -- the generic
+               begin
+                  Generic_Elem := Corresponding_Generic_Element (Value.Declaration);
+                  -- Generic_Elem can be Nil for implicit elements inherited from a derivation in the generic,
+                  -- which have no corresponding generic elements. But then, there are certainly no usage inside
+                  -- the generic
+               exception
+                  when Asis.Exceptions.Asis_Inappropriate_Element =>
+                     -- See comment in Package_Origin, the same can happen here
+                     -- TBSL: this is really a work-around
+                     Generic_Elem := Asis.Nil_Element;
+               end;
                if Is_Nil (Generic_Elem) then
                   True_Usage := Value.Usage;
                else
@@ -1792,13 +1808,10 @@ package body Rules.Usage is
                        =>
                      -- Do not consider pseudo declarations of constants, variables, or subtypes that
                      -- correspond, in the expanded template, to the formals of the generic.
-                     declare
-                        Decl_Kind : constant Asis.Declaration_Kinds
-                          := Declaration_Kind (Enclosing_Element
-                                               (Corresponding_Generic_Element
-                                                (Names (Element) (1))));
                      begin
-                        case Decl_Kind is
+                        case Declaration_Kind (Enclosing_Element (Corresponding_Generic_Element
+                                                                  (Names (Element) (1))))
+                        is
                            when A_Formal_Object_Declaration
                               | A_Formal_Type_Declaration
                                 =>
@@ -1806,6 +1819,11 @@ package body Rules.Usage is
                            when others =>
                               Process_Declaration (Element);
                         end case;
+                     exception
+                        when Asis.Exceptions.Asis_Inappropriate_Element =>
+                        -- See comment in Package_Origin, the same can happen here
+                        -- TBSL: this is really a work-around
+                        Control := Abandon_Children;
                      end;
                   when An_Ordinary_Type_Declaration
                      | A_Procedure_Declaration
@@ -1818,7 +1836,7 @@ package body Rules.Usage is
                      | A_Function_Body_Stub
                      | A_Single_Task_Declaration
                      | A_Single_Protected_Declaration
-                       =>
+                     =>
                      Process_Declaration (Element);
                   when others =>
                      -- Since we are in an instantiated unit, all subinstantiations are expanded
