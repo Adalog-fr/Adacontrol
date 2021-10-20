@@ -5,7 +5,8 @@ check style (no_closing_name);
 check style (casing_identifier, original, titlecase);
 check style (casing_attribute, titlecase);
 check style (compound_statement);
-Multiple_Elements: check style (multiple_elements);  -- Label to ease making exceptions
+Multiple_Elements:
+   check style (multiple_elements);  -- Label to ease making exceptions
 check style (casing_keyword, lowercase);
 check max_nesting (7);
 check parameter_aliasing (certain);
@@ -37,20 +38,20 @@ search uncheckable (false_negative, missing_unit);
 
 -- Check that functions for which there is a replacement in A4G_Bugs
 -- are not used directly.
-Use_A4G_Bugs: check entities (
-   Asis.Declarations.Corresponding_First_Subtype,
-   Asis.Expressions.Corresponding_Expression_Type,
-   Asis.Limited_Views.Get_Nonlimited_View,
-   Asis.Text.Element_Span,
-   Asis.Text.First_Line_Number,
-   Asis.Text.Last_Line_Number
-);
+Use_A4G_Bugs:
+   check entities (Asis.Declarations.Corresponding_First_Subtype,
+                   Asis.Expressions.Corresponding_Expression_Type,
+                   Asis.Limited_Views.Get_Nonlimited_View,
+                   Asis.Text.Element_Span,
+                   Asis.Text.First_Line_Number,
+                   Asis.Text.Last_Line_Number
+                  );
 
 -- Check prefered operation from Thick_Queries
-Avoid_Query: check entities (
-   Asis.Definitions.Subtype_Mark,
-   Asis.Definitions.Corresponding_Parent_Subtype
-);
+Avoid_Query:
+   check entities (Asis.Definitions.Subtype_Mark,
+                   Asis.Definitions.Corresponding_Parent_Subtype
+                  );
 Use_Ultimate_Origin:
    check entities (Asis.Compilation_Units.Unit_Origin);
 
