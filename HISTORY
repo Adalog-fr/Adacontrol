@@ -6,6 +6,11 @@ General:
 --------
 Bug fixes
 Support modular types in static evaluator + mod and rem operators
+Improve tracking of discriminants
+
+Changes to existing rules:
+--------------------------
+Usage: fixed missing handling of formal packages
 
 ==============
 == V1.22r15 ==
