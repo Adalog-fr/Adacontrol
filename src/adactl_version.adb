@@ -2,7 +2,7 @@
 --  Adactl_Version - Function body                                  --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
---  of Air Navigation (EUROCONTROL) and Adalog 2004-2020.           --
+--  of Air Navigation (EUROCONTROL) and Adalog 2004-2021.           --
 --  The Ada Controller is  free software; you can  redistribute  it --
 --  and/or modify it under  terms of the GNU General Public License --
 --  as published by the Free Software Foundation; either version 2, --
@@ -29,7 +29,7 @@ with
    Framework.Specific_Plugs;
 function Adactl_Version return Wide_String is
 
-   Version : constant Wide_String := "1.22r16b";
+   Version : constant Wide_String := "1.22r16c";
 
 begin
    -- Gnat (and AdaControl) warn that the following condition is always false/true, but
