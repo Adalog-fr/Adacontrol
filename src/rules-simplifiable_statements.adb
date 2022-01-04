@@ -1367,7 +1367,7 @@ package body Rules.Simplifiable_Statements is
                when ASIS_Inappropriate_Element => -- Attribute name, pragma identifier...
                   return;
             end;
-            if Variables_Proximity (Ident_Def, State.Indexing_Name) /= Different_Variables then
+            if Variables_Proximity (Ident_Def, State.Indexing_Name) = Same_Variable then
                -- Since the identifier is of a discrete type, it can appear in a selected name only as the selector,
                -- but it can be qualified (by the loop name, and enclosing structures)
                declare
