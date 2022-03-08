@@ -2,6 +2,10 @@
 == V1.23b1 ==
 =============
 
+General:
+--------
+Improve message when syntax error in number
+
 Changes to existing rules:
 --------------------------
 Simplifiable_Statements: only diagnose for_in_for_for_of if variables certain

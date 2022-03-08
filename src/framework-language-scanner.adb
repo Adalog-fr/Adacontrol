@@ -289,15 +289,16 @@ package body Framework.Language.Scanner is
                   when others =>
                      exit;
                end case;
-               Next_Char;
 
                if Digit >= Base then
-                  Syntax_Error ("Invalid character in number",
+                  Syntax_Error ("Invalid digit in number '" & Cur_Char & ''',
                                 Create_Location (To_Wide_String (Current_File), Current_Line, Current_Column));
                end if;
                if not Prev_Is_US then
                   Num := Num * Base + Digit;
                end if;
+
+               Next_Char;
             end loop;
             if Prev_Is_US then
                Syntax_Error ("Trailing underscores not allowed in numbers",
@@ -310,7 +311,7 @@ package body Framework.Language.Scanner is
             Negative := True;
             Next_Char;
             if Cur_Char not in '0' .. '9' then
-               Syntax_Error ("Invalid character in number",
+               Syntax_Error ("Invalid character in number: '" & Cur_Char & ''',
                              Create_Location (To_Wide_String (Current_File), Current_Line, Current_Column));
             end if;
          end if;
