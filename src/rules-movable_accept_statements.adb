@@ -556,7 +556,7 @@ package body Rules.Movable_Accept_Statements  is
 
       begin
 
-         -- Do not process the `accept' since it has no statements
+         -- Do not process the `accept' if it has no statements
          if The_State.Number_Of_Statements = 0 then
             return;
          end if;
@@ -569,7 +569,6 @@ package body Rules.Movable_Accept_Statements  is
                                               Checked      => False));
 
          -- 2nd step: insert all of the `accept' parameters into the referenced objects queue
-         -- Insert all of the `accept' parameters into the queue
          for P : Asis.Parameter_Specification of Parameter_Profile (Corresponding_Entry (Statement)) loop
             for Id : Asis.Defining_Name of Names (P) loop
                Append (The_State.References_Queue, (Nb_Refs      => The_State.Number_Of_Statements,

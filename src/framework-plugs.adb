@@ -421,9 +421,9 @@ package body Framework.Plugs is
                   Rules.Usage.          Process_Declaration  (Element);
 
                when A_Protected_Body_Declaration =>
-                  Rules.Max_Size.                       Process_Element        (Element);
-                 Rules.Style.                           Process_Construct      (Element);
-                 Rules.Potentially_Blocking_Operations. Process_Protected_Body (Element);
+                  Rules.Max_Size.                        Process_Element        (Element);
+                  Rules.Style.                           Process_Construct      (Element);
+                  Rules.Potentially_Blocking_Operations. Process_Protected_Body (Element);
 
                when A_Single_Task_Declaration
                  | A_Single_Protected_Declaration

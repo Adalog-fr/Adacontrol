@@ -192,11 +192,11 @@ exception
       end case;
 
    when Occur : Asis.Exceptions.ASIS_Inappropriate_Context
-     | Asis.Exceptions.ASIS_Inappropriate_Compilation_Unit
-     | Asis.Exceptions.ASIS_Inappropriate_Element
-     | Asis.Exceptions.ASIS_Inappropriate_Line
-     | Asis.Exceptions.ASIS_Inappropriate_Line_Number
-     =>
+              | Asis.Exceptions.ASIS_Inappropriate_Compilation_Unit
+              | Asis.Exceptions.ASIS_Inappropriate_Element
+              | Asis.Exceptions.ASIS_Inappropriate_Line
+              | Asis.Exceptions.ASIS_Inappropriate_Line_Number
+      =>
       -- Presumably, an Adactl error
       User_Message ("Unexpected ASIS exception at main level ("
                     & To_Wide_String (Ada.Exceptions.Exception_Name (Occur))

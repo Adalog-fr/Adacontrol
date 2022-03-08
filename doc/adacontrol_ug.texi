@@ -7054,12 +7054,13 @@ search max_statement_nesting (all, 5);
 @node Movable_Accept_Statements, Naming_Convention, Max_Statement_Nesting, Rules reference
 @section Movable_Accept_Statements
 This rule controls statements that are inside accept statements and
-could safely be moved outside.
+could be moved outside.
 
 @subsection Syntax
 @example
 <control_kind> movable_accept_statements (certain|possible @{, <entity>@})
 @end example
+
 @subsection Action
 Since it is good practice to block a client for the shortest time
 possible, any action that does not depend on the accept parameters
@@ -7069,10 +7070,13 @@ Statements that involve synchronisation (delay statements, accept or
 entry calls...) are not movable.  Statements (including compound
 statements) that reference the parameters of the enclosing accept are
 not movable.  In addition, statements that use one of the <entity>
-given as parameters are never considered movable. As usual, the whole
-syntax for entities is allowed for <entity>. @xref{Specifying an Ada
-entity name}.  Note that if a generic entity, or an entity declared in
-a generic package, is given, all statements that use the corresponding
+given as parameters are never considered movable; typically, they are
+procedures whose execution must be part of the accept statement for
+logical reasons, or global variables when the rendezvous is intended
+to prevent concurrent access to them.  As usual, the whole syntax for
+entities is allowed for <entity>. @xref{Specifying an Ada entity
+name}.  Note that if a generic entity, or an entity declared in a
+generic package, is given, all statements that use the corresponding
 instantiated entity are considered not movable.
 
 If the first parameter of the rule is @code{certain}, only statements
@@ -7086,12 +7090,6 @@ Ex:
 @example
 check movable_accept_statements (possible, Log.Report_Rendezvous);
 @end example
-
-@subsection Tips
-The list of <entity> given to the rule can be, for example, procedures
-whose execution must be part of the accept statement for logical
-reasons. They can also be global variables, when the rendezvous is
-intended to prevent concurrent access to these variables.
 
 @node Naming_Convention, No_Operator_Usage, Movable_Accept_Statements, Rules reference
 @section Naming_Convention
@@ -9182,11 +9180,11 @@ The parameters are subrule keywords:
 @itemize @bullet
 @item
 ``all'' (or no subrule given): controls all simplifiable
-statements. If ``no_exit''is given, the ``while_for_for'' subrule will
-be given the ``no_exit'' modifier; if ``full_range'' is given, the
-``for_in_for_for_of'' subrule will be given the ``full_range''
-modifier. (Explicitly specifying ``all'' is necessary only in these
-cases);
+statements. If ``no_exit'' is given, the ``loop_for_while'' and
+``while_for_for'' subrules will be given the ``no_exit'' modifier; if
+``full_range'' is given, the ``for_in_for_for_of'' subrule will be
+given the ``full_range'' modifier. (Explicitly specifying ``all'' is
+necessary only in these cases);
 @item
 ``block'': controls block statements that have no labels, no
 declarations, and no exception handlers.
