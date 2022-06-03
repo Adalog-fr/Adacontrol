@@ -1402,17 +1402,45 @@ package body Rules.Simplifiable_Statements is
                      -- If the variable is a component that depends on defaulted discriminants, for..of is not allowed
                      -- (see 5.5.2(6.1/4)).
                      -- We ignore the case of the "known to be constrained" variable (too complicated to check, and a
-                     -- false negative is harmless here)
+                     -- false negative is harmless here). Note that Thick_Queries.Known_To_Be_Constrained is too
+                     -- simplistic compared to 3.3(23.1 .. 23.13)
                      declare
-                        Discrs : constant Asis.Defining_Name_List := Governing_Discriminants (Indexed_Var);
+                        Discrs : constant Asis.Defining_Name_List := Path_Selection_Discriminants (Indexed_Var)
+                                                                   & Governing_Discriminants      (Indexed_Var);
                      begin
-                        if Discrs /= Nil_Element_List
-                          and then not Is_Nil (Initialization_Expression (Enclosing_Element (Discrs (Discrs'First))))
+                        if (for some Discr of Discrs =>
+                               not Is_Nil (Initialization_Expression (Enclosing_Element (Discr))))
                         then
                            Control := Terminate_Immediately;
                            return;
                         end if;
                      end;
+
+                     -- If the variable is declared in a block inside the loop, it cannot be replaced
+                     -- Indexed_Var can be a component, we must go up to the full variable to check where it is declared
+                     declare
+                        Good_Var : Asis.Element := Indexed_Var;
+                     begin
+                        loop
+                           case Expression_Kind (Good_Var) is
+                              when An_Indexed_Component =>
+                                 Good_Var := Prefix (Good_Var);
+                              when An_Identifier =>
+                                 exit;
+                              when others =>
+                                 if Is_Expanded_Name (Good_Var) then
+                                    Good_Var := Simple_Name (Good_Var);
+                                 else
+                                    Good_Var := Prefix (Good_Var);  -- can only be a record component
+                                 end if;
+                           end case;
+                        end loop;
+                        if Is_Part_Of (Corresponding_Name_Declaration (Good_Var), Inside => Stmt) then
+                           Control := Terminate_Immediately;
+                           return;
+                        end if;
+                     end;
+
 
                      State.Indexed_Name  := Indexed_Var;
                   elsif Variables_Proximity (State.Indexed_Name, Indexed_Var) /= Same_Variable then

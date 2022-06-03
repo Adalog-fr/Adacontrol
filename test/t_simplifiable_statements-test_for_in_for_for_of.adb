@@ -22,20 +22,20 @@ begin
       X := S1(I);
    end loop;
 
-   for I in 1 .. 10 loop                -- Index used in expression
+   for I in 1 .. 10 loop                -- OK Index used in expression
       X := S1 (I + 1);
    end loop;
 
-   for I in Ptr.all'Range loop         -- Indexing of dereference
+   for I in Ptr.all'Range loop         -- OK Indexing of dereference
       X := Ptr.all (I);
    end loop;
 
-   for I in Integer range 1 .. 10 loop -- Different variables
+   for I in Integer range 1 .. 10 loop -- OK Several variables
       X := S1 (I);
       X := S2 (I);
    end loop;
 
-   for I in S1'Range loop              -- Renaming, used with different variable
+   for I in S1'Range loop              -- OK Renaming, used with different variable
       X := S1 (I);
       declare
          Inx : Integer renames I;
@@ -44,12 +44,12 @@ begin
       end;
    end loop;
 
-   for I in 1 .. 10 loop               -- No indexing
+   for I in 1 .. 10 loop               -- OK No indexing
       null;
    end loop;
 
 
-   declare                             -- Same component of different variables
+   declare                             -- OK Same component of different variables
       type Rec is
          record
             Tab : String (1 .. 10);
@@ -66,7 +66,7 @@ begin
       function F return String4 is ("ABCD");
       C :  constant String4 := "ABCD";
    begin
-      for I in 1 .. 4 loop             -- Indexing of function call
+      for I in 1 .. 4 loop             -- OK Indexing of function call
          X := F (I);
          X := F (I);
       end loop;
@@ -76,7 +76,7 @@ begin
       end loop;
    end;
 
-   declare                             -- Case of arrays that depend on discriminants (5.5.2(6.1/4))
+   declare                             -- OK Case of arrays that depend on discriminants (5.5.2(6.1/4))
       subtype Inx is Natural range 0 .. 10;
       type Rec1 (L : Inx) is           -- No default value: OK
          record
@@ -86,30 +86,43 @@ begin
          record
             S : String (1 .. L);
          end record;
+      type Rec3 (B : Boolean := False) is
+         record
+            case B is
+               when True =>
+                  null;
+               when False =>
+                  S : String (Inx);
+            end case;
+         end record;
 
       V1 : Rec1 (5);
       V2 : Rec2;
+      V3 : Rec3;
    begin
       for I in V1.S'Range loop         -- for_in_for_for_of x1, not full range
          X := V1.S (I);
          X := V1.S (I);
       end loop;
-      for I in V2.S'Range loop
+      for I in V2.S'Range loop -- OK mutable
          X := V2.S (I);
+      end loop;
+      for I in Inx loop  -- OK part of variant record
+         X := V3.S (I);
       end loop;
    end;
 
    declare
-      V3 : array (1 .. 10) of String (1 .. 10);
+      V4 : array (1 .. 10) of String (1 .. 10);
    begin
-      for Str of V3 loop               -- for_in_for_for_of
-         for I in Str'Range loop       -- for_in_for_for_of
+      for Str of V4 loop
+         for I in Str'Range loop       -- for_in_for_for_of x1
             Str (I) := ' ';
          end loop;
       end loop;
    end;
 
-   for I in Mat'Range (1) loop         -- multidimensional array
+   for I in Mat'Range (1) loop         -- OK multidimensional array
       for J in Mat'Range (2) loop
          Mat (I, J) := False;
       end loop;
@@ -135,4 +148,18 @@ begin
       X := S1 (I);
    end loop;
 
+   declare
+      S : String (1 .. 10);
+   begin
+      for I in 1 .. 10 loop  -- for_in_for_for_of x1
+         S (I) := ' ';
+      end loop;
+   end;
+   for I in 1 .. 10 loop  -- OK, variable inner to loop
+      declare
+         S : String (1 .. 10);
+      begin
+         S (I) := ' ';
+      end;
+   end loop;
 end Test_For_In_For_For_Of;
