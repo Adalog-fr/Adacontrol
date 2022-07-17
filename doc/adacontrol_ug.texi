@@ -6242,7 +6242,7 @@ specified places.
 @example
 <control_kind> instantiations (<generic_spec>);
 <generic_spec> ::= @{[not] <location_kw>@} <entity> @{, <formal_spec>@}
-<formal_spec>  ::= <entity> | <category> | =
+<formal_spec>  ::= <entity> | <category> | [others] =
 <location_kw>  ::= all | block   | library | local      | nested |
                    own | private | public  | in_generic | task_body
 @end example
@@ -6317,7 +6317,9 @@ value). @xref{Definition of type categories}.
 
 In addition, an equal sign (@code{=}) matches if there has been
 already an instantiation with the same value for this parameter
-(i.e. it matches the second time it is encountered).
+(i.e. it matches the second time it is encountered). Optionally, the
+last parameter can be ``@code{all@tie{}=}'', which stands for an implicit
+@code{=} for all remaining parameters of the instantiation.
 @end enumerate
 
 Formal @code{@strong{in}} parameters cannot be given as <entity>, since the
@@ -6338,8 +6340,8 @@ check instantiations (ada.unchecked_conversion, <>, standard.string);
 check instantiations (ada.unchecked_conversion, system.address, range);
 
 -- Check that Unchecked_Conversion is instantiated only once
--- for any pair of arguments:
-check instantiations (ada.unchecked_conversion, =, =);
+-- for any identical set of arguments:
+check instantiations (ada.unchecked_conversion, others =);
 
 -- No instantiation of Unchecked_Conversion on private types
 -- (Are these guys cheating with privacy?)
@@ -6354,7 +6356,7 @@ match only itself or all of its subtypes.
 @item @strong{Variable} @tab @strong{Values} @tab @strong{Effect}
 @item Type_Matches_Subtype
 @tab off
-@tab A type names matches only itself.
+@tab A type name matches only itself.
 @item
 @tab on (default)
 @tab A type name matches itself and all of its subtypes.
@@ -6382,11 +6384,11 @@ check instantiations (Gen, =, all Proc);
 Note that by default, a generic actual wich is a type matches all its
 subtypes. Therefore,
 @example
-check instantiations (ada.unchecked_deallocation (standard.natural));
+check instantiations (ada.unchecked_deallocation, standard.natural);
 @end example
 will find only instantiations that use @code{Natural}, while:
 @example
-check instantiations (ada.unchecked_deallocation (standard.integer));
+check instantiations (ada.unchecked_deallocation, standard.integer);
 @end example
 will find instantiations that use either @code{Integer},
 @code{Positive}, or @code{Natural}. If this is not desired, set the

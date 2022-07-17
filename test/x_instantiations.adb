@@ -7,7 +7,7 @@ package body X_Instantiations is
       procedure Free is   -- T1, T4, local_instantiation
          new Ada.Unchecked_Deallocation (String, String_Access);
 
-      procedure Free is   -- T3, T1, local_instantiation
+      procedure Free is   -- T1, T3, local_instantiation
          new Ada.Unchecked_Deallocation (Integer, Integer_Access);
 
       function To_Integer_Access is  -- local_instantiation
@@ -33,10 +33,10 @@ package body X_Instantiations is
 
 begin
    declare
-      procedure Free is  -- T4, T1, block_instantiation, local_instantiation
+      procedure Free is  -- T1, T4, local_instantiation, block_instantiation
          new Ada.Unchecked_Deallocation (String, String_Access);
 
-      procedure Free is  -- T1, T3, block_instantiation, local_instantiation
+      procedure Free is  -- T1, T3, local_instantiation, block_instantiation
          new Ada.Unchecked_Deallocation (Integer, Integer_Access);
    begin
       null;

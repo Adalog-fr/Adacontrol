@@ -107,13 +107,28 @@ procedure T_instantiations is
    procedure G5;
    procedure G5 is null;
    I : Integer := 1;
-   procedure I0 is new G5 (Proc);
-   procedure I1 is new G5 (Proc, 1);
-   procedure I2 is new G5 (Proc, 2);
-   procedure I3 is new G5 (Proc, 1);     -- Repeat 8
-   procedure I4 is new G5 (Proc, I);     -- Repeat 8
-   procedure I5 is new G5 (Proc, I + 1); -- Repeat 8
-   procedure I6 is new G5 (Proc, 5);     -- Repeat 8
+   procedure IG50 is new G5 (Proc);
+   procedure IG51 is new G5 (Proc, 1);
+   procedure IG52 is new G5 (Proc, 2);
+   procedure IG53 is new G5 (Proc, 1);     -- Repeat 8
+   procedure IG54 is new G5 (Proc, I);     -- Repeat 8
+   procedure IG55 is new G5 (Proc, I + 1); -- Repeat 8
+   procedure IG56 is new G5 (Proc, 5);     -- Repeat 8
+
+   generic
+      type T1 is private;
+      type T2 is private;
+      type T3 is private;
+   procedure G6;
+   procedure G6 is begin null; end;
+
+   procedure IG61 is new G6 (Integer, Character, Float);
+   procedure IG62 is new G6 (Float,   Integer,   Character);
+   procedure IG63 is new G6 (Integer, Character, Float);     -- Repeat 9
+   procedure IG64 is new G6 (Float,   Character, Integer);
+   procedure IG65 is new G6 (Float,   Integer,   Character); -- Repeat 9
+   procedure IG66 is new G6 (Character, Integer, Character);
+   procedure IG67 is new G6 (Character, Integer, Character);
 
    generic
    package GP is

@@ -6,6 +6,11 @@ General:
 --------
 doc typo fixes
 
+Changes to existing rules:
+--------------------------
+Instantiations
+   Last parameter can be "all ="
+
 =============
 == V1.23b2 ==
 =============

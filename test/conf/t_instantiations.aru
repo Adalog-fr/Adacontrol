@@ -21,5 +21,7 @@ Repeat5 : check instantiations (t_instantiations.g2, =,t_instantiations.proc1,=)
 Repeat6 : check instantiations (t_instantiations.G3, =, <>);
 Repeat7 : check instantiations (t_instantiations.G4, =, <>, =);
 Repeat8 : check instantiations (t_instantiations.G5, =, =);
+Repeat9 : check instantiations (t_instantiations.G6, standard.float, others =),
+          check instantiations (t_instantiations.G6, standard.integer, others =);
 
 GenGen : check instantiations (t_instantiations.gp.gpgp);

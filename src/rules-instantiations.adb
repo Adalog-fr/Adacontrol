@@ -2,7 +2,7 @@
 --  Rules.Instantiations - Package body                             --
 --                                                                  --
 --  This software  is (c) The European Organisation  for the Safety --
---  of Air Navigation (EUROCONTROL) and Adalog 2004-2021.           --
+--  of Air Navigation (EUROCONTROL) and Adalog 2004-2022.           --
 --  The Ada Controller is  free software; you can  redistribute  it --
 --  and/or modify it under  terms of the GNU General Public License --
 --  as published by the Free Software Foundation; either version 2, --
@@ -62,6 +62,7 @@ package body Rules.Instantiations is
    --  - For other parameters, it is a name, and the parameter is its full name image
    -- When an instantiation is encountered, the same comparison as with the parameters of the rule can be used,
    -- except for the special case of in parameters.
+   -- "others =" is like "=", except that the index of comparison does not move when it reaches the final "="
 
    Rule_Used : Boolean := False;
    Save_Used : Boolean;
@@ -96,7 +97,8 @@ package body Rules.Instantiations is
             when False =>
                null;
             when True =>
-               All_Instances : Instance_Info_List.Queue;
+               Has_Others_Equal : Boolean;
+               All_Instances    : Instance_Info_List.Queue;
          end case;
       end record;
 
@@ -158,7 +160,7 @@ package body Rules.Instantiations is
       User_Message ("Optionally, control is restricted to instantiations appearing at indicated locations");
       User_Message;
       User_Message ("Parameter(1): {<location>} <Generic name>");
-      User_Message ("Parameter(2..): <Entity name> | <category> | = (optional)");
+      User_Message ("Parameter(2..): <Entity name> | <category> | [others] = (optional)");
       Help_On_Scope_Places (Header => "<location>:");
       Help_On_Categories (Expected => Expected_Categories);
       User_Message ("Variable:");
@@ -186,10 +188,20 @@ package body Rules.Instantiations is
          end if;
 
          declare
-            Spec : Entity_Specification := Get_Entity_Parameter (Allow_Extended => All_OK);
-            Rest : constant Instantiation_Context := Build_Context (Places);
+            Has_Others : constant Boolean := Get_Modifier ("OTHERS");
+            Spec       : Entity_Specification := Get_Entity_Parameter (Allow_Extended => All_OK);
+            Rest       : constant Instantiation_Context := Build_Context (Places);
          begin
-            Check_Category (Rule_Id, Spec, Expected => Expected_Categories);
+            if Has_Others then
+               if Entity_Specification_Kind (Spec) /= Equal then
+                  Parameter_Error (Rule_Id, "Only ""="" allowed after ""others""");
+               end if;
+               if Rest.Nb_Values /= 0 then
+                  Parameter_Error (Rule_Id, """others ="" must be last");
+               end if;
+            else
+               Check_Category (Rule_Id, Spec, Expected => Expected_Categories);
+            end if;
 
             if Spec = Value ("()") then
                Spec := Value ("ENUM");
@@ -197,11 +209,12 @@ package body Rules.Instantiations is
 
             if Rest.Has_Repeated or Entity_Specification_Kind (Spec) = Equal then
                return (Basic_Rule_Context (Rest) with
-                       Nb_Values     => Rest.Nb_Values + 1,
-                       Has_Repeated  => True,
-                       Values        => Parameter_Descr'(An_In_Out_Mode, Spec) & Rest.Values,
-                       Places        => Rest.Places,
-                       All_Instances => Empty_Queue);
+                       Nb_Values        => Rest.Nb_Values + 1,
+                       Has_Repeated     => True,
+                       Values           => Parameter_Descr'(An_In_Out_Mode, Spec) & Rest.Values,
+                       Places           => Rest.Places,
+                       Has_Others_Equal => Has_Others,
+                       All_Instances    => Empty_Queue);
             else
                return (Basic_Rule_Context (Rest) with
                        Nb_Values    => Rest.Nb_Values + 1,
@@ -338,8 +351,9 @@ package body Rules.Instantiations is
    -- Match --
    -----------
 
-   function Match (Actual_Part : in Asis.Association_List;
-                   Values      : in Generic_Parameters) return Boolean
+   function Match (Actual_Part      : in Asis.Association_List;
+                   Values           : in Generic_Parameters;
+                   Has_Others_Equal : in Boolean := False) return Boolean
    is
       use Asis.Expressions;
 
@@ -350,10 +364,14 @@ package body Rules.Instantiations is
             return False;
          end if;
 
-         -- Safety if there are too few parameters specified by user:
-         exit when Values_Index = Values'Last;
+         if not Has_Others_Equal then
+            -- otherwise stay at the Equal
 
-         Values_Index := Values_Index + 1;
+            -- Safety if there are too few parameters specified by user:
+            exit when Values_Index = Values'Last;
+
+            Values_Index := Values_Index + 1;
+         end if;
       end loop;
 
       return True;
@@ -372,16 +390,21 @@ package body Rules.Instantiations is
       -- Make_Info --
       ---------------
 
-      function Make_Info (Origin : Generic_Parameters; Using  : Asis.Association_List) return Instance_Info is
+      function Make_Info (Origin : Instantiation_Context; Using  : Asis.Association_List) return Instance_Info is
          use Asis.Elements, Asis.Expressions;
          use Framework.Locations, Thick_Queries;
-         Result : Instance_Info := (List_Index'Min (Origin'Length, Using'Length), Get_Location (Instantiation), Origin);
+         Result : Instance_Info := ((if Origin.Has_Repeated and then Origin.Has_Others_Equal
+                                       then Using'Length
+                                       else List_Index'Min (Origin.Values'Length, Using'Length)),
+                                    Get_Location (Instantiation),
+                                    (others => <>));
          P_Mode : Asis.Mode_Kinds;
+         In_Others_Equal : Boolean := False;
       begin
          for I in Result.Values'Range loop
             -- We know that both Origin and Result have 'First = 1, so we can use the same index for both
             -- Replace any "=" by the actual parameter, except if the "=" corresponds to an "in" object
-            if Entity_Specification_Kind (Result.Values (I).Spec) = Equal then
+            if In_Others_Equal or else Entity_Specification_Kind (Origin.Values (I).Spec) = Equal then
                P_Mode := Mode_Kind (Enclosing_Element (Formal_Parameter (Using (I))));
                case P_Mode is
                   when A_Default_In_Mode | An_In_Mode =>
@@ -391,6 +414,11 @@ package body Rules.Instantiations is
                                            Value (Full_Name_Image (Actual_Parameter (Using (I)),
                                                   With_Profile => True)));
                end case;
+               if I = Origin.Values'Last and then Origin.Has_Others_Equal then
+                  In_Others_Equal := True;
+               end if;
+            else
+               Result.Values (I) := Origin.Values (I);
             end if;
          end loop;
 
@@ -437,8 +465,8 @@ package body Rules.Instantiations is
                   end if;
                   Current := Next (Current);
                end loop;
-               if not Found and Match (Actual_Part, Good_Context.Values) then
-                  Append (Good_Context.All_Instances, Make_Info (Good_Context.Values, Actual_Part));
+               if not Found and Match (Actual_Part, Good_Context.Values, Good_Context.Has_Others_Equal) then
+                  Append (Good_Context.All_Instances, Make_Info (Good_Context, Actual_Part));
                   Update (Rule_Uses, Good_Context);
                end if;
             end;

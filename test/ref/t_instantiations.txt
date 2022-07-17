@@ -51,10 +51,12 @@ t_instantiations.adb:113:4: Error: Repeat8: instantiation of T_Instantiations.G5
 t_instantiations.adb:114:4: Error: Repeat8: instantiation of T_Instantiations.G5 with (T_Instantiations{}.Proc{}, 1) already provided at t_instantiations.adb:111:4
 t_instantiations.adb:115:4: Error: Repeat8: instantiation of T_Instantiations.G5 with (T_Instantiations{}.Proc{}, 2) already provided at t_instantiations.adb:112:4
 t_instantiations.adb:116:4: Error: Repeat8: instantiation of T_Instantiations.G5 with (T_Instantiations{}.Proc{}, 5) already provided at t_instantiations.adb:110:4
-t_instantiations.adb:131:4: Error: GenGen: instantiation of T_Instantiations.Gp.Gpgp
-t_instantiations.adb:135:7: Error: Repeat3: block instantiation of T_Instantiations.G1 with (Standard.Duration) already provided at t_instantiations.adb:134:7
-t_instantiations.adb:135:7: Error: Repeat2: instantiation of T_Instantiations.G1 with (<>, Standard.Integer) already provided at t_instantiations.adb:63:4
-t_instantiations.adb:135:7: Error: Repeat1: instantiation of T_Instantiations.G1 with (Standard.Duration) already provided at t_instantiations.adb:134:7
+t_instantiations.adb:127:4: Error: Repeat9: instantiation of T_Instantiations.G6 with (Standard.Integer, Standard.Character) already provided at t_instantiations.adb:125:4
+t_instantiations.adb:129:4: Error: Repeat9: instantiation of T_Instantiations.G6 with (Standard.Float, Standard.Integer) already provided at t_instantiations.adb:126:4
+t_instantiations.adb:146:4: Error: GenGen: instantiation of T_Instantiations.Gp.Gpgp
+t_instantiations.adb:150:7: Error: Repeat3: block instantiation of T_Instantiations.G1 with (Standard.Duration) already provided at t_instantiations.adb:149:7
+t_instantiations.adb:150:7: Error: Repeat2: instantiation of T_Instantiations.G1 with (<>, Standard.Integer) already provided at t_instantiations.adb:63:4
+t_instantiations.adb:150:7: Error: Repeat1: instantiation of T_Instantiations.G1 with (Standard.Duration) already provided at t_instantiations.adb:149:7
 x_instantiations.ads:9:4: Found: T4: instantiation of Ada.Unchecked_Deallocation with (Standard.String, <>)
 x_instantiations.ads:9:4: Found: T1: instantiation of Ada.Unchecked_Deallocation
 x_instantiations.ads:12:4: Found: T3: instantiation of Ada.Unchecked_Deallocation with (Standard.Integer)
