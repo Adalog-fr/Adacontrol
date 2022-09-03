@@ -109,6 +109,8 @@ package body Rules.Actual_Parameters is
    Controlled_Entities : Context_Store;
 
    Key_All               : constant Unbounded_Wide_String := To_Unbounded_Wide_String ("ALL");
+   Key_Left              : constant Unbounded_Wide_String := To_Unbounded_Wide_String ("LEFT");
+   Key_Right             : constant Unbounded_Wide_String := To_Unbounded_Wide_String ("RIGHT");
    Entity_Calls          : constant Entity_Specification  := Value ("CALLS");
    Entity_Instantiations : constant Entity_Specification  := Value ("INSTANTIATIONS");
 
@@ -425,7 +427,7 @@ package body Rules.Actual_Parameters is
 
             procedure Pre  (Element : Asis.Element; Control : in out Traverse_Control; State : in out Entity_Context);
             procedure Post (Element : Asis.Element; Control : in out Traverse_Control; State : in out Entity_Context)
-            is null;
+               is null;
             procedure Traverse_Expression is new Traverse_Element (Entity_Context, Pre, Post);
             procedure Pre (Element  : Asis.Element; Control : in out Traverse_Control; State : in out Entity_Context) is
             begin
@@ -532,6 +534,108 @@ package body Rules.Actual_Parameters is
          end if;
       end Check_Entity;
 
+      procedure Check_Predefined_Entity (Actual                    : Asis.Expression;
+                                         Formal_Key                : Unbounded_Wide_String;
+                                         Name_Context, All_Context : Root_Context'Class)
+      is
+         use Parameter_Tree;
+
+         procedure Do_Predefined_Report (Searched_Entities : Entity_Queue.Queue) is
+            use Entity_Queue, Framework.Locations, Framework.Reports;
+            use Asis.Expressions, Asis.Iterator;
+            Curs          : Cursor := First (Searched_Entities);
+            Context       : Entity_Context;
+            Ctrl          : Traverse_Control;
+            Simple_Actual : Asis.Expression := Actual;
+
+            procedure Pre  (Element : Asis.Element; Control : in out Traverse_Control; State : in out Entity_Context);
+            procedure Post (Element : Asis.Element; Control : in out Traverse_Control; State : in out Entity_Context)
+            is null;
+            procedure Traverse_Expression is new Traverse_Element (Entity_Context, Pre, Post);
+            procedure Pre (Element  : Asis.Element; Control : in out Traverse_Control; State : in out Entity_Context) is
+            begin
+               case Expression_Kind (Element) is
+                  when An_Identifier =>
+                     if Matches (State.Entity, Element, Extend_To => All_Extensions) then
+                        Report (Rule_Id,
+                                Context,
+                                Get_Location (Element),
+                                "Entity " & Adjust_Image (Image (State.Entity))
+                                & " used in expression for parameter "  & To_Wide_String (Formal_Key));
+                     end if;
+                  when An_Attribute_Reference =>
+                     -- Don't traverse the attribute designator
+                     Traverse_Expression (Prefix (Element), Control, State);
+                     Control := Abandon_Children;
+                  when others =>
+                     null;
+               end case;
+            end Pre;
+
+         begin  -- Do_Predefined_Report
+            loop -- Get a clean name
+               case Expression_Kind (Simple_Actual) is
+                  when An_Identifier | An_Attribute_Reference =>
+                     exit;
+                     when A_Selected_Component =>
+                     Simple_Actual := Selector (Simple_Actual);
+                  when An_Indexed_Component =>
+                     Simple_Actual := Prefix (Simple_Actual);
+                  when A_Function_Call =>
+                     Simple_Actual := Prefix (Simple_Actual);
+                  when A_Parenthesized_Expression =>
+                     Simple_Actual := Expression_Parenthesized (Simple_Actual);
+                  when A_Type_Conversion | A_Qualified_Expression =>
+                     Simple_Actual := Converted_Or_Qualified_Expression (Simple_Actual);
+                  when others =>
+                     Simple_Actual := Nil_Element;
+                     exit;
+               end case;
+            end loop;
+
+            while Has_Element (Curs) loop
+               Context := Fetch (Curs);
+               if Matches (Context.Entity, Simple_Actual, Extend_To => All_Extensions) then
+                     Report (Rule_Id,
+                             Context,
+                             Get_Location (Simple_Actual),
+                             "Entity " & Adjust_Image (Image (Context.Entity))
+                             & " used as actual for parameter "  & To_Wide_String (Formal_Key));
+
+               elsif Context.Deep_Search then
+                  Ctrl := Continue;
+                  Traverse_Expression (Actual, Ctrl, Context);
+               end if;
+               Curs := Next (Curs);
+            end loop;
+         end Do_Predefined_Report;
+
+      begin  -- Check_Predefined_Entity
+
+         -- Check Sp_Name, Formal_Name
+         --       Sp_Name, All
+         --       All,     Formal_Name
+         --       All,     All
+         if Name_Context /= No_Matching_Context then
+            if Is_Present (Controlled_Entity_Context (Name_Context).Formals_Map, Formal_Key) then
+               Do_Predefined_Report (Fetch (Controlled_Entity_Context (Name_Context).Formals_Map,
+                                            Formal_Key).Entity_Data);
+            end if;
+            if Is_Present (Controlled_Entity_Context (Name_Context).Formals_Map, Key_All) then
+               Do_Predefined_Report (Fetch (Controlled_Entity_Context (Name_Context).Formals_Map, Key_All).Entity_Data);
+            end if;
+         end if;
+         if All_Context /= No_Matching_Context then
+            if Is_Present (Controlled_Entity_Context (All_Context).Formals_Map, Formal_Key) then
+               Do_Predefined_Report (Fetch (Controlled_Entity_Context (All_Context).Formals_Map,
+                                                                       Formal_Key).Entity_Data);
+            end if;
+            if Is_Present (Controlled_Entity_Context (All_Context).Formals_Map, Key_All) then
+               Do_Predefined_Report (Fetch (Controlled_Entity_Context (All_Context).Formals_Map, Key_All).Entity_Data);
+            end if;
+         end if;
+      end Check_Predefined_Entity;
+
       Entity_All : Entity_Specification;
    begin  -- Process_Call_Or_Instantiation
       if Rule_Used = No_Rule then
@@ -564,54 +668,79 @@ package body Rules.Actual_Parameters is
             return;
          end if;
 
-         for Formal : Asis.Element of Get_Formals_List loop
-            case Element_Kind (Formal) is
-               when A_Clause =>
-                  -- Use clause in generic formal part
-                  null;
-               when A_Declaration =>
-                  case Declaration_Kind (Formal) is
-                     when A_Parameter_Specification
-                        | A_Formal_Object_Declaration
-                        =>
-                        if Rule_Used (SR_Entity) or not Is_Nil (Initialization_Expression (Formal)) then
-                           for N : Asis.Defining_Name of Names (Formal) loop
-                              if Rule_Used (Default_Usage_Kind) /= (Default_Usage_Kind => False) then
-                                 Check_Default (N, Name_Context, All_Context);
-                              end if;
-                              if Rule_Used (SR_Entity) then
-                                 Check_Entity (N, Name_Context, All_Context);
-                              end if;
-                           end loop;
-                        end if;
-                     when A_Formal_Procedure_Declaration
-                        | A_Formal_Function_Declaration
-                        =>
-                        if  Rule_Used (Default_Usage_Kind) /= (Default_Usage_Kind => False) then
-                           case Default_Kind (Formal) is
-                              when Not_A_Default =>
-                                 Failure ("Not_A_Default");
-                              when A_Name_Default
-                                 | A_Box_Default
-                                 | A_Null_Default
-                                 =>
-                                 Check_Default (Names (Formal) (1), Name_Context, All_Context);
-                              when A_Nil_Default =>
-                                 null;
-                           end case;
-                        end if;
-                        if Rule_Used (SR_Entity) then
-                           Check_Entity (Names (Formal) (1), Name_Context, All_Context);
-                        end if;
+         declare
+            Formals : constant Asis.Element_List := Get_Formals_List;
+         begin
+            if Formals = Nil_Element_List then
+               -- Could be a predefined operator without an explicit declaration
+               -- Operators have no default (ARM 6.6(4)), therefore only Entity applies
+               if Expression_Kind (Name) /= An_Operator_Symbol or else not Rule_Used (SR_Entity) then
+                  return;
+               end if;
 
-                     when others =>
-                        -- Others cases have no possible default value
-                        null;
-                  end case;
-               when others =>
-                  Failure ("Bad formal", Formal);
-            end case;
-         end loop;
+               declare
+                  Actuals : constant Expression_List := Actual_Expressions (Call_Inst, Normalized => False);
+                  -- Binary operators: formal names are Left and Right
+                  -- Unary operators: formal name is Right
+               begin
+                  if Actuals'Length = 2 then
+                     Check_Predefined_Entity (Actuals (1), Key_Left,  Name_Context, All_Context);
+                     Check_Predefined_Entity (Actuals (2), Key_Right, Name_Context, All_Context);
+                  else
+                     Check_Predefined_Entity (Actuals (1), Key_Right, Name_Context, All_Context);
+                  end if;
+               end;
+            end if;
+
+            for Formal : Asis.Element of Formals loop
+               case Element_Kind (Formal) is
+                  when A_Clause =>
+                     -- Use clause in generic formal part
+                     null;
+                  when A_Declaration =>
+                     case Declaration_Kind (Formal) is
+                        when A_Parameter_Specification
+                           | A_Formal_Object_Declaration
+                           =>
+                           if Rule_Used (SR_Entity) or not Is_Nil (Initialization_Expression (Formal)) then
+                              for N : Asis.Defining_Name of Names (Formal) loop
+                                 if Rule_Used (Default_Usage_Kind) /= (Default_Usage_Kind => False) then
+                                    Check_Default (N, Name_Context, All_Context);
+                                 end if;
+                                 if Rule_Used (SR_Entity) then
+                                    Check_Entity (N, Name_Context, All_Context);
+                                 end if;
+                              end loop;
+                           end if;
+                        when A_Formal_Procedure_Declaration
+                           | A_Formal_Function_Declaration
+                           =>
+                           if  Rule_Used (Default_Usage_Kind) /= (Default_Usage_Kind => False) then
+                              case Default_Kind (Formal) is
+                                 when Not_A_Default =>
+                                    Failure ("Not_A_Default");
+                                 when A_Name_Default
+                                    | A_Box_Default
+                                    | A_Null_Default
+                                    =>
+                                    Check_Default (Names (Formal) (1), Name_Context, All_Context);
+                                 when A_Nil_Default =>
+                                    null;
+                              end case;
+                           end if;
+                           if Rule_Used (SR_Entity) then
+                              Check_Entity (Names (Formal) (1), Name_Context, All_Context);
+                           end if;
+
+                        when others =>
+                           -- Others cases have no possible default value
+                           null;
+                     end case;
+                  when others =>
+                     Failure ("Bad formal", Formal);
+               end case;
+            end loop;
+         end;
       end;
    end Process_Call_Or_Instantiation;
 

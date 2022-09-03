@@ -35,3 +35,6 @@ t_actual_parameters-entity.adb:54:7: Error: R/X/all_C: Entity T_Actual_Parameter
 t_actual_parameters-entity.adb:54:10: Error: all/Y/B: Entity T_Actual_Parameters.Entity.B used as actual for parameter Y
 t_actual_parameters-entity.adb:55:11: Error: R/X/all_C: Entity T_Actual_Parameters{}.Entity{}.C used in expression for parameter X
 t_actual_parameters-entity.adb:58:12: Error: Instance: Entity Ada.Unchecked_Conversion used as actual for parameter X
+t_actual_parameters-entity.adb:69:10: Error: Predef_1: Entity T_Actual_Parameters.Entity.Predef.I1 used as actual for parameter LEFT
+t_actual_parameters-entity.adb:69:15: Error: Predef_1: Entity T_Actual_Parameters.Entity.Predef.Cte1 used as actual for parameter RIGHT
+t_actual_parameters-entity.adb:72:15: Error: Predef_2: Entity T_Actual_Parameters.Entity.Predef.Cte2 used as actual for parameter RIGHT

@@ -10,7 +10,9 @@ Changes to existing rules:
 --------------------------
 Instantiations
    Last parameter can be "all ="
-
+Actual_Parameters
+   check calls to predefined operators
+   
 =============
 == V1.23b2 ==
 =============

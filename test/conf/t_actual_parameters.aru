@@ -14,12 +14,17 @@ Pos:   check actual_parameters (default_positional, calls,          all);
 Pos:   check actual_parameters (default_positional, instantiations, all);
 
 -- Subrule Entity
-"P/X/A":               check actual_parameters (entity, T_Actual_Parameters.Entity.P,   X,   T_Actual_Parameters.Entity.A);
-"P/X/B":               check actual_parameters (entity, T_Actual_Parameters.Entity.P,   X,   T_Actual_Parameters.Entity.B);
-"all/Y/B":             check actual_parameters (entity, calls,                          Y,   T_Actual_Parameters.Entity.B);
-"Calls/X/F_No_Param":  check actual_parameters (entity, calls,                          X,   T_Actual_Parameters{}.Entity{}.F{return Standard.Integer});
-"R/X/all_C":           check actual_parameters (entity, T_Actual_Parameters.Entity.R,   all, all T_Actual_Parameters{}.Entity{}.C);
-"Gen/V/B":             check actual_parameters (entity, T_Actual_Parameters.Entity.gen, v,   T_Actual_Parameters{}.Entity{}.B);
-"Gen/F/F_No_Param":    check actual_parameters (entity, T_Actual_Parameters.Entity.gen, f,   T_Actual_Parameters{}.Entity{}.F{return Standard.Integer});
-"Instance":            check actual_parameters (entity, calls,                          all, Ada.Unchecked_Conversion);
-
+"P/X/A":               check actual_parameters (entity, T_Actual_Parameters.Entity.P,   X,     T_Actual_Parameters.Entity.A);
+"P/X/B":               check actual_parameters (entity, T_Actual_Parameters.Entity.P,   X,     T_Actual_Parameters.Entity.B);
+"all/Y/B":             check actual_parameters (entity, calls,                          Y,     T_Actual_Parameters.Entity.B);
+"Calls/X/F_No_Param":  check actual_parameters (entity, calls,                          X,     T_Actual_Parameters{}.Entity{}.F{return Standard.Integer});
+"R/X/all_C":           check actual_parameters (entity, T_Actual_Parameters.Entity.R,   all,   all T_Actual_Parameters{}.Entity{}.C);
+"Gen/V/B":             check actual_parameters (entity, T_Actual_Parameters.Entity.gen, v,     T_Actual_Parameters{}.Entity{}.B);
+"Gen/F/F_No_Param":    check actual_parameters (entity, T_Actual_Parameters.Entity.gen, f,     T_Actual_Parameters{}.Entity{}.F{return Standard.Integer});
+"Instance":            check actual_parameters (entity, calls,                          all,   Ada.Unchecked_Conversion);
+"Predef_1":            check actual_parameters (entity, standard."=",                   Right, T_Actual_Parameters.Entity.Predef.Cte1),
+                       check actual_parameters (entity, standard."=",                   Left,  T_Actual_Parameters.Entity.Predef.I1);
+"Predef_2":            check actual_parameters (entity,
+                                                T_Actual_Parameters.Entity.Predef."=",
+                                                right,
+                                                T_Actual_Parameters.Entity.Predef.Cte2);

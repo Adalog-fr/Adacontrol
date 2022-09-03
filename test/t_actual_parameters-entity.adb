@@ -56,4 +56,22 @@ begin
 
    -- Instance
    A := F (F_To_I (1.0));                       -- Instance
+
+   -- Predefined operators
+   Predef : declare
+      I1   : Integer;
+      Cte1 : constant Integer := 0;
+
+      type Der is new Integer;
+      I2   : Der;
+      Cte2 : constant Der := 0;
+   begin
+      if I1 = Cte1 then                         -- Predef_1 x2
+         null;
+      end if;
+      if I2 = Cte2 then                         -- Predef_2
+         null;
+      end if;
+   end Predef;
+
 end Entity;
