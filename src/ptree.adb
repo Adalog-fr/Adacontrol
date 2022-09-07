@@ -1,6 +1,6 @@
 ----------------------------------------------------------------------
 -- Program PTREE                                                    --
--- (C) Copyright 2001-2018 ADALOG                                   --
+-- (C) Copyright 2001-2022 ADALOG                                   --
 -- Author: J-P. Rosen                                               --
 --                                                                  --
 -- Prints a graphic representation of an ASIS tree                  --
@@ -9,10 +9,10 @@
 --  ADALOG   is   providing   training,   consultancy,   expertise, --
 --  assistance and custom developments  in Ada and related software --
 --  engineering techniques.  For more info about our services:      --
--- ADALOG                           Tel: +33 1 45 29 21 52          --
--- 2 rue du Docteur Lombard         Fax: +33 1 45 29 25 00          --
+-- ADALOG                                     --
+-- 2 rue du Docteur Lombard                   --
 -- 92441 Issy-Les-Moulineaux CEDEX  E-m: info@adalog.fr             --
--- FRANCE                           URL: http://www.adalog.fr/      --
+-- FRANCE                           URL: https://www.adalog.fr/     --
 --                                                                  --
 --  This  unit is  free software;  you can  redistribute  it and/or --
 --  modify  it under  terms of  the GNU  General Public  License as --
