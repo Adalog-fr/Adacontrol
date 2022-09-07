@@ -137,4 +137,15 @@ begin
    B := (B1 or B2) in False .. False;            -- OK
    B := (B in False .. False) in False .. False; -- OK
    B := B or B in False .. False;              -- Should Trigger
+
+   -- Ranges with logical operators (not simple expression)
+   for L in False .. (I = 3) loop                -- OK
+      null;
+   end loop;
+   for L in 0 .. I + 3 loop                    -- Should Trigger
+      null;
+   end loop;
+   B := B in False .. (I = 3);                   -- OK
+   B := I in 0     .. I + 3;                   -- Should Trigger
+
 end Test_Parentheses;

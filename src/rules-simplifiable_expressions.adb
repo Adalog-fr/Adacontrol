@@ -1057,6 +1057,7 @@ package body Rules.Simplifiable_Expressions is
             A_Multiply_Operator      .. A_Rem_Operator                   => Multiplying,
             An_Exponentiate_Operator .. A_Not_Operator                   => Highest);
       subtype A_Structured_Expression is Expression_Kinds range A_Case_Expression .. A_For_Some_Quantified_Expression;
+      subtype A_Simple_Expression     is Priority_Level range Adding   .. Priority_Level'Last;
 
       Enclosing : Asis.Element;
       Enclosed  : Asis.Element;
@@ -1067,7 +1068,7 @@ package body Rules.Simplifiable_Expressions is
       Rules_Manager.Enter (Rule_Id);
 
       Enclosing := Enclosing_Element (Expr);
-      Enclosed := Expression_Parenthesized (Expr);
+      Enclosed  := Expression_Parenthesized (Expr);
 
       case Expression_Kind (Enclosed) is
          when A_Structured_Expression =>                  -- Things that generally require parentheses
@@ -1107,8 +1108,6 @@ package body Rules.Simplifiable_Expressions is
                         Do_Report;
                      end if;
                end case;
---              elsif Expression_Kind (Enclosing) = A_Parenthesized_Expression then
---                 Do_Report;
             end if;
 
          when A_Parenthesized_Expression =>
@@ -1193,9 +1192,16 @@ package body Rules.Simplifiable_Expressions is
                   end case;
 
                when others =>  -- Including Not_An_Expression
-                  if Declaration_Kind (Enclosing) /= An_Expression_Function_Declaration then
-                     -- Special case: the parentheses around the expression of an expression function
-                     -- Always required
+                  if Declaration_Kind (Enclosing) /= An_Expression_Function_Declaration
+                  -- Special case: the parentheses around the expression of an expression function
+                  -- Always required
+
+                    and then (Element_Kind (Enclosing) /= A_Definition
+                              or else Expression_Kind (Enclosed) /= A_Function_Call
+                              or else Priority (Operator_Kind (Prefix (Enclosed))) in A_Simple_Expression)
+                  -- Expressions appearing in definitions must be simple expressions.
+                  -- Those that are not must be parenthesized
+                  then
                      Do_Report;
                   end if;
 

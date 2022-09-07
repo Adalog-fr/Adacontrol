@@ -210,6 +210,12 @@ t_simplifiable_expressions-test_parentheses.adb:136:13: Delete:136:13
 t_simplifiable_expressions-test_parentheses.adb:139:14: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
 t_simplifiable_expressions-test_parentheses.adb:139:14: Delete:139:14
 t_simplifiable_expressions-test_parentheses.adb:139:34: Delete:139:34
+t_simplifiable_expressions-test_parentheses.adb:145:18: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:145:18: Delete:145:18
+t_simplifiable_expressions-test_parentheses.adb:145:24: Delete:145:24
+t_simplifiable_expressions-test_parentheses.adb:149:23: Error: SIMPLIFIABLE_EXPRESSIONS: Unnecessary parentheses in expression
+t_simplifiable_expressions-test_parentheses.adb:149:23: Delete:149:23
+t_simplifiable_expressions-test_parentheses.adb:149:29: Delete:149:29
 t_simplifiable_expressions-test_conversion.adb:9:9: Found: SIMPLIFIABLE_EXPRESSIONS: unnecessary conversion
 t_simplifiable_expressions-test_conversion.adb:9:9: Replace:9:19
 !Y
@@ -293,4 +299,4 @@ t_simplifiable_expressions-test_if.adb:7:10: Found: SIMPLIFIABLE_EXPRESSIONS: Ne
 t_simplifiable_expressions-test_if.adb:7:13: Found: SIMPLIFIABLE_EXPRESSIONS: "not" on comparison
 
 Counts summary:
-SIMPLIFIABLE_EXPRESSIONS: 127
+SIMPLIFIABLE_EXPRESSIONS: 129
